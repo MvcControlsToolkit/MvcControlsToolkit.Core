@@ -24,18 +24,23 @@ namespace MvcControlsToolkit.Core.Options
         }
         public void AddToRequest(string prefix, HttpContext context, IOptionsDictionary dict)
         {
-            foreach(var x in allProviders)
+            HashSet<IOptionsProvider> set = new HashSet<IOptionsProvider>();
+            foreach (var x in allProviders)
             {
-                if (x.Key.StartsWith(prefix)){
+                if (x.Key == prefix || (x.Key.StartsWith(prefix) && x.Key[prefix.Length] == '.')){
                     foreach (var y in x.Value)
                     {
-                        if (!requestProviders.Contains(y))
+                        if (y.Enabled(context) && !requestProviders.Contains(y))
                         {
-                            y.Load(context, dict);
+                            set.UnionWith(y.Load(context, dict));
+                            requestProviders.Add(y);
                         }
                     }
                 }
-                
+            }
+            foreach(var x in set)
+            {
+                if (x.Enabled(context) && x.CanSave && x.AutoSave) x.Save(context, dict);
             }
         }
     }

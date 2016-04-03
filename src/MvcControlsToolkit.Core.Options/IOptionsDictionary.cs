@@ -7,11 +7,13 @@ namespace MvcControlsToolkit.Core.Options
 {
     public interface IOptionsDictionary
     {
-        void AddOption(string name, string value, uint? priority=null);
+        IOptionsProvider AddOption(IOptionsProvider provider, string name, string value, uint? priority=null);
         void Remove(string name);
 
-        object GetOptionObject(string prefix, Type type);
+        object GetOptionObject(string prefix, Type type, object instance = null);
 
-        void AddOptionObject(string prefix, object x, uint? priority = null);
+        List<KeyValuePair<string, string>> GetEntries(string prefix, string newPrefix=null);
+
+        List<IOptionsProvider> AddOptionObject(IOptionsProvider provide, string prefix, object x, uint? priority = null, uint jumpComplexTypes = uint.MaxValue);
     }
 }

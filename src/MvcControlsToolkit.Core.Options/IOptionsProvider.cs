@@ -11,11 +11,14 @@ namespace MvcControlsToolkit.Core.Options
 {
     public interface IOptionsProvider
     {
-        string Prefix { get; set; }
-        bool CanSave { get; set; }
+        string Prefix { get; set;}
+        uint Priority { get; set; }
+        bool CanSave { get;}
+        bool Enabled(HttpContext ctx);
+        bool AutoSave { get; set; }
         void Save(HttpContext ctx, IOptionsDictionary dict);
 
-        void Load(HttpContext ctx, IOptionsDictionary dict);
+        List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict);
         
     }
 }

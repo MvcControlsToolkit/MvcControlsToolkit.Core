@@ -6,7 +6,10 @@
     "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
     "licenseUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core/blob/master/LICENSE.txt",
     "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final"
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
+        "Newtonsoft.Json": "8.0.3",
+        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-rc1-final",
+        "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-rc1-final"
     },
     "frameworks": {
         "net451": {
