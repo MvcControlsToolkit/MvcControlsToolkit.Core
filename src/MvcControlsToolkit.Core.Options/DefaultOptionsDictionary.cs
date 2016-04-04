@@ -53,7 +53,12 @@ namespace MvcControlsToolkit.Core.Options
         {
             Creator = Activator.CreateInstance;
         }
-
+        private string propertyName(PropertyInfo property)
+        {
+            var att = property.GetCustomAttribute(typeof(Attributes.OptionNameAttribute)) as Attributes.OptionNameAttribute;
+            if (att == null) return property.Name;
+            else return att.Name;
+        }
         public IOptionsProvider AddOption(IOptionsProvider provider, string name, string value, uint? priority = default(uint?))
         {
             if (name == null) throw new ArgumentException("name");
@@ -119,7 +124,7 @@ namespace MvcControlsToolkit.Core.Options
                 obj = Activator.CreateInstance(type);
                 foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
                 {
-                    prop.SetValue(obj, GetOptionObject(prefix + "." + prop.Name, prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
+                    prop.SetValue(obj, GetOptionObject(prefix + "." + propertyName(prop), prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
                 }
             }
             
@@ -164,7 +169,7 @@ namespace MvcControlsToolkit.Core.Options
             {
                 foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
                 {
-                    res.AddRange(AddOptionObject(provider, prefix + "." + prop.Name, prop.GetValue(obj), priority, jumpComplexTypes - 1));
+                    res.AddRange(AddOptionObject(provider, prefix + "." + propertyName(prop), prop.GetValue(obj), priority, jumpComplexTypes - 1));
                 }
             }
             return res;

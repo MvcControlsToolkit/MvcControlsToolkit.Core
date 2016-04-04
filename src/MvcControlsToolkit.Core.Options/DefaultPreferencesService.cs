@@ -10,14 +10,14 @@ namespace MvcControlsToolkit.Core.Options
     {
         private IOptionsDictionary optionsDictionary;
         private ProvidersDictionary providersInfos = new ProvidersDictionary();
-        private static OptionObjectsDictionary optionsObjectsInfos = new OptionObjectsDictionary();
+        internal static OptionObjectsDictionary OptionsObjectsInfos = new OptionObjectsDictionary();
         private HttpContext requestContext;
         public void BindToRequest(HttpContext ctx)
         {
             requestContext = ctx;
             optionsDictionary.Creator = x =>
             {
-                if (optionsObjectsInfos.ContainsKey(x))
+                if (OptionsObjectsInfos.ContainsKey(x))
                 {
                     return ctx.RequestServices.GetService(x);
                 }
@@ -28,9 +28,12 @@ namespace MvcControlsToolkit.Core.Options
         public T BuildOptionsObject<T>()
              where T : class, new()
         {
-            return optionsObjectsInfos.Bind<T>(optionsDictionary);
+            return OptionsObjectsInfos.Bind<T>(optionsDictionary);
         }
-
+        public void Save<T>(T options)
+        {
+            OptionsObjectsInfos.Save(options, optionsDictionary, requestContext);
+        }
         public DefaultPreferencesService(IOptionsDictionary optionsDictionary)
         {
             

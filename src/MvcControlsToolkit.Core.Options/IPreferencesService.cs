@@ -11,5 +11,7 @@ namespace MvcControlsToolkit.Core.Options
         T BuildOptionsObject<T>()
             where T : class, new();
         void BindToRequest(HttpContext ctx);
+
+        void Save<T>(T options);
     }
 }
