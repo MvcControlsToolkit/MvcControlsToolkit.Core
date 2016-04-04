@@ -10,14 +10,14 @@ namespace MvcControlsToolkit.Core.Options.Providers
     public class ClaimsProvider<T>: IOptionsProvider
         where T: class
     {
-        public bool CanSave
+        virtual public bool CanSave
         {
             get
             {
-                return false;
+                return true;
             }
         }
-        public bool Enabled(HttpContext ctx)
+        virtual public bool Enabled(HttpContext ctx)
         {
             return ctx.User != null && ctx.User.Identity != null && ctx.User.Identity.IsAuthenticated;
         }
@@ -33,7 +33,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public string SourcePrefix { get; set; }
 
-        public void Save(HttpContext ctx, IOptionsDictionary dict)
+        virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
@@ -89,7 +89,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
                 
             }
         }
-        public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
+        virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var res = new List<IOptionsProvider>();
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);

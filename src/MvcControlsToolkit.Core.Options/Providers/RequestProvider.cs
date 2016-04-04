@@ -8,14 +8,14 @@ namespace MvcControlsToolkit.Core.Options.Providers
 {
     public class RequestProvider : IOptionsProvider
     {
-        public bool CanSave
+        virtual public bool CanSave
         {
             get
             {
                 return false;
             }
         }
-        public bool Enabled(HttpContext ctx)
+        virtual public bool Enabled(HttpContext ctx)
         {
             return true;
         }
@@ -30,7 +30,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public bool UseParams { get; set; }
 
-        public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
+        virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
             var res = new List<IOptionsProvider>();
@@ -73,7 +73,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
             return res;
         }
 
-        public void Save(HttpContext ctx, IOptionsDictionary dict)
+        virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             throw new NotImplementedException();
         }

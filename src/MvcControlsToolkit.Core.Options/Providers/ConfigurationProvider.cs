@@ -8,14 +8,14 @@ namespace MvcControlsToolkit.Core.Options.Providers
 {
     public class ConfigurationProvider: IOptionsProvider
     {
-        public bool CanSave
+        virtual public bool CanSave
         {
             get
             {
                 return false;
             }
         }
-        public bool Enabled(HttpContext ctx)
+        virtual public bool Enabled(HttpContext ctx)
         {
             return true;
         }
@@ -27,11 +27,11 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public string SourcePrefix { get; set; }
 
-        public void Save(HttpContext ctx, IOptionsDictionary dict)
+        virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             throw new NotImplementedException();
         }
-        public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
+        virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             if (string.IsNullOrWhiteSpace(SourcePrefix)) SourcePrefix = Prefix;
             var path = SourcePrefix.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);

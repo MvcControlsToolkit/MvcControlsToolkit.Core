@@ -10,14 +10,14 @@ namespace MvcControlsToolkit.Core.Options.Providers
 {
     public class CookieProvider : IOptionsProvider
     {
-        public bool CanSave
+        virtual public bool CanSave
         {
             get
             {
                 return true;
             }
         }
-        public bool Enabled(HttpContext ctx)
+        virtual public bool Enabled(HttpContext ctx)
         {
             return true;
         }
@@ -33,7 +33,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public uint Priority { get; set; }
 
-        public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
+        virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
             var cookie = ctx.Request.Cookies[CookieName].FirstOrDefault();
@@ -56,7 +56,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
             return res;
         }
 
-        public void Save(HttpContext ctx, IOptionsDictionary dict)
+        virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             var serialized = JsonConvert.SerializeObject(dict.GetEntries(Prefix, String.IsNullOrEmpty(SourcePrefix) ? null : SourcePrefix));
             ctx.Response.Cookies.Append(CookieName, serialized, new CookieOptions

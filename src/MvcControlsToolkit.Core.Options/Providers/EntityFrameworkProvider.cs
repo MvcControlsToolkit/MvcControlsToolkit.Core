@@ -15,11 +15,11 @@ namespace MvcControlsToolkit.Core.Options.Providers
         where T : class
         where M : class, new()
     {
-        public bool CanSave
+        virtual public bool CanSave
         {
             get
             {
-                return false;
+                return true;
             }
         }
         public bool Enabled(HttpContext ctx)
@@ -46,7 +46,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public bool AutoSave { get; set; }
 
-        public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
+        virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var res = new List<IOptionsProvider>();
             UserManager<T> um = ctx.RequestServices.GetService(typeof(UserManager<T>)) as UserManager<T>;
@@ -58,7 +58,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
             return dict.AddOptionObject(this, Prefix, options, Priority, 1);
 
         }
-        public void Save(HttpContext ctx, IOptionsDictionary dict)
+        virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             var res = new List<IOptionsProvider>();
             UserManager<T> um = ctx.RequestServices.GetService(typeof(UserManager<T>)) as UserManager<T>;
