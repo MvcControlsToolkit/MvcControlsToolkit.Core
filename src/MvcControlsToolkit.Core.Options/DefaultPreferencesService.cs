@@ -15,6 +15,14 @@ namespace MvcControlsToolkit.Core.Options
         public void BindToRequest(HttpContext ctx)
         {
             requestContext = ctx;
+            optionsDictionary.Creator = x =>
+            {
+                if (optionsObjectsInfos.ContainsKey(x))
+                {
+                    return ctx.RequestServices.GetService(x);
+                }
+                return null;
+            };
         }
 
         public T BuildOptionsObject<T>()
@@ -25,6 +33,7 @@ namespace MvcControlsToolkit.Core.Options
 
         public DefaultPreferencesService(IOptionsDictionary optionsDictionary)
         {
+            
             this.optionsDictionary = optionsDictionary;
         }
 

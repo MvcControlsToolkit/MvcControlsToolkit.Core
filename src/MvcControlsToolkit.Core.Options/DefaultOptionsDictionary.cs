@@ -45,10 +45,13 @@ namespace MvcControlsToolkit.Core.Options
             }
         }
         private Dictionary<string, OptionEntry> store = new Dictionary<string, OptionEntry>();
-        private Func<Type, object> creator = Activator.CreateInstance;
-        public DefaultOptionsDictionary(Func<Type, object> creator = null)
+        public Func<Type, object> Creator
         {
-            if (creator != null) this.creator = creator;
+            get; set;
+        }
+        public DefaultOptionsDictionary()
+        {
+            Creator = Activator.CreateInstance;
         }
 
         public IOptionsProvider AddOption(IOptionsProvider provider, string name, string value, uint? priority = default(uint?))
@@ -110,11 +113,16 @@ namespace MvcControlsToolkit.Core.Options
                 else return null;
             }
             //complex object
-            var obj = instance?? creator(type);
-            foreach(var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
+            var obj = instance?? Creator(type);
+            if(obj == null)
             {
-                prop.SetValue(obj, GetOptionObject(prefix + "." + prop.Name, prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
+                obj = Activator.CreateInstance(type);
+                foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
+                {
+                    prop.SetValue(obj, GetOptionObject(prefix + "." + prop.Name, prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
+                }
             }
+            
             return obj;    
         }
 

@@ -10,6 +10,8 @@ namespace MvcControlsToolkit.Core.Options
         IOptionsProvider AddOption(IOptionsProvider provider, string name, string value, uint? priority=null);
         void Remove(string name);
 
+        Func<Type, object> Creator{get; set;}
+
         object GetOptionObject(string prefix, Type type, object instance = null);
 
         List<KeyValuePair<string, string>> GetEntries(string prefix, string newPrefix=null);

@@ -14,7 +14,7 @@ namespace MvcControlsToolkit.Core.Options
             string prefix = null;
             if(this.TryGetValue(typeof(T), out prefix))
             {
-                return (T)dict.GetOptionObject(prefix, typeof(T));
+                return (T)dict.GetOptionObject(prefix, typeof(T), new T());
             }
             return null;
         }
