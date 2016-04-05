@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNet.Http;
 namespace MvcControlsToolkit.Core.Options.Providers
 {
-    public class ConfigurationProvider: IOptionsProvider
+    public class ApplicationConfigurationProvider: IOptionsProvider
     {
         virtual public bool CanSave
         {
@@ -58,7 +58,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
                 loadSection(dict, prefix + "." + child.Key, child, res);
             }
         }
-        public ConfigurationProvider(string prefix, IConfiguration configuration)
+        public ApplicationConfigurationProvider(string prefix, IConfiguration configuration)
         {
             if (string.IsNullOrEmpty(prefix)) throw new ArgumentNullException("prefix");
             if (configuration == null) throw new ArgumentNullException("configuration");

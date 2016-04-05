@@ -18,11 +18,12 @@ namespace MvcControlsToolkit.Core.Options.Extensions
             where T : class, new()
         {
             if (string.IsNullOrWhiteSpace(prefix)) throw new ArgumentException("prefix");
-            services.AddScoped<T>(x => x.GetService<IPreferencesService>().BuildOptionsObject<T>());
+            services.AddScoped<T>(x => 
+                x.GetService<IPreferencesService>().BuildOptionsObject<T>());
             DefaultPreferencesService.OptionsObjectsInfos[typeof(T)] = prefix;
             return services;
         }
-        public static IServiceCollection AddPreferencesProvider<T>(this IServiceCollection services, IOptionsProvider provider)
+        public static IServiceCollection AddPreferencesProvider(this IServiceCollection services, IOptionsProvider provider)
         {
             if (provider == null) throw new ArgumentException("provider");
             ProvidersDictionary.Add(provider);

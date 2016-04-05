@@ -8,12 +8,13 @@ namespace MvcControlsToolkit.Core.Options
 {
     internal class OptionObjectsDictionary: Dictionary<Type, string>
     {
-        public T Bind<T>(IOptionsDictionary dict)
+        public T Bind<T>(IOptionsDictionary dict, ProvidersDictionary prov, HttpContext ctx)
             where T : class, new()
         {
             string prefix = null;
             if(this.TryGetValue(typeof(T), out prefix))
             {
+                prov.AddToRequest(prefix, ctx, dict);
                 return (T)dict.GetOptionObject(prefix, typeof(T), new T());
             }
             return null;

@@ -28,7 +28,7 @@ namespace MvcControlsToolkit.Core.Options
         public T BuildOptionsObject<T>()
              where T : class, new()
         {
-            return OptionsObjectsInfos.Bind<T>(optionsDictionary);
+            return OptionsObjectsInfos.Bind<T>(optionsDictionary, providersInfos, requestContext);
         }
         public void Save<T>(T options)
         {

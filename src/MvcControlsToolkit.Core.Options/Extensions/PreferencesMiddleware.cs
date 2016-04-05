@@ -10,15 +10,13 @@ namespace MvcControlsToolkit.Core.Options.Extensions
 {
     public class PreferencesMiddleware
     {
-        public class RequestPreferencesMiddleware
-        {
+        
             private readonly RequestDelegate _next;
             
 
-            public RequestPreferencesMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
+            public PreferencesMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
             {
                 _next = next;
-               
             }
 
             public async Task Invoke(HttpContext context)
@@ -27,6 +25,6 @@ namespace MvcControlsToolkit.Core.Options.Extensions
                 preferencesHandler.BindToRequest(context);
                 await _next.Invoke(context);
             }
-        }
+        
     }
 }

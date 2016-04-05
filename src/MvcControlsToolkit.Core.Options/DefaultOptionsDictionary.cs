@@ -119,10 +119,10 @@ namespace MvcControlsToolkit.Core.Options
             }
             //complex object
             var obj = instance?? Creator(type);
-            if(obj == null)
+            if(obj == null || instance != null)
             {
-                obj = Activator.CreateInstance(type);
-                foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
+                if(instance == null) obj = Activator.CreateInstance(type);
+                foreach (var prop in type.GetProperties(BindingFlags.Public|BindingFlags.Instance))
                 {
                     prop.SetValue(obj, GetOptionObject(prefix + "." + propertyName(prop), prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
                 }
@@ -167,7 +167,7 @@ namespace MvcControlsToolkit.Core.Options
             }
             if (jumpComplexTypes > 0)
             {
-                foreach (var prop in type.GetProperties(System.Reflection.BindingFlags.Public))
+                foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
                     res.AddRange(AddOptionObject(provider, prefix + "." + propertyName(prop), prop.GetValue(obj), priority, jumpComplexTypes - 1));
                 }

@@ -27,7 +27,7 @@ namespace MvcControlsToolkit.Core.Options
             HashSet<IOptionsProvider> set = new HashSet<IOptionsProvider>();
             foreach (var x in allProviders)
             {
-                if (x.Key == prefix || (x.Key.StartsWith(prefix) && x.Key[prefix.Length] == '.')){
+                if (x.Key == prefix || (prefix.StartsWith(x.Key) && prefix[x.Key.Length] == '.')){
                     foreach (var y in x.Value)
                     {
                         if (y.Enabled(context) && !requestProviders.Contains(y))
