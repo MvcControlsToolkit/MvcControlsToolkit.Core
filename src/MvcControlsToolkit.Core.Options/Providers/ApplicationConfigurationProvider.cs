@@ -25,6 +25,8 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public bool AutoSave { get; set; }
 
+        public bool AutoCreate { get; set; }
+
         public string SourcePrefix { get; set; }
 
         virtual public void Save(HttpContext ctx, IOptionsDictionary dict)

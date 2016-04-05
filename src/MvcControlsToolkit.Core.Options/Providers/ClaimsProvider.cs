@@ -31,13 +31,14 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public bool AutoSave { get; set; }
 
+        public bool AutoCreate { get; set; }
         public string SourcePrefix { get; set; }
 
         virtual public void Save(HttpContext ctx, IOptionsDictionary dict)
         {
             
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
-            var toAdd = ctx.User.Claims.Where(m => m.Type.StartsWith(SourcePrefix))
+            var toAdd = ctx.User.Claims.Where(m => m.Type == SourcePrefix || (m.Type.StartsWith(SourcePrefix) && m.Type[SourcePrefix.Length] == '/'))
                 .Select(m => new
                 {
                     Key = m.Type,
@@ -50,12 +51,12 @@ namespace MvcControlsToolkit.Core.Options.Providers
                 comparer.Add(x.Key, x.Value);
             }
 
-            var changes=dict.GetEntries(Prefix, emptyPrefix ? null : SourcePrefix);
+            var changes=dict.GetEntries(Prefix);
             List<System.Security.Claims.Claim> ToAddC = new List<System.Security.Claims.Claim>();
             List<System.Security.Claims.Claim> ToRemove = new List<System.Security.Claims.Claim>();
             foreach(var c in changes)
             {
-                var key = c.Key.Replace(".", "/");
+                var key = emptyPrefix ? c.Key.Replace(".", "/") : SourcePrefix+"/"+ c.Key.Replace(".", "/");
                 var val = c.Value;
                 System.Security.Claims.Claim prev = null;
                 if (comparer.TryGetValue(key, out prev))
@@ -93,10 +94,10 @@ namespace MvcControlsToolkit.Core.Options.Providers
         {
             var res = new List<IOptionsProvider>();
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
-            var toAdd = ctx.User.Claims.Where(m => m.Type.StartsWith(SourcePrefix))
+            var toAdd = ctx.User.Claims.Where(m => m.Type == SourcePrefix || (m.Type.StartsWith(SourcePrefix) && m.Type[SourcePrefix.Length] == '/'))
                 .Select(m => new
                 {
-                    Key = emptyPrefix ? Prefix + "." + m.Value.Replace("/", ".") : Prefix + "." + m.Value.Substring(SourcePrefix.Length + 1).Replace("/", "."),
+                    Key = emptyPrefix ? Prefix + "." + m.Type.Replace("/", ".") : Prefix + "." + m.Type.Substring(SourcePrefix.Length + 1).Replace("/", "."),
                     Value = m.Value
                 });
             foreach (var x in toAdd)

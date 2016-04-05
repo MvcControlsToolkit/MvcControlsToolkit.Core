@@ -22,6 +22,8 @@ namespace MvcControlsToolkit.Core.Options.Providers
         public string Prefix { get; set; }
         public bool AutoSave { get; set; }
 
+        public bool AutoCreate { get; set; }
+
         public string SourcePrefix { get; set; }
 
         public uint Priority { get; set; }
@@ -34,7 +36,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
         {
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
             var res = new List<IOptionsProvider>();
-            if (UseForm)
+            if (UseForm && ctx.Request.HasFormContentType)
             {
                 var form = ctx.Request.Form;
                 

@@ -17,7 +17,7 @@ namespace MvcControlsToolkit.Core.ITests.Controllers
         public IActionResult Index()
         {
 
-            ViewData["Welcome"] = welcome.Message + (welcome.AddDate ? ", "+DateTime.Today: "");
+            ViewData["Welcome"] = welcome.Message + (welcome.AddDate ? ", "+DateTime.Today.ToString("D") : "");
             return View();
         }
 

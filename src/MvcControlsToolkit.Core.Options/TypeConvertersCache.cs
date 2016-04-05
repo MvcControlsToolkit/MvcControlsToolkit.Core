@@ -24,7 +24,7 @@ namespace MvcControlsToolkit.Core.Options
             if (!store.TryGetValue(type, out pres)){
                 if (isConvertible(type)) pres = IConvertibleConverter;
                 var converter = TypeDescriptor.GetConverter(type);
-                if (converter == null || !converter.CanConvertTo(typeof(string))) pres = null;
+                if (converter == null || !converter.CanConvertTo(typeof(string)) || !converter.CanConvertFrom(typeof(string))) pres = null;
                 else
                 {
                     pres = (x, y) => converter.ConvertTo(null, CultureInfo.InvariantCulture, x, typeof(string)) as string;

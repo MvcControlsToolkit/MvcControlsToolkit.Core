@@ -26,7 +26,7 @@ namespace MvcControlsToolkit.Core.Options
                 IOptionsProvider res = null;
                 if (priority.HasValue)
                 {
-                    if(!Priority.HasValue || priority.Value >= Priority.Value)
+                    if (!Priority.HasValue || priority.Value >= Priority.Value)
                     {
                         Priority = priority;
                         if (Value != value && Provider != provider) res = Provider;
@@ -41,6 +41,7 @@ namespace MvcControlsToolkit.Core.Options
                     Value = value;
                     Provider = provider;
                 }
+                else if (provider != Provider && value != Value) res=provider;
                 return res;
             }
         }
@@ -87,7 +88,7 @@ namespace MvcControlsToolkit.Core.Options
             {
                 if (x.Key == prefix || (x.Key.StartsWith(prefix) && x.Key[prefix.Length] == '.'))
                 {
-                    res.Add(new KeyValuePair<string, string>(newPrefix== null ? x.Key : newPrefix+x.Key.Substring(prefix.Length), x.Value.Value));
+                    res.Add(new KeyValuePair<string, string>(newPrefix== null ? x.Key.Substring(prefix.Length+1) : newPrefix+x.Key.Substring(prefix.Length), x.Value.Value));
 
                 }
             }

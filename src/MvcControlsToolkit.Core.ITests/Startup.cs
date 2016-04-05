@@ -15,6 +15,7 @@ using MvcControlsToolkit.Core.ITests.Options;
 using MvcControlsToolkit.Core.Options.Extensions;
 using MvcControlsToolkit.Core.Options.Providers;
 
+
 namespace MvcControlsToolkit.Core.ITests
 {
     public class Startup
@@ -60,9 +61,36 @@ namespace MvcControlsToolkit.Core.ITests
             services.AddMvc();
             services.AddPreferences()
                 .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
-                .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration) {
-                    SourcePrefix="CustomUI"
-                });
+                .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration)
+                {
+                    SourcePrefix = "CustomUI"
+                })
+                .AddPreferencesProvider(new CookieProvider("UI.Strings.Welcome", "_welcome") {
+                    Priority = 1,
+                    AutoCreate = true,
+                    WhenEnabled = x => x.User == null || x.User.Identity == null || !x.User.Identity.IsAuthenticated
+                })
+                //.AddPreferencesProvider(new EntityFrameworkProvider<ApplicationUser, WelcomeMessage>(
+                //    "UI.Strings.Welcome",
+                //    user => new WelcomeMessage
+                //    {
+                //        Message = "Welcome " + user.UserName,
+                //        AddDate = true
+                //    }
+                //    )
+                //{
+                //    Priority = 2
+                //})
+                .AddPreferencesProvider(new ClaimsProvider<ApplicationUser>("UI.Strings.Welcome"){
+                    Priority=2,
+                    AutoCreate=true,
+                    SourcePrefix= "http://www.mvc-controls.com/Welcome"
+                })
+                .AddPreferencesProvider(new RequestProvider("UI.Strings.Welcome")
+                {
+                    Priority = 10,
+                    SourcePrefix = "Welcome"
+                }) ;
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();

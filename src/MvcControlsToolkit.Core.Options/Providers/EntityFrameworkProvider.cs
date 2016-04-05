@@ -31,7 +31,9 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public string Prefix { get; set; }
 
-        protected Func<T, M> UserOptionsField { get; set; }
+        protected Func<T, M> UserOptions { get; set; }
+
+        public Action<T, M> ApplyOptionsToUser { get; set; }
 
         protected string OptionFieldName { get; set; }
         public Expression<Func<T, M>> UserOptionsExpression { get; set; }
@@ -46,6 +48,8 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
         public bool AutoSave { get; set; }
 
+        public bool AutoCreate { get; set; }
+
         virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var res = new List<IOptionsProvider>();
@@ -53,7 +57,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
             var aUserT = um.FindByNameAsync(ctx.User.Identity.Name);
             aUserT.Wait();
             var user = aUserT.Result;
-            var options = UserOptionsField(user);
+            var options = UserOptions(user);
             if (options == null) return res;
             return dict.AddOptionObject(this, Prefix, options, Priority, 1);
 
@@ -65,14 +69,22 @@ namespace MvcControlsToolkit.Core.Options.Providers
             var aUserT = um.FindByNameAsync(ctx.User.Identity.Name);
             aUserT.Wait();
             var user = aUserT.Result;
-            var options = UserOptionsField(user);
-            if (options == null)
+            if (ApplyOptionsToUser == null)
             {
-                options = new M();
+                var options = UserOptions(user);
+                if (options == null)
+                {
+                    options = new M();
+                }
+                typeof(T).GetProperty(OptionFieldName).SetValue(user, options);
+                dict.GetOptionObject(Prefix, typeof(M), options);
             }
-            typeof(T).GetProperty(OptionFieldName).SetValue(user, options);
-            dict.GetOptionObject(Prefix, typeof(M), options);
-            if(SaveDbContext || RelogUserAfterSave)
+            else {
+                var options = dict.GetOptionObject(Prefix, typeof(M)) as M;
+                ApplyOptionsToUser(user, options);
+            }
+                
+            if (SaveDbContext || RelogUserAfterSave)
             {
                 var aw = um.UpdateAsync(user);
                 aw.Wait();
@@ -86,12 +98,17 @@ namespace MvcControlsToolkit.Core.Options.Providers
                 }
             }
         }
-        public EntityFrameworkProvider(Expression<Func<T, M>> userOptionsExpression)
+        public EntityFrameworkProvider(string prefix, Expression<Func<T, M>> userOptionsExpression)
         {
+            if (string.IsNullOrWhiteSpace(prefix)) throw new ArgumentNullException("prefix");
+            Prefix = prefix;
             if (userOptionsExpression == null) throw new ArgumentNullException("userOptionsExpression");
             UserOptionsExpression = userOptionsExpression;
-            UserOptionsField = userOptionsExpression.Compile();
-            OptionFieldName = ExpressionHelper.GetExpressionText(userOptionsExpression);
+            UserOptions = userOptionsExpression.Compile();
+            try {
+                OptionFieldName = ExpressionHelper.GetExpressionText(userOptionsExpression);
+            }
+            catch { }
         }
     }
 }

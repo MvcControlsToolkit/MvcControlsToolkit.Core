@@ -16,6 +16,7 @@ namespace MvcControlsToolkit.Core.Options
         bool CanSave { get;}
         bool Enabled(HttpContext ctx);
         bool AutoSave { get; set; }
+        bool AutoCreate { get; set; }
         void Save(HttpContext ctx, IOptionsDictionary dict);
 
         List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict);
