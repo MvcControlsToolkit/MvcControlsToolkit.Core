@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
 {
@@ -23,5 +24,21 @@ namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
+        public float? AFloat { get; set; }
+        public DateTime ADatetime { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime? ADate { get; set; }
+
+        [DataType(DataType.Time)]
+        public DateTime? ATime { get; set; }
+
+        [DataType("Week")]
+        public Week? AWeek { get; set; }
+
+        [DataType("Month")]
+        public Month? AMonth { get; set; }
+
     }
 }

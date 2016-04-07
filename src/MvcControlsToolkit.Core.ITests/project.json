@@ -26,6 +26,7 @@
         "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
         "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
         "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc1-final",
+        "MvcControlsToolkit.Core": "0.8.0-*",
         "MvcControlsToolkit.Core.Options": "0.8.0-*"
     },
 

@@ -31,6 +31,48 @@
         </div>
     </div>
     <div class="form-group">
+        <label asp-for="AFloat" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AFloat" class="form-control" />
+            <span asp-validation-for="AFloat" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ADatetime"  class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ADatetime"  class="form-control" />
+            <span asp-validation-for="ADatetime" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ADate" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ADate" class="form-control" />
+            <span asp-validation-for="ADate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ATime" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ATime" class="form-control" />
+            <span asp-validation-for="ATime" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AWeek" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AWeek" type="week"  class="form-control" />
+            <span asp-validation-for="AWeek" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AMonth" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AMonth" type="month" class="form-control" />
+            <span asp-validation-for="AMonth" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
             <button type="submit" class="btn btn-default">Register</button>
         </div>

@@ -5,19 +5,21 @@
     "tags": [ "Asp.net Mvc" ],
     "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
     "licenseUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core/blob/master/LICENSE.txt",
-
-  "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
-        "dependencies": {
-            "Microsoft.CSharp": "4.0.1-beta-23516",
-            "System.Collections": "4.0.11-beta-23516",
-            "System.Globalization": "4.0.11-beta-23516",
-            "System.Linq": "4.0.1-beta-23516",
-            "System.Reflection": "4.1.0-beta-23516",
-            "System.Runtime": "4.0.21-beta-23516",
-            "System.Threading": "4.0.11-beta-23516"
+    "frameworks": {
+        "net451": { },
+        "dotnet5.4": {
+            "dependencies": {
+                "Microsoft.CSharp": "4.0.1-beta-23516",
+                "System.Collections": "4.0.11-beta-23516",
+                "System.Globalization": "4.0.11-beta-23516",
+                "System.Linq": "4.0.1-beta-23516",
+                "System.Reflection": "4.1.0-beta-23516",
+                "System.Runtime": "4.0.21-beta-23516",
+                "System.Threading": "4.0.11-beta-23516"
+            }
         }
+    },
+    "dependencies": {
+        "MvcControlsToolkit.Core.Options": "0.8.0-*"
     }
-  }
 }
