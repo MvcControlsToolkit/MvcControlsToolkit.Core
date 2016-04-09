@@ -27,7 +27,7 @@ namespace MvcControlsToolkit.Core.Types
         }
     }
     [System.ComponentModel.TypeConverter("MvcControlsToolkit.Core.Types.MonthTypeConverter")]
-    public struct Month: IComparable
+    public struct Month: IComparable, IComparable<Month>, IEquatable<Month>
     {
         uint _YearNumber;
         public uint YearNumber { get { return _YearNumber; } set { _YearNumber = value; } }
@@ -84,7 +84,31 @@ namespace MvcControlsToolkit.Core.Types
         {
             return m.ToDateTime();
         }
+        public static bool operator <(Month x, Month y)
+        {
+            return x.CompareTo(y) < 0;
+        }
+        public static bool operator >(Month x, Month y)
+        {
+            return x.CompareTo(y) > 0;
+        }
+        public static bool operator <=(Month x, Month y)
+        {
+            return x.CompareTo(y) <= 0;
+        }
+        public static bool operator >=(Month x, Month y)
+        {
+            return x.CompareTo(y) >= 0;
+        }
 
+        public static bool operator ==(Month x, Month y)
+        {
+            return x.Equals(y);
+        }
+        public static bool operator !=(Month x, Month y)
+        {
+            return !x.Equals(y);
+        }
         public override string ToString()
         {
             return string.Format("{0:0000}-{1:00}", _YearNumber, _MonthNumber);
@@ -115,6 +139,25 @@ namespace MvcControlsToolkit.Core.Types
                 else return 1;
             }
             else return 1;
+        }
+
+        public int CompareTo(Month other)
+        {
+            return this.CompareTo(other);
+        }
+
+        public bool Equals(Month other)
+        {
+            return this._YearNumber == other._YearNumber &&
+                this._MonthNumber == other._MonthNumber;
+        }
+        public override bool Equals(object obj)
+        {
+           return (obj is Month) && this.Equals((Month)obj);
+        }
+        public override int GetHashCode()
+        {
+            return (int)(this._YearNumber ^ this._MonthNumber);
         }
     }
 }

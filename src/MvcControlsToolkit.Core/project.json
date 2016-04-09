@@ -20,6 +20,9 @@
         }
     },
     "dependencies": {
-        "MvcControlsToolkit.Core.Options": "0.8.0-*"
+        "MvcControlsToolkit.Core.Options": "0.8.0-*",
+        "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-rc1-final",
+        "Microsoft.AspNet.Mvc.Core": "6.0.0-rc1-final",
+        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final"
     }
 }

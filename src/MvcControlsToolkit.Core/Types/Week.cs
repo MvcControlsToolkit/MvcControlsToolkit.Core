@@ -27,7 +27,7 @@ namespace MvcControlsToolkit.Core.Types
         }
     }
     [System.ComponentModel.TypeConverter("MvcControlsToolkit.Core.Types.WeekTypeConverter")]
-    public struct  Week: IComparable
+    public struct  Week: IComparable, IComparable<Month>, IEquatable<Week>
     {
 
         uint _YearNumber;
@@ -121,6 +121,30 @@ namespace MvcControlsToolkit.Core.Types
         {
             return w.StartDate();
         }
+        public static bool operator <(Week x, Week y)
+        {
+            return x.CompareTo(y) < 0;
+        }
+        public static bool operator >(Week x, Week y)
+        {
+            return x.CompareTo(y) > 0;
+        }
+        public static bool operator <=(Week x, Week y)
+        {
+            return x.CompareTo(y) <= 0;
+        }
+        public static bool operator >=(Week x, Week y)
+        {
+            return x.CompareTo(y) >= 0;
+        }
+        public static bool operator ==(Week x, Week y)
+        {
+            return x.Equals(y);
+        }
+        public static bool operator !=(Week x, Week y)
+        {
+            return !x.Equals(y);
+        }
         public override string ToString()
         {
             return string.Format("{0:0000}-W{1:00}", _YearNumber, _WeekNumber);
@@ -196,6 +220,25 @@ namespace MvcControlsToolkit.Core.Types
                 else return 1;
             }
             else return 1;
+        }
+
+        public int CompareTo(Month other)
+        {
+            return this.CompareTo(other); 
+        }
+
+        public bool Equals(Week other)
+        {
+            return this._YearNumber == other._YearNumber &&
+                this._WeekNumber == other._WeekNumber;
+        }
+        public override bool Equals(object obj)
+        {
+            return (obj is Week) && this.Equals((Week)obj);
+        }
+        public override int GetHashCode()
+        {
+            return (int)(this._YearNumber ^ this._WeekNumber);
         }
     }
 }

@@ -14,7 +14,9 @@ using MvcControlsToolkit.Core.ITests.Services;
 using MvcControlsToolkit.Core.ITests.Options;
 using MvcControlsToolkit.Core.Options.Extensions;
 using MvcControlsToolkit.Core.Options.Providers;
-
+using MvcControlsToolkit.Core.Extensions;
+using Microsoft.AspNet.Localization;
+using System.Globalization;
 
 namespace MvcControlsToolkit.Core.ITests
 {
@@ -48,7 +50,7 @@ namespace MvcControlsToolkit.Core.ITests
         {
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-
+            services.AddLocalization();
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
@@ -59,6 +61,8 @@ namespace MvcControlsToolkit.Core.ITests
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
+            services.AddMvcControlsToolkit();
+
             services.AddPreferences()
                 .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
                 .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration)
@@ -127,6 +131,20 @@ namespace MvcControlsToolkit.Core.ITests
                 }
                 catch { }
             }
+
+            var requestLocalizationOptions = new RequestLocalizationOptions
+            {
+                SupportedCultures = new List<CultureInfo>
+                {
+                    new CultureInfo("en-US"),
+                },
+                SupportedUICultures = new List<CultureInfo>
+                {
+                    new CultureInfo("en-US"),
+                }  
+            };
+
+            app.UseRequestLocalization(requestLocalizationOptions, new RequestCulture(new CultureInfo("en-US")));
 
             app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());
 

@@ -73,6 +73,27 @@
         </div>
     </div>
     <div class="form-group">
+        <label asp-for="AColor" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AColor"  class="form-control" />
+            <span asp-validation-for="AColor" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AUrl" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AUrl"  class="form-control" />
+            <span asp-validation-for="AUrl" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="APositiveInteger" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="APositiveInteger" class="form-control" />
+            <span asp-validation-for="APositiveInteger" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
             <button type="submit" class="btn btn-default">Register</button>
         </div>
