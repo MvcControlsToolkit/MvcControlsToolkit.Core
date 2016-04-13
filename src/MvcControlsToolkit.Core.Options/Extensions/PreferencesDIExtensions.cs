@@ -8,8 +8,11 @@ namespace MvcControlsToolkit.Core.Options.Extensions
 {
     public static class PreferencesDIExtensions
     {
+        private static bool initialized = false;
         public static IServiceCollection AddPreferences(this IServiceCollection services)
         {
+            if (initialized) return services;
+            initialized = true;
             services.AddScoped<IOptionsDictionary, DefaultOptionsDictionary>();
             services.AddScoped<IPreferencesService, DefaultPreferencesService>();
             return services;

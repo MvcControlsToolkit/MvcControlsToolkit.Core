@@ -1,0 +1,45 @@
+﻿@using System.Globalization
+<script src="~/node_modules/globalize/node_modules/cldrjs/dist/cldr.js"></script>
+<script src="~/node_modules/globalize/node_modules/cldrjs/dist/cldr/event.js"></script>
+<script src="~/node_modules/globalize/node_modules/cldrjs/dist/cldr/supplemental.js"></script>
+
+<script src="~/node_modules/globalize/dist/globalize.js"></script>
+<script src="~/node_modules/globalize/dist/globalize/number.js"></script>
+
+<script src="~/node_modules/globalize/dist/globalize/date.js"></script>
+<script src="~/node_modules/globalize/dist/globalize/currency.js"></script>
+
+<script src="~/node_modules/globalize/dist/globalize/relative-time.js"></script>
+<a href="~/node_modules/cldr/supplemental/likelysubtags.json">~/node_modules/cldr/supplemental/likelysubtags.json</a>
+<script type="text/javascript">
+    @{var culture = "it"; }
+    (function () {
+        $(document).on("globalize.ready", function () {
+            var ex = Globalize.dateFormatter({raw: "y-q" })(Globalize.dateParser({ raw: "y-q" })("2010-3"));
+            alert("loaded: " + ex);
+        });
+        $.when(
+          $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/likelysubtags.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/numberingSystems.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/timeData.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/weekData.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/currencyData.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/main/"+ culture + "/currencies.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/main/"+ culture + "/numbers.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/main/"+ culture + "/ca-gregorian.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/main/"+ culture + "/timeZoneNames.json")"),
+          $.getJSON("@Url.Content("~/node_modules/cldr/main/"+ culture + "/dateFields.json")")
+          
+        ).then(function () {
+            // Normalize $.get results, we only need the JSON, not the request statuses.
+            return [].slice.apply(arguments, [0]).map(function (result) {
+                return result[0];
+            });
+        })
+         .then(Globalize.load).then(function () {
+             Globalize.locale("@culture");
+             $(document).trigger("globalize.ready");
+         });
+
+    })(jQuery);
+</script>

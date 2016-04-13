@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using MvcControlsToolkit.Core.ITests.Models;
 using MvcControlsToolkit.Core.ITests.Services;
 using MvcControlsToolkit.Core.ITests.ViewModels.Account;
+using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.ITests.Controllers
 {
@@ -92,7 +93,16 @@ namespace MvcControlsToolkit.Core.ITests.Controllers
         [AllowAnonymous]
         public IActionResult Register()
         {
-            return View();
+            DateTime res = Convert.ToDateTime("21/10/2010, 10:20:00");
+            return View(new RegisterViewModel
+            {
+                ADatetime=new DateTime(2016,4, 10),
+                ADate= new DateTime(2016, 4, 10),
+                AFloat=1.5f,
+                ATime = new TimeSpan(12, 10, 0),
+                AWeek= new Week(2016, 25),
+                AMonth= new Month(2016, 4)
+            });
         }
 
         //

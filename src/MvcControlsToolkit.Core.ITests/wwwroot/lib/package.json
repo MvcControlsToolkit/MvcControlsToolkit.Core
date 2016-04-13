@@ -1,0 +1,8 @@
+{
+	"version": "1.0.0",
+	"name": "ASP.NET",
+	"private": true,
+    "dependencies": {
+        "globalize": "^1.1.1"
+    }
+}

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using MvcControlsToolkit.Core.Extensions;
+using Microsoft.AspNet.Mvc.Localization;
+using System.Reflection;
 
 namespace MvcControlsToolkit.Core.Validation
 {
@@ -12,59 +15,111 @@ namespace MvcControlsToolkit.Core.Validation
     {
         public void GetValidationMetadata(ValidationMetadataProviderContext context)
         {
+            Type resourceType = null;
+            
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
+            if (MvcControlsToolkitOptions.Instance.CustomMessagesResourceType != null)
+            {
+                resourceType = MvcControlsToolkitOptions.Instance.CustomMessagesResourceType;
+                
+            }
+            
             foreach (var a in context.Attributes)
             {
-                object attribute = a;
 
-                if (a is DataTypeAttribute)
+                object attribute = a;
+                if (attribute is DataTypeAttribute)
                 {
-                    var attr = a as DataTypeAttribute;
-                    if (attr.DataType == DataType.Url || attr.DataType == DataType.ImageUrl)
-                    {
-                        var x = new UrlAttribute();
-                        if (attr.ErrorMessageResourceType != null)
+                    
+                        var attr = a as DataTypeAttribute;
+                        if (attr.DataType == DataType.Url || attr.DataType == DataType.ImageUrl)
                         {
-                            x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
-                            x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
+                            var x = new UrlAttribute();
+                            
+                            if (attr.ErrorMessageResourceName != null)
+                            {
+                                x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
+                                x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
+                            }
+                            else if(resourceType != null && resourceType.GetProperty("UrlAttribute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) != null)
+                            {
+                                x.ErrorMessageResourceType = resourceType;
+                                x.ErrorMessageResourceName = "UrlAttribute";
+                            }
+                            else
+                            {
+                                x.ErrorMessageResourceType = typeof(DefaultMessages);
+                                x.ErrorMessageResourceName = "UrlAttribute";
+                            }
+                            attribute = x;
                         }
-                        else if(attr.ErrorMessage != null) x.ErrorMessage = attr.ErrorMessage;
-                        attribute = x;
-                    }
-                    else if (attr.DataType == DataType.EmailAddress)
-                    {
-                        var x = new EmailAddressAttribute();
-                        if (attr.ErrorMessageResourceType != null)
+                        else if (attr.DataType == DataType.EmailAddress)
                         {
-                            x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
-                            x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
-                        }
-                        else if (attr.ErrorMessage != null) x.ErrorMessage = attr.ErrorMessage;
+                            var x = new EmailAddressAttribute();
+                            
+                            if (attr.ErrorMessageResourceName != null)
+                            {
+                                x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
+                                x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
+                            }
+                            else if (resourceType != null && resourceType.GetProperty("EmailAddressAttribute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) != null)
+                            {
+                                x.ErrorMessageResourceType = resourceType;
+                                x.ErrorMessageResourceName = "EmailAddressAttribute";
+                            }
+                            else
+                            {
+                                x.ErrorMessageResourceType = typeof(DefaultMessages);
+                                x.ErrorMessageResourceName = "EmailAddressAttribute";
+                            }
                         attribute = x;
-                    }
-                    else if ((attr.CustomDataType ?? "").ToLowerInvariant() == "color")
-                    {
-                        var x = new RegularExpressionAttribute("^#[a-fA-F0-9]{6}$");
-                        if (attr.ErrorMessageResourceType != null)
+                        }
+                        else if ((attr.CustomDataType ?? "").ToLowerInvariant() == "color")
                         {
-                            x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
-                            x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
-                        }
-                        else if (attr.ErrorMessage != null) x.ErrorMessage = attr.ErrorMessage;
+                            var x = new RegularExpressionAttribute("^#[a-fA-F0-9]{6}$");
+
+                            if (attr.ErrorMessageResourceName != null)
+                            {
+                                x.ErrorMessageResourceType = attr.ErrorMessageResourceType;
+                                x.ErrorMessageResourceName = attr.ErrorMessageResourceName;
+                                
+                            }
+                            else if (resourceType != null && resourceType.GetProperty("ColorAttribute", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) != null)
+                            {
+                                x.ErrorMessageResourceType = resourceType;
+                                x.ErrorMessageResourceName = "ColorAttribute";
+                            }
+                            else
+                            {
+                                x.ErrorMessageResourceType = typeof(DefaultMessages);
+                                x.ErrorMessageResourceName = "ColorAttribute";
+                            }
                         attribute = x;
+                        }
+                    
+                    
+                    
+                    if (attribute != a && (context.ValidationMetadata.ValidatorMetadata.Where(m => m.GetType() == attribute.GetType()).SingleOrDefault()==null))
+                    {
+                        context.ValidationMetadata.ValidatorMetadata.Add(attribute);
                     }
                 }
-                // If another provider has already added this attribute, do not repeat it.
-                // This will prevent attributes like RemoteAttribute (which implement ValidationAttribute and
-                // IClientModelValidator) to be added to the ValidationMetadata twice.
-                // This is to ensure we do not end up with duplication validation rules on the client side.
-                if (!context.ValidationMetadata.ValidatorMetadata.Contains(attribute))
+            }
+            foreach(var attribute in context.ValidationMetadata.ValidatorMetadata)
+            {
+                ValidationAttribute tAttr = attribute as ValidationAttribute;
+                if (tAttr != null && resourceType != null && tAttr.ErrorMessage == null && tAttr.ErrorMessageResourceName == null)
                 {
-                    context.ValidationMetadata.ValidatorMetadata.Add(attribute);
+                    var name = tAttr.GetType().Name;
+                    if (resourceType.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) != null)
+                    {
+                        tAttr.ErrorMessageResourceType = resourceType;
+                        tAttr.ErrorMessageResourceName = name;
+                        tAttr.ErrorMessage = null;
+                    }
                 }
             }
         }

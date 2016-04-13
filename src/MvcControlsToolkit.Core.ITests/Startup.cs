@@ -50,7 +50,8 @@ namespace MvcControlsToolkit.Core.ITests
         {
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-            services.AddLocalization();
+            services.AddLocalization(m => { m.ResourcesPath = "Resources"; });
+
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
@@ -60,8 +61,11 @@ namespace MvcControlsToolkit.Core.ITests
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddMvc();
-            services.AddMvcControlsToolkit();
+            services.AddMvc()
+                .AddViewLocalization()
+                .AddDataAnnotationsLocalization(); 
+
+            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(Resources.ErrorMessages); });
 
             services.AddPreferences()
                 .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
@@ -136,15 +140,15 @@ namespace MvcControlsToolkit.Core.ITests
             {
                 SupportedCultures = new List<CultureInfo>
                 {
-                    new CultureInfo("en-US"),
+                    new CultureInfo("it"),
                 },
                 SupportedUICultures = new List<CultureInfo>
                 {
-                    new CultureInfo("en-US"),
+                    new CultureInfo("it"),
                 }  
             };
 
-            app.UseRequestLocalization(requestLocalizationOptions, new RequestCulture(new CultureInfo("en-US")));
+            app.UseRequestLocalization(requestLocalizationOptions, new RequestCulture(new CultureInfo("it")));
 
             app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());
 
@@ -156,6 +160,7 @@ namespace MvcControlsToolkit.Core.ITests
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
             app.UsePreferences();
+            app.UseMvcControlsToolkit();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

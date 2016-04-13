@@ -9,12 +9,12 @@ namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
 {
     public class RegisterViewModel
     {
-        [Required]
-        [DataType(DataType.EmailAddress)]
+        [Required(ErrorMessage = "bo")]
+        [DataType(DataType.EmailAddress, ErrorMessageResourceType = typeof(Resources.ErrorMessages), ErrorMessageResourceName = "Mail")]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessageResourceType = typeof(Resources.ErrorMessages), ErrorMessageResourceName = "Richiesto")]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
@@ -27,6 +27,7 @@ namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
 
         [Range(10.2, 20.2)]
         public float? AFloat { get; set; }
+        [Range(typeof(DateTime), "2016-01-01T00:00:00", "2016-11-01T23:00:00")]
         public DateTime? ADatetime { get; set; }
 
         [Range(typeof(DateTime), "2016-01-01", "2016-11-01")]
@@ -45,7 +46,7 @@ namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
         [Range(typeof(Month), "2016-01", "2016-10")]
         public Month? AMonth { get; set; }
 
-        [DataType("Color", ErrorMessage = "{0} non è un colore")]
+        [DataType("Color")]
         public string AColor { get; set; }
 
         [DataType(DataType.Url)]

@@ -1014,7 +1014,7 @@ $.extend( $.validator, {
 	},
 
 	attributeRules: function( element ) {
-		var rules = {},
+	    var rules = {},
 			$element = $( element ),
 			type = element.getAttribute( "type" ),
 			method, value;
