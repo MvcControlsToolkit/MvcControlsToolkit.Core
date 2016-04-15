@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
+using MvcControlsToolkit.Core.ModelBinding;
 
 
 
@@ -26,7 +27,22 @@ namespace MvcControlsToolkit.Core.Extensions
         {
             
             options.ModelMetadataDetailsProviders.Add(new Validation.ValidationMetadataProvider());
-            
+            int bcount = 0;
+            IModelBinder res = null;
+            foreach (var b in options.ModelBinders)
+            {
+                if (b is SimpleTypeModelBinder)
+                {
+                    res = b;
+                    break;
+                }
+                bcount++;
+            }
+            if(res != null)
+            {
+                options.ModelBinders.Remove(res);
+                options.ModelBinders.Insert(bcount, new SimpleTypeModelBinderExt());
+            }
         }
     }
 
@@ -54,6 +70,7 @@ namespace MvcControlsToolkit.Core.Extensions
 
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProviderExt(dataAnnotationsLocalizationOptions, stringLocalizerFactory));
             options.ClientModelValidatorProviders.Add(new TypeClientModelValidatorProvider());
+            
 
         }
     }

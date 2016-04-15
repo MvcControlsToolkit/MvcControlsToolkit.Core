@@ -2,27 +2,32 @@
 /// <reference path="../../node_modules/globalize/dist/globalize/number.js" />
 /// <reference path="../../node_modules/globalize/dist/globalize/date.js" />
 (function ($) {
+    
     var mvcct = window["mvcct"] = window["mvcct"] || {};
-    if (!mvcct.enhancer) {
-        mvcct.enhancer = {
-            Browser: {
-                Html5InputSupport: {
-                    number: 4,
-                    range: 4,
-                    date: 4,
-                    month: 4,
-                    week: 4,
-                    time: 4,
-                    datetime: 4,
-                    email: 4,
-                    search: 4,
-                    tel: 4,
-                    url: 4,
-                    color: 4
-                }
-            }
-        }
+    var support = null;
+    var enhancer = mvcct.enhancer;
+    if (enhancer) {
+       
+        support=Html5InputSupport= {
+            number: 4,
+            range: 4,
+            date: 4,
+            month: 4,
+            week: 4,
+            time: 4,
+            datetime: 4,
+            email: 4,
+            search: 4,
+            tel: 4,
+            url: 4,
+            color: 4
+        };
+
     }
+    else {
+        support = mvcct.enhancer.getSupport();
+    }
+
     $.validator.attributeRules = function () { };
     $.validator.globalization = {};
     var initialized = false;
@@ -31,7 +36,7 @@
         timeFormat: { skeleton: "Hms" },
         timeFormat1: { skeleton: "Hm" },
         datetimeFormat: { skeleton: "yMdHms" },
-        datetimeFormat: { skeleton: "yMdHm" },
+        datetimeFormat1: { skeleton: "yMdHm" },
         monthFormat: { date: "short" },
         weekFormat: { date: "short" }
     };
@@ -61,9 +66,9 @@
     function getType(jElement) {
         return parseInt(jElement.attr("data-val-correcttype-type"));
     }
-    function initialize() {
+    function initialize(toptions) {
         if (initialized) return;
-        var support = enhancer.Browser.Html5InputSupport;
+        
         $.extend(options, defaults);
         $.extend(options, $.validator.attributeRules);
         
@@ -122,12 +127,72 @@
         parsers[8] = monthParser;
         neutralParsers[8] = neutralMonthParser;
 
+        if (enhancer && toptions) {
+            var nInfos = Globalize.cldr.attributes.numbers["symbols-numberSystem-latn"];
+            function numericInputCharHandler(charCode, el, decimalSeparator, plus, minus) {
+                var jEl = $(el);
+                var type = getType(jEl);
+                var canDecimal = type==3, canNegative = type != 1;
+                var min = jEl.attr("min");
+                if (min === undefined) min = jEl.attr("data-val-range-min");
+                if (min !== undefined && parseFloat(min) >= 0) canNegative = false;
+                if (charCode == 0 || charCode == 13 || charCode == 9 || charCode == 8 || (charCode >= 48 && charCode <= 57)) return true;
+                if (canNegative && (charCode == plus.charCodeAt(0) || charCode == minus.charCodeAt(0))) {
+                    var value = el.value;
+                    return value.indexOf(plus) < 0 && value.indexOf(minus) < 0;
+                }
+                if (canDecimal && charCode == decimalSeparator.charCodeAt(0)) {
+                    var value = el.value;
+                    return value.indexOf(decimalSeparator) < 0;
+                }
+                return false;
+            }
+            function enhanceNumeric(input) {
+                if (input.getAttribute("type") != "text") return;
+                this.bind('keypress', function (event) {
+                    return numericInputCharHandler(event.which, event.target, nInfos.decimal, nInfos.plusSign, nInfos.minusSign);
+                });
+            }
+            if (!toptions.browserSupport) toptions.browserSupport = {};
+            var handlers = toptions.browserSupport.handlers;
+            if (!handlers) handlers = toptions.browserSupport.handlers = {};
+            if (!handlers.enhance) handlers.enhance = {};
+            if (!handlers.enhance.number) handlers.number = enhanceNumeric;
+            if (!handlers.enhance.number) handlers.range = enhanceNumeric;
+            if (!handlers.translateVal) {
+                var numberFormatter = Globalize.numberFormatter();
+                var timeFormatter = Globalize.dateFormatter(options.timeFormat)();
+                var sTimeParser = Globalize.dateParser({ raw: "HH:mm" })();
+                var gtimeParser = function (x) { return neutralTimeParser(x) || sTimeParser(x);};
+                var dateTimeFormatter = Globalize.dateFormatter(options.datetimeFormat1)();
+                var sDateTimeParser = Globalize.dateParser({ raw: "yyyy-MM-ddTHH:mm" })();
+                var gDatetimeParser = function (x) { return neutralDateTimeParser(x) || sDateTimeParser(x);};
+                var dateFormatter = Globalize.dateFormatter(options.dateFormat)();
+                var neutralDateParser=Globalize.dateParser({ raw: "yyyy-MM-dd" })();
+                var dict = {
+                    range: function (x) { return x ? numberFormatter(Globalize.foparseFloat(x)) : ""; },
+                    number: function (x) { return x ? numberFormatter(Globalize.foparseFloat(x)) : ""; },
+                    time: function (x) { return x ? timeFormatter(gtimeParser(x)) : ""; },
+                    datetime: function (x) { return x ? dateTimeFormatter(gDatetimeParser(x)) : ""; },
+                    date: function (x) { return x ? dateFormatter(neutralDateParser(x)) : ""; },
+                    month: function (x) { return x ? dateFormatter(neutralMonthParser(x)) : ""; },
+                    week: function (x, t, input) { return input.getAttribute("data-date-value");}
+
+                };
+                handlers.translateVal = function (value, type, input) {
+                    var tr = dict[type];
+                    if (tr) return tr(value, type, input);
+                    else return value;
+                };
+            }
+        }
+
         
         initialized = true;
     }
     var $jQval = $.validator;
     $.validator.methods.minE = function (value, element, param) {
-        initialize();
+        if (!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
         parser = parsers[type];
@@ -135,7 +200,7 @@
         return parser(value) >= neutralParser(param);
     }
     $.validator.methods.maxE = function (value, element, param) {
-        initialize();
+        if(!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
         parser = parsers[type];
@@ -143,7 +208,7 @@
         return parser(value) <= neutralParser(param);
     }
     $.validator.methods.rangeE = function (value, element, param) {
-        initialize();
+        if(!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
         parser = parsers[type];
@@ -151,7 +216,7 @@
         return parser(value) <= neutralParser(param[1]) && parser(value) >= neutralParser(param[0]);
     }
     $.validator.methods.correcttype = function (value, element, param) {
-        initialize();
+        if(!enhancer) initialize();
         if (!value) return true;
         var type = parseInt(param);
         parser = parsers[type];
@@ -194,5 +259,7 @@
     };
     adapters.addCorrecttype("correcttype", "correcttype");
     adapters.addMinMax("range", "minE", "maxE", "rangeE")
-
+    if (enhancer) {
+        enhancer["register"](null, false, initialize);
+    }
 })(jQuery);
