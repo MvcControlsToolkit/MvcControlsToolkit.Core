@@ -7,6 +7,7 @@ using Microsoft.AspNet.Mvc.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
+using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -108,6 +109,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
             {
                 string value = modelExplorer.Model == null ? null : coverter(modelExplorer.Model, hint);
                 if(!string.IsNullOrEmpty(value)) output.Attributes["value"] = value;
+            }
+            if (typeName == "week")
+            {
+                string value = modelExplorer.Model == null ? "" : ((Week)modelExplorer.Model).StartDate().ToString("yyyy-MM-dd");
+                output.Attributes["data-date-value"] = value;
             }
             if (limits != null)
             {

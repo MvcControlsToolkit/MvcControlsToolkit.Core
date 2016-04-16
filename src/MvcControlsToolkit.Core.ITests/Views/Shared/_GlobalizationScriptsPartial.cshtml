@@ -15,8 +15,7 @@
     @{var culture = "it"; }
     (function () {
         $(document).on("globalize.ready", function () {
-            var ex = Globalize.dateFormatter({raw: "y-q" })(Globalize.dateParser({ raw: "y-q" })("2010-3"));
-            alert("loaded: " + ex);
+            mvcct.enhancer.asyncReady();
         });
         $.when(
           $.getJSON("@Url.Content("~/node_modules/cldr/supplemental/likelysubtags.json")"),

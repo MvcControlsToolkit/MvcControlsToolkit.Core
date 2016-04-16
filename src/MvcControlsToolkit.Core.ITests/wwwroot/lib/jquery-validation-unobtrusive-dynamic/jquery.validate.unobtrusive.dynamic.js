@@ -50,5 +50,5 @@
         registerFormFix(selector);
     }
     var enhancer = window["enhancer"];
-    if (enhancer) enhancer.register($.validator.unobtrusive.parseDynamic, false, null);
+    if (enhancer) enhancer.register($.validator.unobtrusive.parseDynamic, false, null, "dynamic validation");
 })(jQuery);

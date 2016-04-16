@@ -17,16 +17,18 @@ namespace MvcControlsToolkit.Core.ModelBinding
         private bool needNeutral(ModelBindingContext bindingContext)
         {
             var support = bindingContext.OperationBindingContext.HttpContext.RequestServices.GetRequiredService<Html5InputSupport>();
-            if (allNumbers.Contains(bindingContext.ModelType)) return support.Number>2;
-            if(bindingContext.ModelType == typeof(DateTime))
+            var type = bindingContext.ModelMetadata.UnderlyingOrModelType;
+            if (allNumbers.Contains(type)) return support.Number>2;
+            
+            if (type == typeof(DateTime))
             {
                 if (bindingContext.ModelMetadata.DataTypeName == "Date") return support.Date > 2;
                 else if (bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
                 else return support.DateTime > 2;
             }
-            if (bindingContext.ModelType == typeof(Week)) return support.Week > 2;
-            if (bindingContext.ModelType == typeof(Month)) return support.Month > 2;
-            if(bindingContext.ModelType == typeof(TimeSpan) && bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
+            if (type == typeof(Week)) return support.Week > 2;
+            if (type == typeof(Month)) return support.Month > 2;
+            if(type == typeof(TimeSpan) && bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
             return false;
         }
         public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)

@@ -93,7 +93,7 @@ namespace MvcControlsToolkit.Core.ITests.Controllers
         [AllowAnonymous]
         public IActionResult Register()
         {
-            DateTime res = Convert.ToDateTime("21/10/2010, 10:20:00");
+            
             return View(new RegisterViewModel
             {
                 ADatetime=new DateTime(2016,4, 10),

@@ -23,20 +23,56 @@
                 var asyncReady = false;
                 var waitAsync = null;
                 var oldReady = null;
+                jQuery = window["jQuery"];
                 if (jQuery) {
                     oldReady = jQuery.fn.ready;
                     jQuery.fn.ready = function (x) {
-                        enhancer["register"](null, null, x)
+                        enhancer["register"](null, null, x, "document.ready: "+x.constructor.name)
                     };
                 }
                 function init(options) {
+                    var lowPriority = [];
                     for (var i = 0; i < transformations.length; i++) {
                         var item = transformations[i];
-                        if (item.processOptions) {
-                            item.processOptions(options);
+                        if (item.lowPriority) {
+                            lowPriority.push(item);
+                            continue;
                         }
+                        if (item.processOptions) {
+                            try{
+                                item.processOptions(options, item);
+                            }
+                            catch(ex){
+                                if (DEBUG) {
+                                    alert(ex + ". " + item.name);
+                                }
+                            }
+                        }
+                    }
+                    for (var i = 0; i < lowPriority.length; i++) {
+                        var item = lowPriority[i];
+                        if (item.processOptions) {
+                            try {
+                                item.processOptions(options, item);
+                            }
+                            catch (ex) {
+                                if (DEBUG) {
+                                    alert(ex + ". " + item.name);
+                                }
+                            }
+                        }
+                    }
+                    for (var i = 0; i < transformations.length; i++) {
+                        var item = transformations[i];
                         if (item.initialize && item.transform) {
-                            item.transform(document.querySelector('body'));
+                            try{
+                                item.transform(document.querySelector('body'));
+                            }
+                            catch (ex) {
+                                if (DEBUG) {
+                                    alert(ex + ". " + item.name);
+                                }
+                            }
                         }
                     }
                 }
@@ -56,18 +92,28 @@
                     if (asyncReady) enhancer["init"](options);
                     waitAsync = options || {};
                 };
-                enhancer["register"] = function (transform, initialize, processOptions) {
+                enhancer["register"] = function (transform, initialize, processOptions, name, lowPriority) {
                     transformations.push({
                         transform: transform,
                         initialize: initialize,
-                        processOptions: processOptions
+                        processOptions: processOptions,
+                        name: name,
+                        lowPriority: lowPriority
                     });
                 };
                 enhancer["transform"] = function (node) {
                     for (var i = 0; i < transformations.length; i++) {
                         var item = transformations[i];
                         if (item.transform) {
-                            item.transform(node);
+                            try {
+                                item.transform(node);
+                            }
+                            catch (ex) {
+                                if (DEBUG) {
+                                    alert(ex + ". " + item.name);
+                                }
+                            }
+                            
                         }
                     }
                 };
@@ -83,7 +129,7 @@
                     var html5ProcessInfos = null;//describe required processing based on user options and defaults
                     var html5ProcessInfosDefaults = {
                         cookie: "_browser_basic_capabilities",
-                        forms: "_browser_basic_capabilities"
+                        forms: null
                     };
                     var handlers = null;
                     enhancer["getSupport"] = function () {
@@ -105,7 +151,7 @@
                     function addToOptions(prefix, object, outputArray) {
                         for(var prop in object){
                             var val = object[prop];
-                            if(typeof(val) === boolean) val= val ? "True":"False";
+                            if(typeof(val) === 'boolean') val= val ? "True":"False";
                             else val = ''+val;
                             if (!object.hasOwnProperty(prop)) continue;
                             outputArray.push({
@@ -118,7 +164,7 @@
                         for (var iAttr = 0; iAttr < elm.attributes.length; iAttr++) {
                             var attribute = elm.attributes[iAttr].name;
                             if (attribute === "min" || attribute === "max" || attribute === "type" || attribute === "value") continue;
-                            else mains[attribute] = elm.attributes[iAttr].value;
+                            else mains.setAttribute(attribute, elm.attributes[iAttr].value);
                         }
                     }
                     function autodetect() {
@@ -142,7 +188,7 @@
                         //pack html5Infos in cookie and or hidden field for server
                         var infos = [];
                         addToOptions("Html5InputSupport", html5Infos.Html5InputSupport, infos);
-                        addToOptions("Html5InputOriginalSupport", Html5InputOriginalSupport.Html5InputSupport, infos);
+                        addToOptions("Html5InputOriginalSupport", html5Infos.Html5InputOriginalSupport, infos);
                         var sInfos = JSON.stringify(infos);
                         if (html5ProcessInfos.forms) {
                             var flist = document.querySelectorAll('form');
@@ -156,18 +202,22 @@
                             }
                         }
                         if (html5ProcessInfos.cookie) {
-                            document.cookie = html5ProcessInfos.cookie + "=" + sInfos + "; path=/";
+                            document.cookie = html5ProcessInfos.cookie + "=" + encodeURIComponent(sInfos) + "; path=/";
                         }
                     }
-                    function processOptions(options) {
+                    function processOptions(options, entry) {
                         options = options || {};
                         html5ProcessInfos = {
                             fallbackHtml5: options.fallbackHtml5 === undefined ? true : options.fallbackHtml5,
                             cookie: options.cookie === undefined ? html5ProcessInfosDefaults.cookie : options.cookie,
                             forms: options.forms === undefined ? html5ProcessInfosDefaults.forms : options.forms,
                             fallbacks: options.fallbacks || {},
-                            handlers
+                            handlers: {}
                         };
+                        if (!html5ProcessInfos.fallbackHtml5) {
+                            entry.initialize = false;
+                            return;
+                        }
                         if (!options.handlers || !options.handlers.replace)
                         {
                             html5ProcessInfos.handlers.replace = function (type, support) {
@@ -182,7 +232,8 @@
                         }
                         else html5ProcessInfos.handlers.replace = options.handlers.replace;
                         if (!options.handlers || !options.handlers.translateVal)
-                            html5ProcessInfos.handlers.translateVal = function (val, type, el) { return val;}
+                            html5ProcessInfos.handlers.translateVal = function (val, type, el) { return val; }
+                        else html5ProcessInfos.handlers.translateVal = options.handlers.translateVal;
                         //compute html5Infos and html5ProcessInfos
 
                         var fallbacks = html5ProcessInfos.fallbacks;
@@ -191,13 +242,20 @@
                             var fallback = fallbacks[prop];
                             if (support && (!fallback || !fallback.force)) processedSupport[prop] = 4;
                             else if (!fallback) processedSupport[prop] = 1;
-                            else processedSupport[prop] = fallback;
+                            else processedSupport[prop] = fallback.type;
                         }
                         handlers = html5ProcessInfos.handlers;
                         handlers.fullReplace = options && options.handlers ? options.handlers.fullReplace : null;
                         handlers.enhance = options && options.handlers ? options.handlers.enhance : {};
                         
                         packInfosForServer();
+                    }
+                    function processAllNodes(ancestor) {
+                        if (ancestor.tagName == "INPUT") process(node);
+                        else {
+                            var allInputs = ancestor.querySelectorAll("input");
+                            for (var i = 0; i < allInputs.length; i++) process(allInputs[i]);
+                        }
                     }
                     function process(node) {
                         var type = node.getAttribute("type");
@@ -210,13 +268,13 @@
                             return;
                         }
                         var input = document.createElement("input");
-                        input.setAttribute("type", type);
-                        input.setAttribute("value", handlers.translateVal(node.getAttribute("value"), stype, input));
+                        input.setAttribute("type", replace);
+                        input.setAttribute("value", handlers.translateVal(node.getAttribute("value"), stype, node));
                         copyAttrs(node, input);
                         node.parentNode.replaceChild(input, node);
-                        if (handlers.enhance && handlers[type]) handlers.enhance[type](input);
+                        if (handlers.enhance && handlers.enhance[type]) handlers.enhance[type](input);
                     }
-                    if (html5ProcessInfos.fallbackHtml5) enhancer["register"](process, true, function (options) {options=options || {}; processOptions(options.browserSupport)});
+                    enhancer["register"](processAllNodes, true, function (options) { options = options || {}; processOptions(options.browserSupport) }, "html5 support", true);
                 }(enhancer));
 
                 //Finish actual code
