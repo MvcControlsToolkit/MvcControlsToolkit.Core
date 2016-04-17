@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
+@using MvcControlsToolkit.Core.Views
 <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
     <ol class="carousel-indicators">
         <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -9,6 +9,7 @@
         <li data-target="#myCarousel" data-slide-to="2"></li>
         <li data-target="#myCarousel" data-slide-to="3"></li>
     </ol>
+    
     <div class="carousel-inner" role="listbox">
         <div class="item active">
             <img src="~/images/ASP-NET-Banners-01.png" alt="ASP.NET" class="img-responsive" />
@@ -65,6 +66,14 @@
     </a>
 </div>
 <h2 class="welcome">@ViewBag.Welcome</h2>
+<div>
+    @using (var s = new RenderingScope<RegisterViewModel>(null, "123", ViewData))
+    {
+        <input asp-for="@(!s).Email" />
+    }
+
+</div>
+
 <div class="row">
     <div class="col-md-3">
         <h2>Application uses</h2>

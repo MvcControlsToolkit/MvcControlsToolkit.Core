@@ -54,5 +54,7 @@ namespace MvcControlsToolkit.Core.ITests.ViewModels.Account
 
         
         public uint APositiveInteger  { get; set; }
+
+        public List<int> TransformationTest { get; set; }
     }
 }

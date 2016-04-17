@@ -43,6 +43,8 @@ namespace MvcControlsToolkit.Core.Extensions
                 options.ModelBinders.Remove(res);
                 options.ModelBinders.Insert(bcount, new SimpleTypeModelBinderExt());
             }
+            options.ModelBinders.Insert(0, new TransformationModelBinder());
+            
         }
     }
 

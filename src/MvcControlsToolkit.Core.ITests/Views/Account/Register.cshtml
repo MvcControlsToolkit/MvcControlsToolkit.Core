@@ -1,4 +1,6 @@
 ﻿@model RegisterViewModel
+@using MvcControlsToolkit.Core.Views
+@using MvcControlsToolkit.Core.ITests.ViewModels.Account
 @{
     ViewData["Title"] = "Register";
 }
@@ -38,9 +40,9 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="ADatetime"  class="col-md-2 control-label"></label>
+        <label asp-for="ADatetime" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            <input asp-for="ADatetime"  class="form-control" />
+            <input asp-for="ADatetime" class="form-control" />
             <span asp-validation-for="ADatetime" class="text-danger"></span>
         </div>
     </div>
@@ -75,14 +77,14 @@
     <div class="form-group">
         <label asp-for="AColor" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            <input asp-for="AColor"  class="form-control" />
+            <input asp-for="AColor" class="form-control" />
             <span asp-validation-for="AColor" class="text-danger"></span>
         </div>
     </div>
     <div class="form-group">
         <label asp-for="AUrl" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            <input asp-for="AUrl"  class="form-control" />
+            <input asp-for="AUrl" class="form-control" />
             <span asp-validation-for="AUrl" class="text-danger"></span>
         </div>
     </div>
@@ -92,6 +94,19 @@
             <input asp-for="APositiveInteger" class="form-control" />
             <span asp-validation-for="APositiveInteger" class="text-danger"></span>
         </div>
+    </div>
+    <div>
+        @using (var s = Html.Transform(m => m.TransformationTest, new IEnumerableToArray<int>()))
+        {
+            <div class="form-group">
+                <label asp-for="@(!s)[0]" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="@(!s)[0]" class="form-control" />
+                    <span asp-validation-for="@(!s)[0]" class="text-danger"></span>
+                </div>
+            </div>
+
+        }
     </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">

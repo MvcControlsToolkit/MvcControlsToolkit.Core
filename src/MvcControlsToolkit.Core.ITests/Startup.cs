@@ -17,6 +17,7 @@ using MvcControlsToolkit.Core.Options.Providers;
 using MvcControlsToolkit.Core.Extensions;
 using Microsoft.AspNet.Localization;
 using System.Globalization;
+using MvcControlsToolkit.Core.Views;
 
 namespace MvcControlsToolkit.Core.ITests
 {
@@ -41,6 +42,8 @@ namespace MvcControlsToolkit.Core.ITests
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
+
+            TransformationsRegister.Add(typeof(IEnumerableToArray<>));
         }
 
         public IConfigurationRoot Configuration { get; set; }
