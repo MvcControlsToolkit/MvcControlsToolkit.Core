@@ -41,9 +41,9 @@ namespace MvcControlsToolkit.Core.ModelBinding
             //    fieldName: bindingContext.FieldName,
             //    modelName: string.IsNullOrEmpty(bindingContext.ModelName) ? index : bindingContext.ModelName + "." + index,
             //    model: null);
-            var modelState = new ModelStateDictionary(bindingContext.ModelState.MaxAllowedErrors);
+            //var modelState = new ModelStateDictionary(bindingContext.ModelState.MaxAllowedErrors);
             string moidelPrefix = string.IsNullOrEmpty(bindingContext.ModelName) ? index : bindingContext.ModelName + "." + index;
-            var innerBindingContext = ModelBindingContext.CreateBindingContext(bindingContext.OperationBindingContext, modelState, elementMetadata, null, moidelPrefix);
+            var innerBindingContext = ModelBindingContext.CreateBindingContext(bindingContext.OperationBindingContext, bindingContext.ModelState, elementMetadata, null, moidelPrefix);
            
             var result =
                     await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(innerBindingContext);
@@ -52,12 +52,12 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 var validator = httpContext.RequestServices.GetService<IObjectModelValidator>();
                 var options = httpContext.ApplicationServices.GetService<IOptions<MvcOptions>>();
                 foreach (var prov in options.Value.ModelValidatorProviders) {
-                    validator.Validate(prov, modelState, innerBindingContext.ValidationState, moidelPrefix, result.Model);
+                    validator.Validate(prov, bindingContext.ModelState, innerBindingContext.ValidationState, moidelPrefix, result.Model);
                 }
-                foreach(var pair in modelState)
-                {
-                    bindingContext.ModelState.Add(pair);
-                }
+                //foreach(var pair in modelState)
+                //{
+                //    bindingContext.ModelState.Add(pair);
+                //}
                 var fres=fctype.GetMethod("InverseTransform").Invoke(Activator.CreateInstance(fctype), new[] { result.Model });
                 return ModelBindingResult.Success(bindingContext.ModelName, fres);
                
