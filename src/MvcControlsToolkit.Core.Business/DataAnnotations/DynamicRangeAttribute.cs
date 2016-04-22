@@ -93,9 +93,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                             case 'y':
                                 currDate = currDate.AddYears((int)numberBeingBuild);
                                 break;
-                            case 'T':
-                                currDate = currDate.AddHours(CurrentTimeShift);
-                                break;
+                           
                             case 't':
                                 if (max)
                                     toleranceMax = numberBeingBuild > 0 ? numberBeingBuild : -numberBeingBuild;
@@ -113,8 +111,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             else Minimum = currDate;
             return true;
         }
-        [ThreadStatic]
-        public static int CurrentTimeShift;
+       
         private string _SMinimum;
         public string SMinimum
         {
@@ -133,6 +130,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 try
                 {
                     if (TargetType == typeof(Week)) Minimum = Week.Parse(value);
+                    else if (TargetType == typeof(Month)) Minimum = Month.Parse(value);
+                    else if (TargetType == typeof(TimeSpan)) Minimum = TimeSpan.Parse(value, CultureInfo.InvariantCulture);
                     else Minimum = Convert.ChangeType(value, TargetType, CultureInfo.InvariantCulture) as IComparable;
                 }
                 catch
@@ -164,6 +163,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 try
                 {
                     if (TargetType == typeof(Week)) Maximum = Week.Parse(value);
+                    else if (TargetType == typeof(Month)) Maximum = Month.Parse(value);
+                    else if (TargetType == typeof(TimeSpan)) Maximum = TimeSpan.Parse(value, CultureInfo.InvariantCulture);
                     else Maximum = Convert.ChangeType(value, TargetType, CultureInfo.InvariantCulture) as IComparable;
                 }
                 catch
@@ -207,13 +208,13 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         }
         public string DynamicMaximumDelay { get; set; }
         public string DynamicMinimumDelay { get; set; }
-        private IComparable min, max;
+        
 
         private object getDelay(string delayRef, object model, object fixedDelay = null, bool invertSign = false)
         {
             if (delayRef != null && delayRef.StartsWith("!"))
             {
-                if (TargetType == typeof(DateTime)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
+                if (TargetType == typeof(DateTime) || TargetType == typeof(TimeSpan) || TargetType == typeof(Week) || TargetType == typeof(Month)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
                 else fixedDelay = Convert.ChangeType(delayRef.Substring(1), TargetType, CultureInfo.InvariantCulture);
             }
 
@@ -234,7 +235,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 res = delayProp.Value;
             }
             if (invertSign) res = changeSign(res);
-            if (TargetType == typeof(DateTime) && res != null) return Convert.ToInt64(((TimeSpan)res).TotalMilliseconds);
+            if ((TargetType == typeof(DateTime) || TargetType == typeof(TimeSpan) || TargetType == typeof(Week) || TargetType == typeof(Month)) && res != null) return Convert.ToInt64(((TimeSpan)res).TotalMilliseconds);
             return res;
         }
         private object changeSign(object value)
@@ -284,7 +285,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             {
                 value = -Convert.ToDouble(value);
             }
-            else if (TargetType == typeof(DateTime))
+            else if (TargetType == typeof(DateTime) || TargetType == typeof(TimeSpan) || TargetType == typeof(Week) || TargetType == typeof(Month))
             {
                 value = -(TimeSpan)value;
 
@@ -361,9 +362,24 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 {
                     value = Convert.ToDouble(value) - Convert.ToDouble(toAdd);
                 }
+                else if (TargetType == typeof(TimeSpan))
+                {
+                    value = (TimeSpan)value - (TimeSpan)toAdd;
+                    toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
                 else if (TargetType == typeof(DateTime))
                 {
                     value = Convert.ToDateTime(value).Add(-(TimeSpan)toAdd);
+                    toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
+                else if (TargetType == typeof(Month))
+                {
+                    value = Month.FromDateTime(((Month)value).ToDateTime().Add(-(TimeSpan)toAdd));
+                    toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
+                else if (TargetType == typeof(Week))
+                {
+                    value = Week.FromDateTime(((Week)value).StartDate().Add(-(TimeSpan)toAdd));
                     toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
                 }
             }
@@ -413,9 +429,24 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 {
                     value = Convert.ToDouble(value) + Convert.ToDouble(toAdd);
                 }
+                else if (TargetType == typeof(TimeSpan))
+                {
+                    value = (TimeSpan)value + (TimeSpan)toAdd;
+                    toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
                 else if (TargetType == typeof(DateTime))
                 {
                     value = Convert.ToDateTime(value).Add((TimeSpan)toAdd);
+                    toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
+                else if (TargetType == typeof(Month))
+                {
+                    value = Month.FromDateTime(((Month)value).ToDateTime().Add((TimeSpan)toAdd)); 
+                    toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
+                else if (TargetType == typeof(Week))
+                {
+                    value = Week.FromDateTime(((Week)value).StartDate().Add((TimeSpan)toAdd));
                     toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
                 }
             }
@@ -496,7 +527,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             if (value == null) return "0";
             else return Convert.ToString(value, CultureInfo.InvariantCulture);
         }
-        public object GetGlobalMaximum(object model, object globalModel, out List<string> clientMaximum, out List<string> maxDelay)
+        public object GetGlobalMaximum(object model, out List<string> clientMaximum, out List<string> maxDelay)
         {
             _lastModel = model;
             processNowToday(_SMaximum, true);
@@ -551,7 +582,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             return res;
 
         }
-        public object GetGlobalMinimum(object model, object globalModel, out List<string> clientMinimum, out List<string> minDelay)
+        public object GetGlobalMinimum(object model, out List<string> clientMinimum, out List<string> minDelay)
         {
             _lastModel = model;
             processNowToday(_SMinimum, false);
@@ -609,10 +640,12 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         {
             List<string> par1, par2;
             string min = null, max = null;
-            IComparable cmin = _lastModel != null ? GetGlobalMinimum(_lastModel, null, out par1, out par2) as IComparable ?? Minimum : Minimum;
-            IComparable cmax = _lastModel != null ? GetGlobalMaximum(_lastModel, null, out par1, out par2) as IComparable ?? Maximum : Maximum;
+            IComparable cmin = _lastModel != null ? GetGlobalMinimum(_lastModel, out par1, out par2) as IComparable ?? Minimum : Minimum;
+            IComparable cmax = _lastModel != null ? GetGlobalMaximum(_lastModel, out par1, out par2) as IComparable ?? Maximum : Maximum;
             cmin = (cmin != null && TargetType == typeof(Week)) ? ((Week)cmin).StartDate() : cmin;
             cmax = (cmax != null && TargetType == typeof(Week)) ? ((Week)cmax).StartDate() : cmax;
+            cmin = (cmin != null && TargetType == typeof(Month)) ? ((Month)cmin).ToDateTime() : cmin;
+            cmax = (cmax != null && TargetType == typeof(Month)) ? ((Month)cmax).ToDateTime() : cmax;
             if (cmin != null)
             {
                 IFormattable fmin = cmin as IFormattable;

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
+using MvcControlsToolkit.Core.DataAnnotations;
 
 
 namespace MvcControlsToolkit.Core.Validation
@@ -107,6 +108,12 @@ namespace MvcControlsToolkit.Core.Validation
                     typeof(RangeAttribute),
                     (attribute, stringLocalizer) => new RangeAttributeAdapterExt(
                         (RangeAttribute)attribute,
+                        stringLocalizer)
+                },
+                {
+                    typeof(DynamicRangeAttribute),
+                    (attribute, stringLocalizer) => new DynamicRangeAttributeAdapter(
+                        (DynamicRangeAttribute)attribute,
                         stringLocalizer)
                 },
                 {

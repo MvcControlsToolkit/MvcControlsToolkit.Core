@@ -93,16 +93,7 @@ namespace MvcControlsToolkit.Core.ITests.Controllers
         [AllowAnonymous]
         public IActionResult Register()
         {
-            return View(new RegisterViewModel
-            {
-                ADatetime = new DateTime(2016, 4, 10),
-                ADate = new DateTime(2016, 4, 10),
-                AFloat = 1.5f,
-                ATime = new TimeSpan(12, 10, 0),
-                AWeek = new Week(2016, 25),
-                AMonth = new Month(2016, 4),
-                TransformationTest = new List<int>() { 4 }
-            });
+            return View();
         }
 
         //

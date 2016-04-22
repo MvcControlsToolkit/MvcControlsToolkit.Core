@@ -60,6 +60,15 @@ namespace MvcControlsToolkit.Core.ITests.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to {0} must be between {1} and {2}|{0} must be greater than {1}|{0} must be less than {2}|{0} is not in the required range.
+        /// </summary>
+        internal static string DynamicRangeAttribute {
+            get {
+                return ResourceManager.GetString("DynamicRangeAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to non è email.
         /// </summary>
         internal static string Mail {

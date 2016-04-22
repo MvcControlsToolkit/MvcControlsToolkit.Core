@@ -6,31 +6,31 @@
         forms: null,
         fallbacks: {
             number: {
-                force: true,
+                force: false,
                 type: 2
             },
             range: {
-                force: true,
+                force: false,
                 type: 2
             },
             time: {
-                force: true,
+                force: false,
                 type: 1
             },
             date: {
-                force: true,
+                force: false,
                 type: 1
             },
             datetime: {
-                force: true,
+                force: false,
                 type: 1
             },
             month: {
-                force: true,
+                force: false,
                 type: 1
             },
             week: {
-                force: true,
+                force: false,
                 type: 1
             }
         }

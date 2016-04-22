@@ -23,11 +23,13 @@
                 var asyncReady = false;
                 var waitAsync = null;
                 var oldReady = null;
+                var baseEvent = "_enhancer.dependency.";
+                var dependencyOnPathAttribute = "data-enhancer-dependency";
                 jQuery = window["jQuery"];
                 if (jQuery) {
                     oldReady = jQuery.fn.ready;
                     jQuery.fn.ready = function (x) {
-                        enhancer["register"](null, null, x, "document.ready: "+x.constructor.name)
+                        enhancer["register"](null, x, null, "document.ready: "+x.constructor.name)
                     };
                 }
                 function init(options) {
@@ -64,9 +66,12 @@
                     }
                     for (var i = 0; i < transformations.length; i++) {
                         var item = transformations[i];
-                        if (item.initialize && item.transform) {
+                        if (item.initialize ) {
                             try{
-                                item.transform(document.querySelector('body'));
+                                if(item.transform)
+                                    item.transform(document.querySelector('body'));
+                                else
+                                    item.initialize(document.querySelector('body'));
                             }
                             catch (ex) {
                                 if (DEBUG) {
@@ -117,7 +122,43 @@
                         }
                     }
                 };
-                
+                enhancer["dependency"] = function (name, sourceNode, targetNode, eventNames, action) {
+                    var mainF = function () {
+                        if (!sourceNode.getAttribute(dependencyOnPathAttribute)) {
+                            try {
+                                sourceNode.setAttribute(dependencyOnPathAttribute, "true");
+                                action(targetNode, sourceNode);
+                                //var ev = document.createEvent("Event");
+                                //ev.initEvent(baseEvent + name, false, true);
+                                //targetNode.dispatchEvent(ev);
+
+                            }
+                            finally {
+                                sourceNode.setAttribute(dependencyOnPathAttribute, "");
+                            }
+                        }
+                    };
+                    var triggerF=function () {
+                        var ev = document.createEvent("Event");
+                        ev.initEvent(baseEvent + name, false, true);
+                        sourceNode.dispatchEvent(ev);
+                    };
+                    sourceNode.addEventListener(baseEvent + name, mainF);
+                    for (var i = 0; i < eventNames.length; i++) 
+                        sourceNode.addEventListener(eventNames[i], triggerF);
+                    return  {
+                        mainF: mainF,
+                        triggerF: triggerF,
+                        name: baseEvent + name,
+                        events: eventNames,
+                        node: sourceNode
+                    };
+                }
+                enhancer["removeDependency"] = function (handle) {
+                    for (var i = 0; i < events.length; i++)
+                        handle.sourceNode.removeEventListener(events[i], handle.triggerF);
+                    handle.sourceNode.removeEventListener(handle.name, handle.mainF);
+                };
                 //html5 enhancement
                 (function (enhancer) {
                     var originalSupport = autodetect();
@@ -205,6 +246,16 @@
                             document.cookie = html5ProcessInfos.cookie + "=" + encodeURIComponent(sInfos) + "; path=/";
                         }
                     }
+                    function preProcessOptions(options, entry) {
+                        var fallbacks = options.fallbacks;
+                        for (var prop in originalSupport) {
+                            var support = originalSupport[prop];
+                            var fallback = fallbacks[prop];
+                            if (support && (!fallback || !fallback.force)) processedSupport[prop] = 4;
+                            else if (!fallback) processedSupport[prop] = 1;
+                            else processedSupport[prop] = fallback.type;
+                        }
+                    }
                     function processOptions(options, entry) {
                         options = options || {};
                         html5ProcessInfos = {
@@ -236,14 +287,7 @@
                         else html5ProcessInfos.handlers.translateVal = options.handlers.translateVal;
                         //compute html5Infos and html5ProcessInfos
 
-                        var fallbacks = html5ProcessInfos.fallbacks;
-                        for (var prop in originalSupport) {
-                            var support = originalSupport[prop];
-                            var fallback = fallbacks[prop];
-                            if (support && (!fallback || !fallback.force)) processedSupport[prop] = 4;
-                            else if (!fallback) processedSupport[prop] = 1;
-                            else processedSupport[prop] = fallback.type;
-                        }
+                        
                         handlers = html5ProcessInfos.handlers;
                         handlers.fullReplace = options && options.handlers ? options.handlers.fullReplace : null;
                         handlers.enhance = options && options.handlers ? options.handlers.enhance : {};
@@ -274,7 +318,8 @@
                         node.parentNode.replaceChild(input, node);
                         if (handlers.enhance && handlers.enhance[type]) handlers.enhance[type](input);
                     }
-                    enhancer["register"](processAllNodes, true, function (options) { options = options || {}; processOptions(options.browserSupport) }, "html5 support", true);
+                    enhancer["register"](null, false, function (options) { options = options || {}; preProcessOptions(options.browserSupport) }, "html5 support");
+                    enhancer["register"](processAllNodes, true, function (options) { options = options || {}; processOptions(options.browserSupport) }, "html5 enhance", true);
                 }(enhancer));
 
                 //Finish actual code

@@ -8,27 +8,28 @@ using Microsoft.AspNet.Mvc.Rendering;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using MvcControlsToolkit.Core.Types;
+using MvcControlsToolkit.Core.DataAnnotations;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
-    public class Enhance1InputTagHelper : TagHelper
-    {
-        private const string ForAttributeName = "asp-for";
-        public override int Order
-        {
-            get
-            {
-                return -100000;
-            }
-        }
-        public override void Process(TagHelperContext context, TagHelperOutput output)
-        {
-            var i = context.AllAttributes;
-            var o = output.Attributes;
-        }
-    }
-
+    //[HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    //public class Enhance1InputTagHelper : TagHelper
+    //{
+    //    private const string ForAttributeName = "asp-for";
+    //    public override int Order
+    //    {
+    //        get
+    //        {
+    //            return -100000;
+    //        }
+    //    }
+    //    public override void Process(TagHelperContext context, TagHelperOutput output)
+    //    {
+    //        var i = context.AllAttributes;
+    //        var o = output.Attributes;
+    //    }
+    //}
+    
         [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class EnhanceInputTagHelper: TagHelper 
     {
@@ -103,8 +104,24 @@ namespace MvcControlsToolkit.Core.TagHelpers
             
             bool isHtml5DateTime = (string.IsNullOrEmpty(InputTypeName) || InputTypeName == "date" || InputTypeName == "datetime" || InputTypeName == "datetime-local" || InputTypeName == "week" || InputTypeName == "month");
             bool isDateTimeType = typeName == "datetime" || typeName == "timespan" || typeName == "week" || typeName == "month";
+            object minimum=null, maximum=null;
             RangeAttribute limits = metaData.ValidatorMetadata.Where(m => m is RangeAttribute).FirstOrDefault() as RangeAttribute;
-            if(string.IsNullOrWhiteSpace(Value) && ((isNumber && (isPositive || isIntegerNP || isDecimal)) ||(isHtml5DateTime && isDateTimeType)))
+            if (limits != null)
+            {
+                minimum = limits.Minimum;
+                maximum = limits.Maximum;
+            }
+            else {
+                DynamicRangeAttribute limitsExt = metaData.ValidatorMetadata.Where(m => m is DynamicRangeAttribute).FirstOrDefault() as DynamicRangeAttribute;
+                if(limitsExt != null)
+                {
+                    List<string> a, b;
+                    maximum=limitsExt.GetGlobalMaximum(modelExplorer.Container.Model, out a, out b);
+                    minimum= limitsExt.GetGlobalMinimum(modelExplorer.Container.Model, out a, out b);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(Value) && ((isNumber && (isPositive || isIntegerNP || isDecimal)) ||(isHtml5DateTime && isDateTimeType)))
 
             {
                 string value = modelExplorer.Model == null ? null : coverter(modelExplorer.Model, hint);
@@ -115,35 +132,35 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 string value = modelExplorer.Model == null ? "" : ((Week)modelExplorer.Model).StartDate().ToString("yyyy-MM-dd");
                 output.Attributes["data-date-value"] = value;
             }
-            if (limits != null)
+            if (minimum != null || maximum != null)
             {
-                if (min == null && limits.Minimum != null)
+                if (min == null && minimum != null)
                 {
                     if (isNumber && isPositive)
                     {
 
-                        var trueMin = ((limits.Minimum is string) ? Convert.ChangeType(limits, limits.OperandType, CultureInfo.InvariantCulture) : limits.Minimum) as IComparable;
-                        if (trueMin.CompareTo(Convert.ChangeType("0", limits.OperandType)) < 0) min = "0";
+                        var trueMin = ((minimum is string) ? Convert.ChangeType(minimum, limits.OperandType, CultureInfo.InvariantCulture) : minimum) as IComparable;
+                        if (trueMin.CompareTo(Convert.ChangeType("0", trueMin.GetType())) < 0) min = "0";
                         else min = (trueMin as IFormattable).ToString(null, CultureInfo.InvariantCulture);
 
 
                     }
                     else if (isNumber && (isIntegerNP || isDecimal))
                     {
-                        min = (limits.Minimum is string) ? limits.Minimum as string : (limits.Minimum as IConvertible).ToString(CultureInfo.InvariantCulture);
+                        min = (minimum is string) ? minimum as string : (minimum as IConvertible).ToString(CultureInfo.InvariantCulture);
                     }
                     else if(isHtml5DateTime && isDateTimeType)
                     {
-                        min = (limits.Minimum is string) ? limits.Minimum as string : (limits.Minimum is IConvertible ? coverter(limits.Minimum, hint) : limits.Minimum.ToString());
+                        min = (minimum is string) ? minimum as string : (minimum is IConvertible ? coverter(minimum, hint) : minimum.ToString());
                     }
                 }
-                if (max == null && limits.Maximum != null)
+                if (max == null && maximum != null)
                 {
                     if (isNumber && (isPositive || isIntegerNP || isDecimal))
-                        max = (limits.Maximum is string) ? limits.Maximum as string : (limits.Maximum as IConvertible).ToString(CultureInfo.InvariantCulture);
+                        max = (maximum is string) ? maximum as string : (maximum as IConvertible).ToString(CultureInfo.InvariantCulture);
                     else if(isHtml5DateTime && isDateTimeType)
                     {
-                        max = (limits.Maximum is string) ? limits.Maximum as string : (limits.Maximum is IConvertible ? coverter(limits.Maximum, hint) : limits.Maximum.ToString());
+                        max = (maximum is string) ? maximum as string : (maximum is IConvertible ? coverter(maximum, hint) : maximum.ToString());
                     }
                 }
             }

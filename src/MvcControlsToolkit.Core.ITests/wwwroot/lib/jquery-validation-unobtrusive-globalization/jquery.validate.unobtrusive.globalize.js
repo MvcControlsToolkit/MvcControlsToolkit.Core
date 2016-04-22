@@ -25,7 +25,7 @@
 
     }
     else {
-        support = mvcct.enhancer.getSupport();
+        support = null;
     }
     var numberRegEx = null;
    
@@ -62,13 +62,34 @@
     var neutralNumberParser = parseFloat;
     var numberParser;
 
+    var dateTimeAdder, weekAdder, numberAdder;
+
     var parsers = [null, null, null, null, null, null, null, null, null];
     var neutralParsers = [null, null, null, null, null, null, null, null, null];
+    var adders = [null, null, null, null, null, null, null, null, null];
     function getType(jElement) {
         return parseInt(jElement.attr("data-val-correcttype-type"));
     }
+    function otherElement(el, ref) {
+        var name = el.name;
+        var otherName=null;
+        var index = name.lastIndexOf(".");
+        if (index < 0) otherName = ref;
+        else otherElement = name.substring(0, index + 1) + ref;
+        if(!otherElement) return null;
+        var res = $("[name='" + otherName + "']");
+        return res.length > 0 ? res[0] : null;
+    };
+    function otherElements(el, names) {
+        if (!names) return [];
+        names = names.split(" ");
+        var res = [];
+        for (var i = 0; i < names.length; i++) res.push(otherElement(el, names[i]));
+        return res;
+    }
     function initialize(toptions) {
         if (initialized) return;
+        if (!support) support = mvcct.enhancer.getSupport().Html5InputSupport;
         var locale = Globalize.locale().attributes.language;
         var nInfos = Globalize.cldr.get('main/' + locale).numbers["symbols-numberSystem-latn"];
 
@@ -81,18 +102,20 @@
         $.extend(options, defaults);
         $.extend(options, toptions.editFormats || {});
         
-        dateParser = support.date > 1 ? Globalize.dateParser({ raw: "yyyy-MM-dd" }) : Globalize.dateParser(options.dateFormat);
+
+
+        dateParser = support.date > 2 ? Globalize.dateParser({ raw: "yyyy-MM-dd" }) : Globalize.dateParser(options.dateFormat);
 
         neutralTimeParser = Globalize.dateParser({ raw: "HH:mm:ss" });
-        timeParser = support.time> 1 ?  neutralTimeParser : Globalize.dateParser(options.timeFormat);
-        timeParser1 = support.time>1 ?  Globalize.dateParser({ raw: "HH:mm" }) : Globalize.dateParser(options.timeFormat1);
+        timeParser = support.time> 2 ?  neutralTimeParser : Globalize.dateParser(options.timeFormat);
+        timeParser1 = support.time>2 ?  Globalize.dateParser({ raw: "HH:mm" }) : Globalize.dateParser(options.timeFormat1);
 
         neutralDateTimeParser = Globalize.dateParser({ raw: "yyyy-MM-ddTHH:mm:ss" })
-        dateTimeParser = support.datetime > 1 ? neutralDateTimeParser : Globalize.dateParser(options.datetimeFormat);
-        dateTimeParser1 = support.datetime > 1 ? Globalize.dateParser({ raw: "yyyy-MM-ddTHH:mm" }) : Globalize.dateParser(options.datetimeFormat1);
+        dateTimeParser = support.datetime > 2 ? neutralDateTimeParser : Globalize.dateParser(options.datetimeFormat);
+        dateTimeParser1 = support.datetime > 2 ? Globalize.dateParser({ raw: "yyyy-MM-ddTHH:mm" }) : Globalize.dateParser(options.datetimeFormat1);
 
         neutralMonthParser = Globalize.dateParser({ raw: "yyyy-MM" });
-        neutralWeekParser = support.week > 1 ? 
+        neutralWeekParser = support.week > 2 ? 
             function (s) {
                 if (!s) return null;
                 parts=s.split("|");
@@ -106,21 +129,50 @@
                 return new Date(subparts[0], parts[1], parts[2]);
             };
 
-        monthParser = support.month > 1 ? neutralMonthParser : Globalize.dateParser(options.monthFormat);
-        weekParser = support.week > 1 ? function (x) { return x } : dateParser;
+        monthParser = support.month > 2 ? neutralMonthParser : Globalize.dateParser(options.monthFormat);
+        weekParser = support.week > 2 ? function (x) { return x } : dateParser;
 
-        numberParser = support.number ? parseFloat : Globalize.numberParser();
+        numberParser = support.number > 2 ? parseFloat : Globalize.numberParser();
+
+        numberAdder = function (base, value) {
+            if (!base ) return null;
+            if (!value) return base;
+            return base + parseFloat(value);
+        }
+
+        dateTimeAdder = function (base, value) {
+            if (!base) return null;
+            if (!value) return base;
+            return new Date(base.getTime() + parseInt(value));
+        }
+        var weekHelp = document.createElement("INPUT");
+        weekHelp.setAttribute("type", "week");
+        weekAdder = support.week > 2 ?
+            function (base, value) {
+                if (!base) return null;
+                if (!value) return base;
+                var toAdd = parseInt(value) / (1000 * 3600 * 24 * 7);
+                if (toAdd == 0) return base;
+                weekHelp.value = base;
+                if (toAdd > 0) weekHelp.stepUp(toAdd);
+                else weekHelp.stepDown(-toAdd);
+                return weekHelp.value;
+            } :
+            dateTimeAdder;
 
         parsers[0] = function (x) { return x };
         neutralParsers[0] = parsers[0];
+        adders[0] = function (x) { return x };
 
         parsers[1] = parsers[2] = parsers[3] = numberParser;
         neutralParsers[1] = neutralParsers[2] = neutralParsers[3] = neutralNumberParser;
+        adders[1] = adders[2] = adders[3] = numberAdder;
 
         parsers[4] = function (x) {
             return timeParser(x) || timeParser1(x);
         }
         neutralParsers[4] = neutralTimeParser;
+        
 
         parsers[5] = dateParser;
         neutralParsers[5] = neutralDateTimeParser;
@@ -129,12 +181,15 @@
             return dateTimeParser(x) || dateTimeParser1(x);
         }
         neutralParsers[6] = neutralDateTimeParser;
+        adders[4] = adders[5] = adders[6] = dateTimeAdder;
 
         parsers[7] = weekParser;
         neutralParsers[7] = neutralWeekParser;
+        adders[7] = weekAdder;
 
         parsers[8] = monthParser;
         neutralParsers[8] = neutralMonthParser;
+        adders[8] = dateTimeAdder;
 
         if (enhancer && toptions) {
             
@@ -208,37 +263,66 @@
         if (!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
-        parser = parsers[type];
-        neutralParser = neutralParsers[type];
+        var parser = parsers[type];
+        var neutralParser = neutralParsers[type];
         return parser(value) >= neutralParser(param);
     }
     $.validator.methods.maxE = function (value, element, param) {
         if(!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
-        parser = parsers[type];
-        neutralParser = neutralParsers[type];
+        var parser = parsers[type];
+        var neutralParser = neutralParsers[type];
         return parser(value) <= neutralParser(param);
     }
     $.validator.methods.rangeE = function (value, element, param) {
         if(!enhancer) initialize();
         var type = getType($(element));
         if (!value) return true;
-        parser = parsers[type];
-        neutralParser = neutralParsers[type];
+        var parser = parsers[type];
+        var neutralParser = neutralParsers[type];
         return parser(value) <= neutralParser(param[1]) && parser(value) >= neutralParser(param[0]);
     }
     $.validator.methods.correcttype = function (value, element, param) {
         if(!enhancer) initialize();
         if (!value) return true;
         var type = parseInt(param);
-        parser = parsers[type];
+        var parser = parsers[type];
         var val = parser(value);
         
         return (val || val === 0)
             &&(!(typeof val === "number") || numberRegEx.test(value))
             && ((type != 1 && type != 2) || (val % 1) === 0 )
             && (type != 1 || val >= 0);
+    }
+    $.validator.methods.drange = function (value, element, param) {
+        if (!enhancer) initialize();
+        if (!value) return true;
+        var type = getType($(element));
+        var mins = param[0];
+        var minDelays = param[1];
+        var maxs = param[2];
+        var maxDelays = param[3];
+        var parser = parsers[type];
+        var adder = adders[type];
+        var tvalue = parser(value);
+        for (var i = 0; i < mins.length; i++) {
+            var otherVal = mins[i].value;
+            if (!otherVal) continue;
+            otherVal = parser(otherVal);
+            if (!otherVal) continue;
+            otherVal=adder(otherVal, minDelays[i]);
+            if (tvalue < otherVal) return false;
+        }
+        for (var i = 0; i < maxs.length; i++) {
+            var otherVal = maxs[i].value;
+            if (!otherVal) continue;
+            otherVal = parser(otherVal);
+            if (!otherVal) continue;
+            otherVal=adder(otherVal, maxDelays[i]);
+            if (tvalue > otherVal) return false;
+        }
+        return true;
     }
     var adapters = $jQval.unobtrusive.adapters;
     var index = 0;
@@ -272,9 +356,32 @@
             setValidationValues(options, ruleName, type);
         });
     };
+    
     adapters.addCorrecttype("correcttype", "correcttype");
-    adapters.addMinMax("range", "minE", "maxE", "rangeE")
+    adapters.addMinMax("range", "minE", "maxE", "rangeE");
+    
     if (enhancer) {
+        function addHandler(el, limits) {
+            if (!limits) return;
+            for (var i = 0; i < limits.length; i++) {
+                enhancer.dependency("drange", limits[i], el, ["blur", "keyup"], function (t, s) {
+                    $(t).closest('form').validate().element(t);
+                });
+            }
+        }
+        adapters.addDRange = function (adapterName, ruleName, minsName, minDelaysName, maxsName, maxDelaysName) {
+            return this.add(adapterName, [minsName, minDelaysName, maxsName, maxDelaysName], function (options) {
+                var el = options.element;
+                var mins = otherElements(el, options.params[minsName]);
+                var maxs = otherElements(el, options.params[maxsName]); 
+                addHandler(el, mins);
+                addHandler(el, maxs);
+                var mdelays = options.params[minDelaysName].split(" ");
+                var maxdelays = options.params[maxDelaysName].split(" ");
+                setValidationValues(options, ruleName, [mins, mdelays, maxs, maxdelays]);
+            });
+        };
+        adapters.addDRange("drange", "drange", "dmins", "dminds", "dmaxs", "dmaxds");
         enhancer["register"](null, false, initialize, "html5 globalized fallback");
     }
 })(jQuery);
