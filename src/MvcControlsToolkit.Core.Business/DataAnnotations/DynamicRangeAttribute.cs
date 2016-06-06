@@ -13,6 +13,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class DynamicRangeAttribute : ValidationAttribute
     {
+
         public DynamicRangeAttribute(Type targetType, string message) :
             base(message)
         {
@@ -93,7 +94,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                             case 'y':
                                 currDate = currDate.AddYears((int)numberBeingBuild);
                                 break;
-                           
+
                             case 't':
                                 if (max)
                                     toleranceMax = numberBeingBuild > 0 ? numberBeingBuild : -numberBeingBuild;
@@ -111,7 +112,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             else Minimum = currDate;
             return true;
         }
-       
+
         private string _SMinimum;
         public string SMinimum
         {
@@ -208,7 +209,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         }
         public string DynamicMaximumDelay { get; set; }
         public string DynamicMinimumDelay { get; set; }
-        
+        public bool Propagate {get; set;}
 
         private object getDelay(string delayRef, object model, object fixedDelay = null, bool invertSign = false)
         {

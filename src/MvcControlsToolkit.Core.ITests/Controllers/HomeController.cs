@@ -30,7 +30,7 @@ namespace MvcControlsToolkit.Core.ITests.Controllers
             {
                 ADatetime = new DateTime(2016, 4, 10),
                 ADate = new DateTime(2016, 4, 10),
-                AFloat = 1.5f,
+                AFloat = 12f,
                 ATime = new TimeSpan(12, 10, 0),
                 AWeek = new Week(2016, 25),
                 AMonth = new Month(2016, 4)

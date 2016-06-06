@@ -14,7 +14,7 @@
     <div class="form-group">
         <label asp-for="AFloat" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            <input asp-for="AFloat" class="form-control" />
+            <input asp-for="AFloat" class="form-control" type="range" />
             <span asp-validation-for="AFloat" class="text-danger"></span>
         </div>
     </div>
@@ -83,6 +83,9 @@
 </form>
 
 @section Scripts {
-
+<script src="~/lib/mvcct-enhancer/enhancer-modules/mvcct.enhancer.input.basic.min.js"></script>
+@*<script type="text/javascript">
+    mvcct.enhancer.addBasicInput(Globalize);
+</script>*@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

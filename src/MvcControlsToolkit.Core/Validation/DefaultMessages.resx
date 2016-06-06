@@ -138,7 +138,7 @@
   <data name="ClientFieldMustBeTime" xml:space="preserve">
     <value>{0} must be a time</value>
   </data>
-  <data name="ClientFieldMustBeWeak" xml:space="preserve">
+  <data name="ClientFieldMustBeWeek" xml:space="preserve">
     <value>{0} must be a date</value>
   </data>
   <data name="ColorAttribute" xml:space="preserve">

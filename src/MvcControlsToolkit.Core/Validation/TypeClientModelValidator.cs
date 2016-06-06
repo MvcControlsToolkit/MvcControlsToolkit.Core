@@ -75,7 +75,7 @@ namespace MvcControlsToolkit.Core.Validation
             else if (type == typeof(Week))
             {
                 typeCode = 7;
-                return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeWeak)), modelMetadata.GetDisplayName());
+                return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeWeek)), modelMetadata.GetDisplayName());
             }
             else if (type == typeof(Month))
             {

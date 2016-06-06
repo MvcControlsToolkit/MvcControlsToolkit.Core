@@ -13,11 +13,13 @@ namespace MvcControlsToolkit.Core.Validation
         private const string RangeValidationType = "range";
         private const string MinValidationParameter = "min";
         private const string MaxValidationParameter = "max";
+        private const string GoValidationParameter = "go";
 
         public ModelClientValidationRangeRuleExt(
             string errorMessage,
             object minValue,
-            object maxValue)
+            object maxValue,
+            bool propagate=false)
             : base(RangeValidationType, errorMessage)
         {
             if (minValue == null && maxValue == null)
@@ -30,7 +32,7 @@ namespace MvcControlsToolkit.Core.Validation
                 else if (minValue is Week)
                 {
                     var date = ((Week)minValue).StartDate();
-                    minValue = ((Week)minValue).ToString() + "|" + date.Month + "|" + date.Day;
+                    minValue = ((Week)minValue).ToString() ;
                 }
                 else if (minValue is IConvertible) minValue = (minValue as IConvertible).ToString(CultureInfo.InvariantCulture);
                 else if (minValue is IFormattable) minValue = (minValue as IFormattable).ToString(null,CultureInfo.InvariantCulture);
@@ -41,13 +43,14 @@ namespace MvcControlsToolkit.Core.Validation
                 else if (maxValue is Week)
                 {
                     var date = ((Week)maxValue).StartDate();
-                    maxValue = ((Week)maxValue).ToString() + "|" + date.Month + "|" + date.Day;
+                    maxValue = ((Week)maxValue).ToString();
                 }
                 else if (maxValue is IConvertible) maxValue = (maxValue as IConvertible).ToString(CultureInfo.InvariantCulture);
                 else if (maxValue is IFormattable) maxValue = (maxValue as IFormattable).ToString(null, CultureInfo.InvariantCulture);
             }
             ValidationParameters[MinValidationParameter] = minValue;
             ValidationParameters[MaxValidationParameter] = maxValue;
+            ValidationParameters[GoValidationParameter] = propagate ? "true" : "false";
         }
     }
 }

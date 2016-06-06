@@ -6,7 +6,7 @@
         forms: null,
         fallbacks: {
             number: {
-                force: false,
+                force: true,
                 type: 2
             },
             range: {
@@ -14,11 +14,11 @@
                 type: 2
             },
             time: {
-                force: false,
+                force: true,
                 type: 1
             },
             date: {
-                force: false,
+                force: true,
                 type: 1
             },
             datetime: {
@@ -26,12 +26,20 @@
                 type: 1
             },
             month: {
-                force: false,
+                force: true,
                 type: 1
             },
             week: {
-                force: false,
+                force: true,
                 type: 1
+            },
+            color: {
+                force: true
+            }
+        },
+        handlers: {
+            enhance: {
+                datetime: undefined
             }
         }
     };

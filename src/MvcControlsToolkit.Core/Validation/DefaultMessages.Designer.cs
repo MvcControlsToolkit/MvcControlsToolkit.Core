@@ -125,9 +125,9 @@ namespace MvcControlsToolkit.Core.Validation {
         /// <summary>
         ///    Looks up a localized string similar to {0} must be a date.
         /// </summary>
-        internal static string ClientFieldMustBeWeak {
+        internal static string ClientFieldMustBeWeek {
             get {
-                return ResourceManager.GetString("ClientFieldMustBeWeak", resourceCulture);
+                return ResourceManager.GetString("ClientFieldMustBeWeek", resourceCulture);
             }
         }
         

@@ -28,10 +28,10 @@ namespace MvcControlsToolkit.Core.Validation
             var max = Attribute.GetGlobalMaximum(fatherModel, out clientMaxs, out clientMaxDelays);
             var min = Attribute.GetGlobalMinimum(fatherModel, out clientMins, out clientMinDelays);
             List<ModelClientValidationRule> res = new List<ModelClientValidationRule>();
-            if (min != null || max != null) res.Add(new ModelClientValidationRangeRuleExt(errorMessage, min, max));
+            if (min != null || max != null) res.Add(new ModelClientValidationRangeRuleExt(errorMessage, min, max, Attribute.Propagate));
             if ((clientMaxs != null && clientMaxs.Count>0) || (clientMaxDelays != null && clientMaxDelays.Count>0) || (clientMins != null && clientMins.Count>0) || (clientMinDelays != null && clientMinDelays.Count>0))
             {
-                res.Add(new ModelClientValidationDRangeRule(errorMessage, clientMins, clientMinDelays, clientMaxs, clientMaxDelays));
+                res.Add(new ModelClientValidationDRangeRule(errorMessage, clientMins, clientMinDelays, clientMaxs, clientMaxDelays, Attribute.Propagate));
             }
             return res;
         }

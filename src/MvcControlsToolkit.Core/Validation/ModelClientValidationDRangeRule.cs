@@ -15,14 +15,16 @@ namespace MvcControlsToolkit.Core.Validation
         private const string MaxsValidationParameter = "dmaxs";
         private const string MinDelaysValidationParameter = "dminds";
         private const string MaxDelaysValidationParameter = "dmaxds";
+        private const string GoValidationParameter = "go";
 
-        public ModelClientValidationDRangeRule(string errorMessage, List<string> mins, List<string> minds, List<string> maxs, List<string> maxds)
+        public ModelClientValidationDRangeRule(string errorMessage, List<string> mins, List<string> minds, List<string> maxs, List<string> maxds, bool propagate=false)
             : base(DynamicRangeValidationType, errorMessage)
         {
             ValidationParameters[MinsValidationParameter] = mins == null? string.Empty : String.Join(" ", mins);
             ValidationParameters[MinDelaysValidationParameter] = minds == null ? string.Empty : String.Join(" ", minds);
             ValidationParameters[MaxsValidationParameter] = maxs == null ? string.Empty : String.Join(" ", maxs);
             ValidationParameters[MaxDelaysValidationParameter] = maxds == null ? string.Empty : String.Join(" ", maxds);
+            ValidationParameters[GoValidationParameter] = propagate ? "true" : "false";
         }
     }
 }

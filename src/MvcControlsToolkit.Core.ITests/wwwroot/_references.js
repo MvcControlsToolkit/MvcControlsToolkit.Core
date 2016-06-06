@@ -6,4 +6,7 @@
 /// <reference path="lib/jquery/dist/jquery.js" />
 /// <reference path="lib/jquery-validation/dist/jquery.validate.js" />
 /// <reference path="lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js" />
+/// <reference path="lib/mjolnic-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js" />
+/// <reference path="lib/seiyria-bootstrap-slider/dist/bootstrap-slider.js" />
+/// <reference path="lib/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js" />
 /// <reference path="startupjs/startup.js" />
