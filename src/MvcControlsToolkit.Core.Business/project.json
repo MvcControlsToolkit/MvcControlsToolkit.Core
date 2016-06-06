@@ -1,10 +1,19 @@
 {
-  "version": "1.0.0-*",
-
-    "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-24027"
+    "description": "Data annotations and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.",
+    "version": "1.0.0-rc2-final",
+    "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+    "packOptions": {
+        "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+        "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git"
+        },
+        "tags": [
+            "aspnetcore",
+            "aspnetcoremvc"
+        ]
     },
-
     "frameworks": {
         "net451": {
             "frameworkAssemblies": {
@@ -14,10 +23,12 @@
         "netstandard1.5": {
             "imports": "portable-net451+win8+dnxcore50",
             "dependencies": {
+                "NETStandard.Library": "1.5.0-rc2-24027",
                 "System.ComponentModel.Annotations": "4.1.0-rc2-24027",
                 "System.ComponentModel.TypeConverter": "4.0.1-rc2-24027",
                 "System.Reflection.TypeExtensions": "4.1.0-rc2-24027"
             }
+
         }
     }
 }
