@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace MvcControlsToolkit.Core.Views
 {
-    public class RenderingScope<T>: IDisposable
+    public class RenderingScope : IDisposable
     {
-        private T model;
-        private string oldPrefix;
-        private ViewDataDictionary viewData;
-        public RenderingScope(T model, string newPrefix, ViewDataDictionary viewData)
+        protected string oldPrefix;
+        protected ViewDataDictionary viewData;
+        protected object model;
+        const string field = "__current_prefix__";
+        internal static string Field {get { return field; } }
+        public RenderingScope(object model, string newPrefix, ViewDataDictionary viewData)
         {
             if (newPrefix == null) throw new ArgumentNullException(nameof(newPrefix));
             if (viewData == null) throw new ArgumentNullException(nameof(viewData));
@@ -19,19 +21,25 @@ namespace MvcControlsToolkit.Core.Views
             this.viewData = viewData;
             oldPrefix = viewData.TemplateInfo.HtmlFieldPrefix;
             viewData.TemplateInfo.HtmlFieldPrefix = newPrefix;
+            viewData[Field] = this;
         }
 
         public void Dispose()
         {
-            viewData.TemplateInfo.HtmlFieldPrefix=oldPrefix;
+            viewData.TemplateInfo.HtmlFieldPrefix = oldPrefix;
+            viewData.Remove(Field);
         }
-
-        public static T operator !(RenderingScope<T> x)
+        public string Prefix { get { return viewData.TemplateInfo.HtmlFieldPrefix; } }
+    }
+    public class RenderingScope<T>: RenderingScope
+    {
+        
+        
+        public RenderingScope(T model, string newPrefix, ViewDataDictionary viewData)
+            :base(model, newPrefix, viewData)
         {
-            return x.model;
-        }
-        public T M(){
-            return model;
-        }
+           
+        }       
+        public T Model { get { return model == null ? default(T) :  (T)model; } }         
     }
 }

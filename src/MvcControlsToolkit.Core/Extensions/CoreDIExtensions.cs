@@ -18,6 +18,7 @@ namespace MvcControlsToolkit.Core.Extensions
         {
 
             services.AddSingleton<IValidationAttributeAdapterProvider, MvcControlsToolkit.Core.Validation.ValidationAttributeAdapterProviderExt>();
+            services.AddSingleton<MvcControlsToolkit.Core.TagHelpers.Providers.DefaultTagHelpersProvider>();
             services.AddScoped<RequestTransformationsRegister>();
 
             services.AddTransient<IConfigureOptions<MvcOptions>, MvcControlsToolkitOptionsSetup>();

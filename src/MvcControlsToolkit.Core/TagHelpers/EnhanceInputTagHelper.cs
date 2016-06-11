@@ -28,17 +28,18 @@ namespace MvcControlsToolkit.Core.TagHelpers
     //    }
     //}
     
-        [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class EnhanceInputTagHelper: TagHelper 
     {
         private const string ForAttributeName = "asp-for";
         private static string[] positiveIntegerTypes = new string[] {nameof(Byte).ToLowerInvariant(), nameof(UInt16).ToLowerInvariant(), nameof(UInt32).ToLowerInvariant(), nameof(UInt64).ToLowerInvariant() };
         private static string[] integerTypes = new string[] { nameof(SByte).ToLowerInvariant(), nameof(Int16).ToLowerInvariant(), nameof(Int32).ToLowerInvariant(), nameof(Int64).ToLowerInvariant() };
+        public const int order = int.MinValue + 10;
         public override int Order
         {
             get
             {
-                return int.MinValue;
+                return order;
             }
         }
         [HtmlAttributeName("type")]

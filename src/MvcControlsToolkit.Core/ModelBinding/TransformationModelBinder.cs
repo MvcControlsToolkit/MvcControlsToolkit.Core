@@ -68,7 +68,9 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 //{
                 //    bindingContext.ModelState.Add(pair);
                 //}
-                var fres=fctype.GetMethod("InverseTransform").Invoke(Activator.CreateInstance(fctype), new[] { result.Model });
+                IBindingTransformation trasf = Activator.CreateInstance(fctype) as IBindingTransformation;
+                trasf.Context = httpContext;
+                var fres=fctype.GetMethod("InverseTransform").Invoke(trasf, new[] { result.Model });
                 bindingContext.Result= ModelBindingResult.Success(bindingContext.ModelName, fres);
                 return;
                
