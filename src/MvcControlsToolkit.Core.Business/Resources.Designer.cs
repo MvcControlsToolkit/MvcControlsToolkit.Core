@@ -60,11 +60,38 @@ namespace MvcControlsToolkit.Core.Business {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to All filters must have the same parameter.
+        /// </summary>
+        public static string FilterParameterName {
+            get {
+                return ResourceManager.GetString("FilterParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Filter must have 1 parameter.
+        /// </summary>
+        public static string FilterParameterNumber {
+            get {
+                return ResourceManager.GetString("FilterParameterNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to the DynamicRangeAttribute has been applied to an unsopported type.
         /// </summary>
         public static string InvalidDynamicRangeApplication {
             get {
                 return ResourceManager.GetString("InvalidDynamicRangeApplication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to L&apos;espressione non si riferisce ad un proprietà sel modello.
+        /// </summary>
+        public static string InvalidExpressionText {
+            get {
+                return ResourceManager.GetString("InvalidExpressionText", resourceCulture);
             }
         }
         
