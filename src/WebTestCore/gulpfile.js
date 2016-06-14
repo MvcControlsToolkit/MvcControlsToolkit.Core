@@ -6,7 +6,7 @@ var gulp = require("gulp"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
     uglify = require("gulp-uglify");
-
+require('gulp-load-subtasks')('tasks');
 var webroot = "./wwwroot/";
 
 var paths = {
@@ -42,4 +42,4 @@ gulp.task("min:css", function () {
         .pipe(gulp.dest("."));
 });
 
-gulp.task("min", ["min:js", "min:css"]);
+gulp.task("min", ["min:js", "min:css", "min:startup"]);

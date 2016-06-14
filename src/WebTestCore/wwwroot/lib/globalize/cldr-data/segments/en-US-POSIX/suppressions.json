@@ -1,0 +1,28 @@
+{
+  "segments": {
+    "identity": {
+      "version": {
+        "_number": "$Revision: 11914 $",
+        "_cldrVersion": "29"
+      },
+      "language": "en",
+      "territory": "US",
+      "variant": "POSIX"
+    },
+    "segmentations": {
+      "WordBreak": {
+        "variables": [
+          {
+            "$MidLetter": "[[$MidLetter]-[\\\\:]]"
+          },
+          {
+            "$MidNumLet": "[[$MidNumLet]-[.]]"
+          },
+          {
+            "$MidNum": "[[$MidNum] [.]]"
+          }
+        ]
+      }
+    }
+  }
+}

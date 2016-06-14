@@ -42,3 +42,19 @@ textarea {
     display: none
   }
 }
+.welcome{
+    text-align:center;
+    -moz-animation: blinker 1s linear infinite;
+    -o-animation: blinker 1s linear infinite;
+    -webkit-animation: blinker 1s linear infinite;
+    animation: blinker 1s linear infinite;
+    color:darkblue;
+}
+
+@keyframes  blinker {  
+  50% { opacity: 0.0; }
+}
+
+@-webkit-keyframes  blinker {  
+  50% { opacity: 0.0; }
+}

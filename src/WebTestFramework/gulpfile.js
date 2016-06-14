@@ -6,7 +6,7 @@ var gulp = require("gulp"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
     uglify = require("gulp-uglify");
-
+require('gulp-load-subtasks')('tasks');
 var webroot = "./wwwroot/";
 
 var paths = {

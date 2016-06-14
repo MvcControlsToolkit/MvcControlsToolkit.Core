@@ -12,6 +12,12 @@ using Microsoft.Extensions.Logging;
 using WebTestFramework.Data;
 using WebTestFramework.Models;
 using WebTestFramework.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using MvcControlsToolkit.Core.Options.Extensions;
+using MvcControlsToolkit.Core.Options.Providers;
+using WebTestFramework.Options;
+using MvcControlsToolkit.Core.Extensions;
 
 namespace WebTestFramework
 {
@@ -53,6 +59,41 @@ namespace WebTestFramework
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
+            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(Resources.ErrorMessages); });
+            services.AddPreferences()
+                .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
+                .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration)
+                {
+                    SourcePrefix = "CustomUI"
+                })
+                .AddPreferencesProvider(new CookieProvider("UI.Strings.Welcome", "_welcome")
+                {
+                    Priority = 1,
+                    AutoCreate = true,
+                    WhenEnabled = x => x.User == null || x.User.Identity == null || !x.User.Identity.IsAuthenticated
+                })
+                //.AddPreferencesProvider(new EntityFrameworkProvider<ApplicationUser, WelcomeMessage>(
+                //    "UI.Strings.Welcome",
+                //    user => new WelcomeMessage
+                //    {
+                //        Message = "Welcome " + user.UserName,
+                //        AddDate = true
+                //    }
+                //    )
+                //{
+                //    Priority = 2
+                //})
+                .AddPreferencesProvider(new ClaimsProvider<ApplicationUser>("UI.Strings.Welcome")
+                {
+                    Priority = 2,
+                    AutoCreate = true,
+                    SourcePrefix = "http://www.mvc-controls.com/Welcome"
+                })
+                .AddPreferencesProvider(new RequestProvider("UI.Strings.Welcome")
+                {
+                    Priority = 10,
+                    SourcePrefix = "Welcome"
+                });
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -65,6 +106,34 @@ namespace WebTestFramework
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            var supportedCultures = new[]
+              {
+                  
+                  new CultureInfo("en-AU"),
+                  new CultureInfo("en-GB"),
+                  new CultureInfo("en"),
+                  new CultureInfo("es-MX"),
+                  new CultureInfo("es"),
+                  new CultureInfo("fr-CA"),
+                  new CultureInfo("fr"),
+                  new CultureInfo("it-CH"),
+                  new CultureInfo("it")
+              };
+            var supportedUICultures = new[]
+              {
+                  new CultureInfo("en"),
+              };
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en"),
+                
+                // Formatting numbers, dates, etc.
+                SupportedCultures = supportedCultures,
+                // UI strings that we have localized.
+                SupportedUICultures = supportedUICultures,
+                FallBackToParentCultures=true,
+                FallBackToParentUICultures=true
+            });
             app.UseApplicationInsightsRequestTelemetry();
 
             if (env.IsDevelopment())
@@ -84,6 +153,8 @@ namespace WebTestFramework
 
             app.UseIdentity();
 
+            app.UsePreferences();
+            app.UseMvcControlsToolkit();
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
