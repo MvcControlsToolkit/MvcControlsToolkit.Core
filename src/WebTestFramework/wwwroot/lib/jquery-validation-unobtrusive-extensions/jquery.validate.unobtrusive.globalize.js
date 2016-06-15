@@ -67,7 +67,7 @@
                     var y=parseInt(parts[0]);
                     var w = parseInt(parts[1]);
                     
-                    var simple = new Date(Date.UTC(y, 0, 1 + (w - 1) * 7));
+                    var simple = new Date(y, 0, 1 + (w - 1) * 7);
                     var dow = simple.getDay();
                     var ISOweekStart = simple;
                     if (dow <= 4)

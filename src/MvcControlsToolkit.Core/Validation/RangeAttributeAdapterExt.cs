@@ -24,8 +24,8 @@ namespace MvcControlsToolkit.Core.Validation
             var errorMessage = GetErrorMessage(context);
            
             
-            var maxValue = Attribute.Minimum;
-            var minValue = Attribute.Maximum;
+            var maxValue = Attribute.Maximum;
+            var minValue = Attribute.Minimum;
             
             if (minValue == null && maxValue == null)
             {
@@ -68,10 +68,12 @@ namespace MvcControlsToolkit.Core.Validation
             {
                 throw new ArgumentNullException(nameof(validationContext));
             }
-            return GetErrorMessage(validationContext.ModelMetadata,
-                validationContext.ModelMetadata.GetDisplayName(),
-                Attribute.Minimum,
-                Attribute.Maximum);
+            
+                
+                return GetErrorMessage(validationContext.ModelMetadata,
+                    validationContext.ModelMetadata.GetDisplayName(),
+                    Attribute.Minimum,
+                    Attribute.Maximum);
         }
     }
 }

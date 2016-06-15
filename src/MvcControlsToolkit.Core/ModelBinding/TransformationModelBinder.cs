@@ -19,25 +19,34 @@ namespace MvcControlsToolkit.Core.ModelBinding
     public class TransformationModelBinder : IModelBinder
     {
         Func<ModelMetadata, IModelBinder> getChildBinder;
-        public TransformationModelBinder(Func<ModelMetadata, IModelBinder> getChildBinder)
+        IModelBinder inner;
+        public TransformationModelBinder(Func<ModelMetadata, IModelBinder> getChildBinder, IModelBinder inner)
         {
             this.getChildBinder = getChildBinder;
+            this.inner = inner;
         }
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            return innerBinding(bindingContext);
+            Type fctype, fitype, fdtype; string index;
+            fctype = getTransformation(bindingContext, out fitype, out fdtype, out index);
+            if (fctype == null) return inner.BindModelAsync(bindingContext);
+            else return innerBinding(bindingContext, fctype, fdtype, fitype, index);
         }
-
-        private async Task innerBinding(ModelBindingContext bindingContext)
+        private Type getTransformation(ModelBindingContext bindingContext, out Type fitype, out Type fdtype, out string index)
         {
+            fitype = null;  fdtype = null; index = null;
             var httpContext = bindingContext.OperationBindingContext.HttpContext;
             var tr = httpContext.RequestServices.GetService<RequestTransformationsRegister>();
-            if (tr == null) return;
-            string index = tr.GetIndex(bindingContext.ModelName??string.Empty);
-            if (index == null) return;
-            Type fctype, fdtype, fitype;
-            fctype = TransformationsRegister.InverseTransform(bindingContext.ModelMetadata.ModelType, index, out fitype, out fdtype);
-            if (fctype == null) return;
+            if (tr == null) return null;
+            index = tr.GetIndex(bindingContext.ModelName ?? string.Empty);
+            if (index == null) return null;
+            return TransformationsRegister.InverseTransform(bindingContext.ModelMetadata.ModelType, index, out fitype, out fdtype);
+            
+        }
+        private async Task innerBinding(ModelBindingContext bindingContext, Type fctype, Type fdtype, Type fitype, string index)
+        {
+
+            var httpContext = bindingContext.OperationBindingContext.HttpContext;
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var elementMetadata = metadataProvider.GetMetadataForType(fitype);
 
@@ -75,7 +84,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 return;
                
             }
-            return ;
+            return;
         }
     }
 }

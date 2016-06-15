@@ -12,7 +12,7 @@ namespace MvcControlsToolkit.Core.Views
         protected ViewDataDictionary viewData;
         protected object model;
         const string field = "__current_prefix__";
-        internal static string Field {get { return field; } }
+        internal static string Field { get { return field; } }
         public RenderingScope(object model, string newPrefix, ViewDataDictionary viewData)
         {
             if (newPrefix == null) throw new ArgumentNullException(nameof(newPrefix));
@@ -30,16 +30,38 @@ namespace MvcControlsToolkit.Core.Views
             viewData.Remove(Field);
         }
         public string Prefix { get { return viewData.TemplateInfo.HtmlFieldPrefix; } }
-    }
-    public class RenderingScope<T>: RenderingScope
-    {
-        
-        
-        public RenderingScope(T model, string newPrefix, ViewDataDictionary viewData)
-            :base(model, newPrefix, viewData)
+
+        public ScopeInfos<T> Infos<T>()
         {
-           
-        }       
-        public T Model { get { return model == null ? default(T) :  (T)model; } }         
+            return new ScopeInfos<T>
+            {
+                Model = (T)this.model,
+                Prefix = this.Prefix
+            };
+        }
+    }
+    public class RenderingScope<T> : RenderingScope
+    {
+
+
+        public RenderingScope(T model, string newPrefix, ViewDataDictionary viewData)
+            : base(model, newPrefix, viewData)
+        {
+
+        }
+        public T Model { get { return model == null ? default(T) : (T)model; } }
+        public ScopeInfos<T> Infos()
+        {
+            return new ScopeInfos<T>
+            {
+                Model = this.Model,
+                Prefix = this.Prefix
+            };
+        }
+    }
+    public class ScopeInfos<T> 
+    {
+        public T Model { get; set; }
+        public string Prefix { get; set; } 
     }
 }

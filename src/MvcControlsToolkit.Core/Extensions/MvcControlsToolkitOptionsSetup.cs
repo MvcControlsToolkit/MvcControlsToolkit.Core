@@ -41,8 +41,23 @@ namespace MvcControlsToolkit.Core.Extensions
                 options.ModelBinderProviders.Remove(res);
                 options.ModelBinderProviders.Insert(bcount, new SimpleTypeModelBinderProviderExt());
             }
+            bcount = 0;
+            res = null;
+            foreach (var b in options.ModelBinderProviders)
+            {
+                if (b is ComplexTypeModelBinderProvider)
+                {
+                    res = b;
+                    break;
+                }
+                bcount++;
+            }
+            if (res != null)
+            {
+                options.ModelBinderProviders.Remove(res);
+                options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res));
+            }
             
-          options.ModelBinderProviders.Insert(0, new TransformationModelBinderProvider());
           
         }
     }

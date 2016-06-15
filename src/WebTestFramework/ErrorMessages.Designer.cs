@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WebTestFramework.Resources {
+namespace WebTestFramework {
     using System;
     using System.Reflection;
     

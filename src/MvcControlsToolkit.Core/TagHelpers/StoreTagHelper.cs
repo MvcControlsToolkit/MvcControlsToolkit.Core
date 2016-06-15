@@ -51,7 +51,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             type = type.MakeGenericType(new Type[] { For.ModelExplorer.ModelType });
             IBindingTransformation trasf = Activator.CreateInstance(type) as IBindingTransformation;
             trasf.Context = ViewContext.HttpContext;
-            string res = type.GetMethod("Transform").Invoke(trasf, new object[0]) as string;
+            string res = type.GetMethod("Transform").Invoke(trasf, new object[] { For.Model }) as string;
             output.Attributes.Add("value", res);
             if (!canHaveNames)
             {

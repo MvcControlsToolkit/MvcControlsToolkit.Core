@@ -9,6 +9,7 @@ using MvcControlsToolkit.Core.Options.Extensions;
 using MvcControlsToolkit.Core.Options.Providers;
 using MvcControlsToolkit.Core.ModelBinding;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using MvcControlsToolkit.Core.Options;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -25,7 +26,7 @@ namespace MvcControlsToolkit.Core.Extensions
             services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcControlsToolkitViewOptionsSetup>();
 
             services.AddPreferences()
-                .AddPreferencesClass<MvcControlsToolkit.Core.Options.Html5InputSupport>("Browser.Html5InputSupport")
+                .AddPreferencesClass<Html5InputSupport>("Browser.Html5InputSupport")
                 .AddPreferencesProvider(new CookieProvider("Browser", "_browser_basic_capabilities") {Priority=0 })
                 .AddPreferencesProvider(new RequestJsonProvider("Browser", "_browser_basic_capabilities"){Priority=1});
             services.AddTransient<IConfigureOptions<MvcControlsToolkitOptions>, MvcControlsToolkitSetup>();

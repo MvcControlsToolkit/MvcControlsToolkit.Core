@@ -1,0 +1,89 @@
+﻿@model GlobalizationTestVieModel
+@using MvcControlsToolkit.Core.Views
+@using WebTestCore.ViewModels
+@{
+    ViewData["Title"] = "Globalization Test";
+}
+
+<h2>@ViewData["Title"].</h2>
+
+<form asp-controller="Home" asp-action="GlobalizationTest" method="post" class="form-horizontal" role="form">
+    <hr />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    
+    <div class="form-group">
+        <label asp-for="AFloat" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AFloat" class="form-control" type="range" />
+            <span asp-validation-for="AFloat" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ADatetime" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ADatetime" class="form-control" />
+            <span asp-validation-for="ADatetime" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ADate" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ADate" class="form-control" />
+            <span asp-validation-for="ADate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="ATime" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="ATime" class="form-control" />
+            <span asp-validation-for="ATime" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AWeek" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AWeek" type="week" data-omin="12" class="form-control" />
+            <span asp-validation-for="AWeek" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AMonth" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AMonth" type="month" class="form-control" />
+            <span asp-validation-for="AMonth" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AColor" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AColor" class="form-control" />
+            <span asp-validation-for="AColor" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AUrl" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="AUrl" class="form-control" />
+            <span asp-validation-for="AUrl" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="APositiveInteger" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="APositiveInteger" class="form-control" />
+            <span asp-validation-for="APositiveInteger" class="text-danger"></span>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <button type="submit" class="btn btn-default">Register</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<script src="~/lib/mvcct-enhancer/enhancer-modules/mvcct.enhancer.input.basic.min.js"></script>
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

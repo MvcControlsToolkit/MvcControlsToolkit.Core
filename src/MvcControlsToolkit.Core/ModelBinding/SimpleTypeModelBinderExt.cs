@@ -29,7 +29,16 @@ namespace MvcControlsToolkit.Core.ModelBinding
         }
         private bool needNeutral(ModelBindingContext bindingContext)
         {
-            var support = bindingContext.OperationBindingContext.HttpContext.RequestServices.GetRequiredService<Html5InputSupport>();
+            Html5InputSupport support = null;
+            try
+            {
+                support= bindingContext.OperationBindingContext.HttpContext.RequestServices.GetService(typeof(Html5InputSupport)) as Html5InputSupport;
+            }
+            catch
+            {
+
+            }
+            if (support == null) return false;
             var type = bindingContext.ModelMetadata.UnderlyingOrModelType;
             if (allNumbers.Contains(type)) return support.Number>2;
             

@@ -50,7 +50,7 @@ namespace WebTestCore
         {
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-
+            services.AddLocalization(m => { m.ResourcesPath = "Resources"; });
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -58,8 +58,12 @@ namespace WebTestCore
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddMvc()
+                .AddViewLocalization()
+                .AddDataAnnotationsLocalization();
+
             services.AddMvc();
-            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(Resources.ErrorMessages); });
+            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(ErrorMessages); });
             services.AddPreferences()
                 .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
                 .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration)
@@ -125,7 +129,7 @@ namespace WebTestCore
               };
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                DefaultRequestCulture = new RequestCulture("en"),
+                DefaultRequestCulture = new RequestCulture("en", "en"),
 
                 // Formatting numbers, dates, etc.
                 SupportedCultures = supportedCultures,

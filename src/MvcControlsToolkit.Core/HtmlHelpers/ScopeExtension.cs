@@ -53,10 +53,10 @@ namespace MvcControlsToolkit.Core.Views
             return Scope<I>(h, prefix, pres);
         }
 
-        public static RenderingScope<T> CurrentScope<T>(this IHtmlHelper h)
+        public static ScopeInfos<T> CurrentScope<T>(this IHtmlHelper h)
         {
-            var scope = h.ViewData[RenderingScope.Field];
-            if (scope is RenderingScope<T>) return (RenderingScope<T>)scope;
+            var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
+            if (scope != null) return scope.Infos<T>();
             else return null;
         }
 

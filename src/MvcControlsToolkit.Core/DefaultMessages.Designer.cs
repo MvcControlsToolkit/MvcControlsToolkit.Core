@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MvcControlsToolkit.Core.Validation {
+namespace MvcControlsToolkit.Core {
     using System;
     using System.Reflection;
     

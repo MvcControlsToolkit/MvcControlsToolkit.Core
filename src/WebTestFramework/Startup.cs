@@ -59,7 +59,7 @@ namespace WebTestFramework
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
-            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(Resources.ErrorMessages); });
+            services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(ErrorMessages); });
             services.AddPreferences()
                 .AddPreferencesClass<WelcomeMessage>("UI.Strings.Welcome")
                 .AddPreferencesProvider(new ApplicationConfigurationProvider("UI", Configuration)

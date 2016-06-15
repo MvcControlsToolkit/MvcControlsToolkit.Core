@@ -26,14 +26,14 @@ namespace MvcControlsToolkit.Core.Views
         }
         public static string GetFullHtmlFieldName(this ViewDataDictionary viewData, string prefix)
         {
-            var pres=viewData.TemplateInfo.GetFullHtmlFieldName(prefix);
+            var pres=prefix;
             if (viewData[RenderingScope.Field] != null)
             {
                 var index = pres.IndexOf('.');
-                if (index < 0) return string.Empty;
-                else return pres.Substring(index + 1);
+                if (index < 0) return viewData.TemplateInfo.GetFullHtmlFieldName(string.Empty);
+                else return viewData.TemplateInfo.GetFullHtmlFieldName(pres.Substring(index + 1));
             }
-            else return pres;
+            else return viewData.TemplateInfo.GetFullHtmlFieldName(pres);
         }
         public static ITagHelpersProvider TagHelperProvider(this ViewContext context )
         {

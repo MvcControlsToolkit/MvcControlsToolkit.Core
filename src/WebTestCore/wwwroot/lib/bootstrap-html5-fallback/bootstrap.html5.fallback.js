@@ -101,7 +101,7 @@
         days: [days.wide.sun, days.wide.mon, days.wide.tue, days.wide.wed, days.wide.thu, days.wide.fri, days.wide.sat, days.wide.sun],
         daysShort: [days.abbreviated.sun, days.abbreviated.mon, days.abbreviated.tue, days.abbreviated.wed, days.abbreviated.thu, days.abbreviated.fri, days.abbreviated.sat, days.abbreviated.sun],
         daysMin: [days.narrow.sun, days.narrow.mon, days.narrow.tue, days.narrow.wed, days.narrow.thu, days.narrow.fri, days.narrow.sat, days.narrow.sun],
-        months: [months.wide["1"], months.wide["2"], months.wide["3"], months.wide["4"], months.wide["5"], months.wide["5"], months.wide["6"], months.wide["7"], months.wide["8"], months.wide["9"], months.wide["10"], months.wide["11"], months.wide["12"]],
+        months: [months.wide["1"], months.wide["2"], months.wide["3"], months.wide["4"], months.wide["5"], months.wide["6"], months.wide["7"], months.wide["8"], months.wide["9"], months.wide["10"], months.wide["11"], months.wide["12"]],
         monthsShort: [months.abbreviated["1"], months.abbreviated["2"], months.abbreviated["3"], months.abbreviated["4"], months.abbreviated["5"], months.abbreviated["6"], months.abbreviated["7"], months.abbreviated["8"], months.abbreviated["9"], months.abbreviated["10"],               months.abbreviated["11"], months.abbreviated["12"]],
         meridiem: [dayPeriods.am, dayPeriods.pm],//gregorian calendar
         weekStart: dayDict[supp.weekData.firstDay[country]], //supp weekData.json

@@ -204,8 +204,8 @@
                             else val = ''+val;
                             if (!object.hasOwnProperty(prop)) continue;
                             outputArray.push({
-                                Key: prefix ? prefix + "." + prop : prop,
-                                Value: val
+                                "Key": prefix ? prefix + "." + prop : prop,
+                                "Value": val
                             });
                         }
                     }
