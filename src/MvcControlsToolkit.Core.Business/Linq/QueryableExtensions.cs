@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,10 +15,22 @@ namespace MvcControlsToolkit.Core.Linq
             return new ProjectionExpression<TSource>(source);
         }
     }
-
+    internal class PropertyBinding
+    {
+        public PropertyBinding (MemberInfo destination, PropertyInfo source, PropertyInfo sourceNested)
+        {
+            Destination = destination;
+            Source = source;
+            SourceNested = sourceNested;
+        }
+        public MemberInfo Destination { get; set; }
+        public PropertyInfo Source { get; set; }
+        public PropertyInfo SourceNested { get; set; }
+    }
     public class ProjectionExpression<TSource>
     {
-        private static readonly Dictionary<string, Expression> ExpressionCache = new Dictionary<string, Expression>();
+        private static readonly ConcurrentDictionary<string, Expression> ExpressionCache = new ConcurrentDictionary<string, Expression>();
+        private static readonly ConcurrentDictionary<string, IEnumerable<PropertyBinding>> PropertyBindingCache = new ConcurrentDictionary<string, IEnumerable<PropertyBinding>>();
 
         private readonly IQueryable<TSource> _source;
 
@@ -28,10 +41,16 @@ namespace MvcControlsToolkit.Core.Linq
 
         public IQueryable<TDest> To<TDest>()
         {
- 	        var queryExpression = GetCachedExpression<TDest>() ?? BuildExpression<TDest>();
+ 	        var queryExpression = GetCachedExpression<TDest>() ?? BuildExpression<TDest>(null);
 
             return _source.Select(queryExpression);
-        }        
+        }
+        public IQueryable<TDest> To<TDest>(Expression<Func<TSource, TDest>> custom)
+        {
+            var queryExpression =  BuildExpression<TDest>(custom);
+
+            return _source.Select(queryExpression);
+        }
 
         private static Expression<Func<TSource, TDest>> GetCachedExpression<TDest>()
         {
@@ -40,62 +59,122 @@ namespace MvcControlsToolkit.Core.Linq
             return ExpressionCache.ContainsKey(key) ? ExpressionCache[key] as Expression<Func<TSource, TDest>> : null;
         }
 
-        private static Expression<Func<TSource, TDest>> BuildExpression<TDest>()
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo<TDest>()
         {
+            var key = GetCacheKey<TDest>();
+
+            return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
+        }
+
+        private static IEnumerable<PropertyBinding> BuildBindings<TDest>()
+        {
+            var res = GetCachedPropertyInfo<TDest>();
+            if (res != null) return res;
             var sourceProperties = typeof(TSource).GetProperties();
             var destinationProperties = typeof(TDest).GetProperties().Where(dest => dest.CanWrite);
             var parameterExpression = Expression.Parameter(typeof(TSource), "src");
-            
+
             var bindings = destinationProperties
-                                .Select(destinationProperty => BuildBinding(parameterExpression, destinationProperty, sourceProperties))
+                                .Select(destinationProperty => BuildBindingAssociation(destinationProperty, sourceProperties))
                                 .Where(binding => binding != null);
 
-            var expression = Expression.Lambda<Func<TSource, TDest>>(Expression.MemberInit(Expression.New(typeof(TDest)), bindings), parameterExpression);
+            
 
             var key = GetCacheKey<TDest>();
+            try
+            {
+                PropertyBindingCache.TryAdd(key, bindings);
+            }
+            catch { }
+            return bindings;
+        }
 
-            ExpressionCache.Add(key, expression);
+        private static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom)
+        {
+            ParameterExpression parameterExpression = custom == null ? Expression.Parameter(typeof(TSource), "src") : custom.Parameters.First();
+            List<MemberAssignment> customAssignements = null;
+            List<MemberInfo> assignedProperties = null;
+            if (custom != null && custom.Body.NodeType == ExpressionType.MemberInit)
+            {
+                customAssignements = (custom.Body as MemberInitExpression).Bindings.Where(m => m.BindingType == MemberBindingType.Assignment).Select(m => m as MemberAssignment).ToList();
+                assignedProperties = customAssignements.Select(m => m.Member).ToList();
+            }
+            IEnumerable<MemberAssignment> bindings = null;
+            if (assignedProperties == null || assignedProperties.Count == 0)
+            {
+                bindings = BuildBindings<TDest>()
+                    .Select(m => BuildBinding(parameterExpression, m));
+            }
+            else
+            {
+                bindings = BuildBindings<TDest>()
+                    .Where(m => !assignedProperties.Contains(m.Destination))
+                   .Select(m => BuildBinding(parameterExpression, m)).Union(customAssignements);
+
+            }
+            //var bindings1 = BuildBindings<TDest>()
+            //    .Select(m => BuildBinding(parameterExpression, m));
+
+            var expression = Expression.Lambda<Func<TSource, TDest>>(Expression.MemberInit(Expression.New(typeof(TDest)), bindings), parameterExpression);
+            if (custom == null) { 
+                var key = GetCacheKey<TDest>();
+                try
+                {
+                    ExpressionCache.TryAdd(key, expression);
+                }
+                catch { }
+            }
 
             return expression;
-        }        
-
-        private static MemberAssignment BuildBinding(Expression parameterExpression, MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties)
+        }
+       
+        private static PropertyBinding BuildBindingAssociation(MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties)
         {
             var sourceProperty = sourceProperties.FirstOrDefault(src => src.Name == destinationProperty.Name);
 
             if (sourceProperty != null)
             {
-                return Expression.Bind(destinationProperty, Expression.Property(parameterExpression, sourceProperty));
+                return new PropertyBinding(destinationProperty, sourceProperty, null);
             }
 
-            var propertyNames = SplitCamelCase(destinationProperty.Name);
+            var propertyName = destinationProperty.Name;
 
-            if (propertyNames.Length == 2)
+            sourceProperty = sourceProperties.FirstOrDefault(src => propertyName.StartsWith(src.Name) 
+                && Char.IsUpper(propertyName[src.Name.Length]) );
+
+            if (sourceProperty != null)
             {
-                sourceProperty = sourceProperties.FirstOrDefault(src => src.Name == propertyNames[0]);
+                var propertyNameRemainder = propertyName.Substring(sourceProperty.Name.Length);
+                var sourceChildProperty = sourceProperty.PropertyType.GetProperties().FirstOrDefault(src => src.Name == propertyNameRemainder);
 
-                if (sourceProperty != null)
+                if (sourceChildProperty != null)
                 {
-                    var sourceChildProperty = sourceProperty.PropertyType.GetProperties().FirstOrDefault(src => src.Name == propertyNames[1]);
-
-                    if (sourceChildProperty != null)
-                    {
-                        return Expression.Bind(destinationProperty, Expression.Property(Expression.Property(parameterExpression, sourceProperty), sourceChildProperty));
-                    }
+                    return new PropertyBinding(destinationProperty, sourceProperty, sourceChildProperty);
+                        
                 }
-            }
-
+            } 
             return null;
         }
+        private static MemberAssignment BuildBinding(Expression parameterExpression, PropertyBinding binding)
+        {
+            
+            if (binding.SourceNested == null)
+            {
+                return Expression.Bind(binding.Destination, Expression.Property(parameterExpression, binding.Source));
+            }
+            else
+            {
+                return Expression.Bind(binding.Destination, Expression.Property(Expression.Property(parameterExpression, binding.Source), binding.SourceNested));
+            }
+            
+        }
+   
 
         private static string GetCacheKey<TDest>()
         {
             return string.Concat(typeof(TSource).FullName, typeof(TDest).FullName);
         }
 
-        private static string[] SplitCamelCase(string input)
-        {
-            return Regex.Replace(input, "([A-Z])", " $1", RegexOptions.Compiled).Trim().Split(' ');
-        }
+        
     }    
 }

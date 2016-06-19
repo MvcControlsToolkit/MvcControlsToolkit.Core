@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace MvcControlsToolkit.Core.Options
 {
     internal class ProvidersDictionary
     {
-        private static IDictionary<string, List<IOptionsProvider>> allProviders = new Dictionary<string, List<IOptionsProvider>>();
+        private static IDictionary<string, List<IOptionsProvider>> allProviders = new ConcurrentDictionary<string, List<IOptionsProvider>>();
         private HashSet<IOptionsProvider> requestProviders = new HashSet<IOptionsProvider>();
         public static void Add(IOptionsProvider provider)
         {

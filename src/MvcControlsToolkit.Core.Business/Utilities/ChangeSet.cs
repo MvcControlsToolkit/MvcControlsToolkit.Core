@@ -6,12 +6,28 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using MvcControlsToolkit.Core.Linq;
+using System.Collections;
 
 namespace MvcControlsToolkit.Core.Business.Utilities
 {
     public class ChangeSet
     {
-        public static ChangeSet<T, K>   Create<T, K> (IEnumerable<T> oldValues, IEnumerable<T> newValues, Expression<Func<T, K>> keyExpression)
+        private static bool changed(IEnumerable<PropertyInfo> props, object oldItem, object newItem)
+        {
+            foreach(var prop in props)
+            {
+                var old = prop.GetValue(oldItem);
+                var newV = prop.GetValue(newItem);
+                if (old == null)
+                {
+                    if (newV != null) return true;
+                }
+                else if (!old.Equals(newV)) return true;
+                
+            }
+            return false;
+        }
+        public static ChangeSet<T, K>   Create<T, K> (IEnumerable<T> oldValues, IEnumerable<T> newValues, Expression<Func<T, K>> keyExpression, bool verifyPropertyChanges=true)
         {
             if (keyExpression == null) throw new ArgumentNullException(nameof(keyExpression));
             var res = new ChangeSet<T, K>();
@@ -30,11 +46,18 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 res.ChangedOldValues = new List<T>();
                 if(newValues != null)
                 {
-                    foreach(var item in newValues)
+                    IEnumerable<PropertyInfo> props = null;
+                    if (verifyPropertyChanges)
+                    {
+                        props = typeof(T).GetTypeInfo().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                            .Where(m => !typeof(IEnumerable).IsAssignableFrom(m.PropertyType) || typeof(IConvertible).IsAssignableFrom(m.PropertyType));
+                    }
+                    foreach (var item in newValues)
                     {
                         var key = keyFunc(item);
                         if (key != null && dict.ContainsKey(key))
                         {
+                            if(!verifyPropertyChanges || changed(props, dict[key], item))
                             res.Changed.Add(item);
                             res.ChangedOldValues.Add(dict[key]);
                             dict.Remove(key);
@@ -59,7 +82,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         
 
-        public async Task UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  bool saveChanges=false, bool retrieveChanged=true)
+        public async Task<bool> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true)
             where M: class, new()
         {
 
@@ -67,8 +90,30 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             if (table == null) throw new ArgumentNullException(nameof(table));
             var keyPropName = ExpressionHelper.GetExpressionText(KeyExpression);
             var keyProperty = typeof(M).GetTypeInfo().GetProperty(keyPropName);
+            var keyFunc = KeyExpression.Compile();
             bool aChange=false;
+            IEnumerable<K> changedIds = null;
+            Expression<Func<M, bool>> changedFilter = null;
             var copier = new ObjectCopier<T, M>(keyPropName);
+            if (accessFilter != null && Deleted != null && Deleted.Count > 0)
+            {
+                var deletedIds = Deleted;
+                var deletedFilter = new FilterBuilder<M>()
+                            .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
+                            .Get();
+                if(await table.Where(deletedFilter).Where(accessFilter).CountAsync() != Deleted.Count)
+                    return false;
+
+            }
+            if (accessFilter != null && Changed != null && Changed.Count > 0)
+            {
+                changedIds = Changed.Select(m => keyFunc(m));
+                changedFilter = new FilterBuilder<M>()
+                            .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
+                            .Get();
+                if (await table.Where(changedFilter).Where(accessFilter).CountAsync() != Changed.Count)
+                    return false;
+            }
             if (Deleted != null && Deleted.Count > 0)
             {
                 foreach(var key in Deleted)
@@ -96,13 +141,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
                 if (retrieveChanged)
                 {
-                    var keyFunc = KeyExpression.Compile();
-                    var ids=Changed.Select(m => keyFunc(m));
-                    var filter=new FilterBuilder<M>()
-                        .Add(FilterCondition.IsContainedIn, keyPropName, ids)
-                        .Get();
+
+                    if (changedIds == null) changedIds = Changed.Select(m => keyFunc(m));
+                    if(changedFilter == null)
+                        changedFilter = new FilterBuilder<M>()
+                            .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
+                            .Get();
                     
-                    var toModify = await table.Where(filter).ToListAsync();
+                    var toModify = await table.Where(changedFilter).ToListAsync();
                     var dict = Changed.ToDictionary(keyFunc);
                     foreach(var item in toModify)
                     {
@@ -114,8 +160,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 }
                 else
                 {
-                    var keyFunc = KeyExpression.Compile();
-                    foreach (var oItem in Inserted)
+                    
+                    foreach (var oItem in Changed)
                     {
                         aChange = true;
                         var item = new M();
@@ -126,6 +172,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 }
             }
             if (aChange && saveChanges) await ctx.SaveChangesAsync();
+            return true;
         }
     }
 

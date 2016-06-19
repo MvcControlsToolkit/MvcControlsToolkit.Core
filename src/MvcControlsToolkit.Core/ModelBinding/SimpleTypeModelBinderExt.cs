@@ -40,7 +40,11 @@ namespace MvcControlsToolkit.Core.ModelBinding
             }
             if (support == null) return false;
             var type = bindingContext.ModelMetadata.UnderlyingOrModelType;
-            if (allNumbers.Contains(type)) return support.Number>2;
+            if (allNumbers.Contains(type))
+            {
+                var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName.Length > 0 ? bindingContext.ModelName+"._" : "_");
+                return valueProviderResult == ValueProviderResult.None ?  support.Number > 2 : support.Range > 2;
+            }
             
             if (type == typeof(DateTime))
             {

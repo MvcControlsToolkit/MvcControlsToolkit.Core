@@ -7,6 +7,8 @@ using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using MvcControlsToolkit.Core.Types;
 using MvcControlsToolkit.Core.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using MvcControlsToolkit.Core.Views;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -51,6 +53,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [HtmlAttributeName("max")]
         public string Max { get; set; }
 
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
 
         [HtmlAttributeName("value")]
         public string Value { get; set; }
@@ -186,8 +191,14 @@ namespace MvcControlsToolkit.Core.TagHelpers
             }
             if (max != null)
             {
-                if (output.Attributes.ContainsName("max")) output.Attributes.Remove(output.Attributes["v"]);
+                if (output.Attributes.ContainsName("max")) output.Attributes.Remove(output.Attributes["max"]);
                 output.Attributes.Add("max", max);
+            }
+            if(InputTypeName == "range")
+            {
+                var fullName = ViewContext.ViewData.GetFullHtmlFieldName(For.Name);
+                fullName = fullName.Length > 0 ? fullName + "._" : "_";
+                output.PostElement.AppendHtml("<input name='"+ fullName + "' type='hidden'/>");
             }
             
         }

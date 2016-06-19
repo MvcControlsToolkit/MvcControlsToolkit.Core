@@ -29,6 +29,7 @@ namespace MvcControlsToolkit.Core.Linq
         private ParameterExpression param;
         private FilterLogicalOperator logicalOperator;
         private FilterBuilder<T> father = null;
+        private static MethodInfo contains = typeof(Enumerable).GetMethods().Where(m => m.Name == "Contains" && m.GetParameters().Count() == 2).SingleOrDefault();
         private static Expression BuildAccessExpressionRec(Expression obj, string[] properties, int level, Type previousType)
         {
             string currpropertyName = properties[level];
@@ -103,9 +104,16 @@ namespace MvcControlsToolkit.Core.Linq
         private LambdaExpression createInverseCall(MethodInfo call, LambdaExpression constantExp, object constantValue, LambdaExpression parameterExpression)
         {
 
-            return Expression.Lambda(
-                Expression.Call(istantiateP(constantExp, constantValue), call, parameterExpression.Body),
-                parameterExpression.Parameters[0]);
+            if (call.IsStatic)
+            {
+                return Expression.Lambda(
+                    Expression.Call(call, istantiateP(constantExp, constantValue) , parameterExpression.Body),
+                    parameterExpression.Parameters[0]);
+            }
+            else
+                return Expression.Lambda(
+                    Expression.Call(istantiateP(constantExp, constantValue), call, parameterExpression.Body),
+                    parameterExpression.Parameters[0]);
         }
         private LambdaExpression createComparison(ExpressionType comparison, LambdaExpression constantExp, object constantValue, LambdaExpression parameterExpression, bool specialString=false)
         {
@@ -237,7 +245,7 @@ namespace MvcControlsToolkit.Core.Linq
                     break;
                 default:
                     clause = createInverseCall(
-                        value.GetType().GetMethod("Contains"),
+                        value.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] {typeof(F) }),
                         null,
                         value,
                         fieldSelector);

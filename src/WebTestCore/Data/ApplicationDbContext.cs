@@ -14,7 +14,7 @@ namespace WebTestCore.Data
             : base(options)
         {
         }
-
+        public DbSet<TestModel> TestModels { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

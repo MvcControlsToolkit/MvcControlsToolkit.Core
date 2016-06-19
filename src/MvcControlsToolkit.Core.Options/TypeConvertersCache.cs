@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace MvcControlsToolkit.Core.Options
 {
@@ -12,8 +13,8 @@ namespace MvcControlsToolkit.Core.Options
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public static class TypeConvertersCache
     {
-        private static IDictionary<Type, Func<object, Type, string>> store = new Dictionary<Type, Func<object, Type, string>>();
-        private static IDictionary<Type, Func<string, Type, object>> inverseStore = new Dictionary<Type, Func<string, Type, object>>();
+        private static IDictionary<Type, Func<object, Type, string>> store = new ConcurrentDictionary<Type, Func<object, Type, string>>();
+        private static IDictionary<Type, Func<string, Type, object>> inverseStore = new ConcurrentDictionary<Type, Func<string, Type, object>>();
         static TypeConvertersCache()
         {
         }
