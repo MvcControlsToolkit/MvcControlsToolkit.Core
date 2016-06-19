@@ -22,7 +22,7 @@ namespace MvcControlsToolkit.Core.Business {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace MvcControlsToolkit.Core.Business {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MvcControlsToolkit.Core.Business.Resources", typeof(Resources).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace MvcControlsToolkit.Core.Business {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -60,18 +60,45 @@ namespace MvcControlsToolkit.Core.Business {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to All filters must have the same parameter.
+        /// </summary>
+        public static string FilterParameterName {
+            get {
+                return ResourceManager.GetString("FilterParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Filter must have 1 parameter.
+        /// </summary>
+        public static string FilterParameterNumber {
+            get {
+                return ResourceManager.GetString("FilterParameterNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to the DynamicRangeAttribute has been applied to an unsopported type.
         /// </summary>
-        internal static string InvalidDynamicRangeApplication {
+        public static string InvalidDynamicRangeApplication {
             get {
                 return ResourceManager.GetString("InvalidDynamicRangeApplication", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to L&apos;espressione non si riferisce ad un proprietà sel modello.
+        /// </summary>
+        public static string InvalidExpressionText {
+            get {
+                return ResourceManager.GetString("InvalidExpressionText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Range Limits of DynamicRangeAttribute have invalid format.
         /// </summary>
-        internal static string InvalidFormat {
+        public static string InvalidFormat {
             get {
                 return ResourceManager.GetString("InvalidFormat", resourceCulture);
             }
@@ -80,7 +107,7 @@ namespace MvcControlsToolkit.Core.Business {
         /// <summary>
         ///    Looks up a localized string similar to enumerable of type {0} has neither () not (int) constructor.
         /// </summary>
-        internal static string NoConstructor {
+        public static string NoConstructor {
             get {
                 return ResourceManager.GetString("NoConstructor", resourceCulture);
             }
@@ -89,7 +116,7 @@ namespace MvcControlsToolkit.Core.Business {
         /// <summary>
         ///    Looks up a localized string similar to enumerables are non supported by {0}.
         /// </summary>
-        internal static string NotSupportedEnumerables {
+        public static string NotSupportedEnumerables {
             get {
                 return ResourceManager.GetString("NotSupportedEnumerables", resourceCulture);
             }
@@ -98,7 +125,7 @@ namespace MvcControlsToolkit.Core.Business {
         /// <summary>
         ///    Looks up a localized string similar to interfaces are not supported by {0}.
         /// </summary>
-        internal static string NotSupportedInterface {
+        public static string NotSupportedInterface {
             get {
                 return ResourceManager.GetString("NotSupportedInterface", resourceCulture);
             }
@@ -107,7 +134,7 @@ namespace MvcControlsToolkit.Core.Business {
         /// <summary>
         ///    Looks up a localized string similar to type {0} has no property named {1}.
         /// </summary>
-        internal static string PropertyNotFound {
+        public static string PropertyNotFound {
             get {
                 return ResourceManager.GetString("PropertyNotFound", resourceCulture);
             }
@@ -116,7 +143,7 @@ namespace MvcControlsToolkit.Core.Business {
         /// <summary>
         ///    Looks up a localized string similar to {0} is not in the required range.
         /// </summary>
-        internal static string RangeStandardError {
+        public static string RangeStandardError {
             get {
                 return ResourceManager.GetString("RangeStandardError", resourceCulture);
             }

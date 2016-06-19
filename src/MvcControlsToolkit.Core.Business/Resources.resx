@@ -117,8 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FilterParameterName" xml:space="preserve">
+    <value>All filters must have the same parameter</value>
+  </data>
+  <data name="FilterParameterNumber" xml:space="preserve">
+    <value>Filter must have 1 parameter</value>
+  </data>
   <data name="InvalidDynamicRangeApplication" xml:space="preserve">
     <value>the DynamicRangeAttribute has been applied to an unsopported type</value>
+  </data>
+  <data name="InvalidExpressionText" xml:space="preserve">
+    <value>L'espressione non si riferisce ad un proprietà sel modello</value>
   </data>
   <data name="InvalidFormat" xml:space="preserve">
     <value>Range Limits of DynamicRangeAttribute have invalid format</value>

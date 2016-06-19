@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.ViewFeatures;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace MvcControlsToolkit.Core.Options.Providers
 {

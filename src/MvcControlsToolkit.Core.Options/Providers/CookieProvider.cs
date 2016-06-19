@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -41,7 +41,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
         virtual public List<IOptionsProvider> Load(HttpContext ctx, IOptionsDictionary dict)
         {
             var emptyPrefix = String.IsNullOrEmpty(SourcePrefix);
-            var cookie = ctx.Request.Cookies[CookieName].FirstOrDefault();
+            var cookie = ctx.Request.Cookies[CookieName];
             var res = new List<IOptionsProvider>();
             if (string.IsNullOrEmpty(cookie)) return res;
             cookie = WebUtility.UrlDecode(cookie);

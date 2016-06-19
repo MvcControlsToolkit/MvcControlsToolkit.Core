@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace MvcControlsToolkit.Core.Options
 {
-    internal class OptionObjectsDictionary: Dictionary<Type, string>
+    internal class OptionObjectsDictionary: ConcurrentDictionary<Type, string>
     {
         public T Bind<T>(IOptionsDictionary dict, ProvidersDictionary prov, HttpContext ctx)
             where T : class, new()

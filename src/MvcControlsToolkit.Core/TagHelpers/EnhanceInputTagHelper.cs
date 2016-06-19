@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Mvc.TagHelpers;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using MvcControlsToolkit.Core.Types;
 using MvcControlsToolkit.Core.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using MvcControlsToolkit.Core.Views;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -30,17 +30,18 @@ namespace MvcControlsToolkit.Core.TagHelpers
     //    }
     //}
     
-        [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class EnhanceInputTagHelper: TagHelper 
     {
         private const string ForAttributeName = "asp-for";
         private static string[] positiveIntegerTypes = new string[] {nameof(Byte).ToLowerInvariant(), nameof(UInt16).ToLowerInvariant(), nameof(UInt32).ToLowerInvariant(), nameof(UInt64).ToLowerInvariant() };
         private static string[] integerTypes = new string[] { nameof(SByte).ToLowerInvariant(), nameof(Int16).ToLowerInvariant(), nameof(Int32).ToLowerInvariant(), nameof(Int64).ToLowerInvariant() };
+        public const int order = int.MinValue + 10;
         public override int Order
         {
             get
             {
-                return int.MinValue;
+                return order;
             }
         }
         [HtmlAttributeName("type")]
@@ -52,6 +53,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [HtmlAttributeName("max")]
         public string Max { get; set; }
 
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
 
         [HtmlAttributeName("value")]
         public string Value { get; set; }
@@ -91,9 +95,13 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 if (hint == "color") type = hint;
                 else if (typeName == "single" || typeName == "double" || typeName == "decimal") type = "number";
                 else if (typeName == "week" || typeName == "month") type = typeName;
-                else if (typeName == "datetime" && string.IsNullOrEmpty(hint)) type = "datetime-local"; 
-                
-                if(type != null) output.Attributes["type"] = type;
+                else if (typeName == "datetime" && string.IsNullOrEmpty(hint)) type = "datetime-local";
+
+                if (type != null)
+                {
+                    
+                    output.Attributes.Add("type", type);
+                }
                 
             }
             bool isDecimal = typeName == "single" || typeName == "double" || typeName == "decimal";
@@ -125,12 +133,17 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
             {
                 string value = modelExplorer.Model == null ? null : coverter(modelExplorer.Model, hint);
-                if(!string.IsNullOrEmpty(value)) output.Attributes["value"] = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (!output.Attributes.ContainsName("value"))
+                        output.Attributes.Add("value", value);
+                }
             }
             if (typeName == "week")
             {
                 string value = modelExplorer.Model == null ? "" : ((Week)modelExplorer.Model).StartDate().ToString("yyyy-MM-dd");
-                output.Attributes["data-date-value"] = value;
+
+                output.Attributes.Add("data-date-value",  value);
             }
             if (minimum != null || maximum != null)
             {
@@ -169,8 +182,24 @@ namespace MvcControlsToolkit.Core.TagHelpers
             {
                 min = "0";
             }
-            if (min != null) output.Attributes["min"] =min;
-            if (max != null) output.Attributes["max"] =max;
+            if (min != null)
+            {
+                
+                if (output.Attributes.ContainsName("min")) output.Attributes.Remove(output.Attributes["min"]);
+                output.Attributes.Add("min", min);
+
+            }
+            if (max != null)
+            {
+                if (output.Attributes.ContainsName("max")) output.Attributes.Remove(output.Attributes["max"]);
+                output.Attributes.Add("max", max);
+            }
+            if(InputTypeName == "range")
+            {
+                var fullName = ViewContext.ViewData.GetFullHtmlFieldName(For.Name);
+                fullName = fullName.Length > 0 ? fullName + "._" : "_";
+                output.PostElement.AppendHtml("<input name='"+ fullName + "' type='hidden'/>");
+            }
             
         }
     }

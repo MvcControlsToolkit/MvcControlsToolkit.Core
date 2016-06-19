@@ -7,7 +7,7 @@ namespace MvcControlsToolkit.Core.Views
 {
     public interface IBindingTransformation
     {
-
+        Microsoft.AspNetCore.Http.HttpContext Context { set; }
     }
     public interface IBindingTransformation<S, I, D>: IBindingTransformation
     {

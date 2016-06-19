@@ -1,30 +1,44 @@
 {
-  "version": "0.8.0-*",
-    "description": "MvcControlsToolkit.Core Class Library",
-    "authors": [ "Francesco Abbruzzese" ],
-    "tags": [ "Asp.net Mvc" ],
-    "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
-    "licenseUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core/blob/master/LICENSE.txt",
-    "frameworks": {
-        "net451": { },
-        "dotnet5.4": {
-            "dependencies": {
-                "Microsoft.CSharp": "4.0.1-beta-23516",
-                "System.Collections": "4.0.11-beta-23516",
-                "System.Globalization": "4.0.11-beta-23516",
-                "System.Linq": "4.0.1-beta-23516",
-                "System.Reflection": "4.1.0-beta-23516",
-                "System.Runtime": "4.0.21-beta-23516",
-                "System.Threading": "4.0.11-beta-23516"
-            }
-        }
+    "description": "Core feature of Mvc Controls Toolkit.",
+    "version": "1.0.0-rc2-final",
+    "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+    "packOptions": {
+        "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+        "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git"
+        },
+        "tags": [
+            "aspnetcore",
+            "aspnetcoremvc"
+        ]
     },
     "dependencies": {
-        "MvcControlsToolkit.Core.Options": "0.8.0-*",
-        "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-rc1-final",
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-rc1-final",
-        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final",
-        "Microsoft.AspNet.Mvc.Localization": "6.0.0-rc1-final",
-        "MvcControlsToolkit.Core.Business": "1.0.0-*"
+        "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-rc2-final",
+        "Microsoft.AspNetCore.Mvc.Core": "1.0.0-rc2-final",
+        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-rc2-final",
+        "Microsoft.AspNetCore.Mvc.Localization": "1.0.0-rc2-final",
+        "MvcControlsToolkit.Core.Business": "1.0.0-rc2-final",
+        "MvcControlsToolkit.Core.Options": "1.0.0-rc2-final"
+    },
+
+    "frameworks": {
+        "net451": {
+            "frameworkAssemblies": {
+                
+            }
+        },
+        "netstandard1.5": {
+            "imports": [
+                "dotnet5.6",
+                "dnxcore50",
+                "portable-net45+win8"
+            ],
+            "dependencies": {
+                "NETStandard.Library": "1.5.0-rc2-24027"
+                
+            }
+        }
     }
 }

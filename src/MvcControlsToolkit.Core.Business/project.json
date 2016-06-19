@@ -1,30 +1,44 @@
 {
-  "version": "1.0.0-*",
-  "description": "MvcControlsToolkit.Core.Business Class Library",
-  "authors": [ "User" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
+    "description": "Data annotations and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.",
+    "version": "1.0.0-rc2-final",
+    "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+    "packOptions": {
+        "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+        "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git"
+        },
+        "tags": [
+            "aspnetcore",
+            "aspnetcoremvc"
+        ]
+    },
     "frameworks": {
         "net451": {
             "frameworkAssemblies": {
-                "System.ComponentModel.DataAnnotations": "4.0.0.0"
+                "System.ComponentModel.DataAnnotations": "",
+                "System.Dynamic.Runtime": ""
             }
         },
-        "dotnet5.4": {
+        "netstandard1.5": {
+            "imports": [
+                "dotnet5.6",
+                "dnxcore50",
+                "portable-net45+win8"
+            ],
             "dependencies": {
-                "Microsoft.CSharp": "4.0.1-beta-23516",
-                "System.Collections": "4.0.11-beta-23516",
-                "System.Linq": "4.0.1-beta-23516",
-                "System.Runtime": "4.0.21-beta-23516",
-                "System.Threading": "4.0.11-beta-23516",
-                "System.ComponentModel": "4.0.1-beta-23516",
-                "System.ComponentModel.Annotations": "4.0.11-beta-23516",
-                "System.ComponentModel.TypeConverter": "4.0.1-beta-23516"
+                "NETStandard.Library": "1.5.0-rc2-24027",
+                "System.ComponentModel.Annotations": "4.1.0-rc2-24027",
+                "System.ComponentModel.TypeConverter": "4.0.1-rc2-24027",
+                "System.Reflection.TypeExtensions": "4.1.0-rc2-24027",
+                "Microsoft.CSharp": "4.0.1-rc2-24027",
+                "System.Dynamic.Runtime": "4.0.11-rc2-24027"
             }
         }
     },
     "dependencies": {
+        "Microsoft.EntityFrameworkCore": "1.0.0-rc2-final"
         
     }
 }

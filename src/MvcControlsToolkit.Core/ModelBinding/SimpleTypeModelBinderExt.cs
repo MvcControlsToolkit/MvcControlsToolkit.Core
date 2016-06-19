@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using MvcControlsToolkit.Core.Options;
 using MvcControlsToolkit.Core.Types;
+using System.ComponentModel;
+using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace MvcControlsToolkit.Core.ModelBinding
 {
@@ -14,11 +16,35 @@ namespace MvcControlsToolkit.Core.ModelBinding
     {
         private static Type[] allNumbers=new Type[]{typeof(byte), typeof(sbyte), typeof(short), typeof(ushort),
             typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double) };
+        private readonly TypeConverter _typeConverter;
+
+        public SimpleTypeModelBinderExt(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            _typeConverter = TypeDescriptor.GetConverter(type);
+        }
         private bool needNeutral(ModelBindingContext bindingContext)
         {
-            var support = bindingContext.OperationBindingContext.HttpContext.RequestServices.GetRequiredService<Html5InputSupport>();
+            Html5InputSupport support = null;
+            try
+            {
+                support= bindingContext.OperationBindingContext.HttpContext.RequestServices.GetService(typeof(Html5InputSupport)) as Html5InputSupport;
+            }
+            catch
+            {
+
+            }
+            if (support == null) return false;
             var type = bindingContext.ModelMetadata.UnderlyingOrModelType;
-            if (allNumbers.Contains(type)) return support.Number>2;
+            if (allNumbers.Contains(type))
+            {
+                var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName.Length > 0 ? bindingContext.ModelName+"._" : "_");
+                return valueProviderResult == ValueProviderResult.None ?  support.Number > 2 : support.Range > 2;
+            }
             
             if (type == typeof(DateTime))
             {
@@ -31,23 +57,18 @@ namespace MvcControlsToolkit.Core.ModelBinding
             if(type == typeof(TimeSpan) && bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
             return false;
         }
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            // This method is optimized to use cached tasks when possible and avoid allocating
-            // using Task.FromResult. If you need to make changes of this nature, profile
-            // allocations afterwards and look for Task<ModelBindingResult>.
-
-            if (bindingContext.ModelMetadata.IsComplexType)
+            if (bindingContext == null)
             {
-                // this type cannot be converted
-                return ModelBindingResult.NoResultAsync;
+                throw new ArgumentNullException(nameof(bindingContext));
             }
 
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -58,13 +79,22 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 {
                     valueProviderResult = new ValueProviderResult(valueProviderResult.Values, CultureInfo.InvariantCulture);
                 }
-                var model = valueProviderResult.ConvertTo(bindingContext.ModelType);
+                var value = valueProviderResult.FirstValue;
+
+                object model = null;
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    model = _typeConverter.ConvertFrom(
+                        context: null,
+                        culture: valueProviderResult.Culture,
+                        value: value);
+                }
 
                 if (bindingContext.ModelType == typeof(string))
                 {
                     var modelAsString = model as string;
                     if (bindingContext.ModelMetadata.ConvertEmptyStringToNull &&
-                        string.IsNullOrWhiteSpace(modelAsString))
+                        string.IsNullOrEmpty(modelAsString))
                     {
                         model = null;
                     }
@@ -80,24 +110,33 @@ namespace MvcControlsToolkit.Core.ModelBinding
                         bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
 
-                    return ModelBindingResult.FailedAsync(bindingContext.ModelName);
+                    return TaskCache.CompletedTask;
                 }
                 else
                 {
-                    return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
+                    bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                    return TaskCache.CompletedTask;
                 }
             }
             catch (Exception exception)
             {
+                var isFormatException = exception is FormatException;
+                if (!isFormatException && exception.InnerException != null)
+                {
+                    // TypeConverter throws System.Exception wrapping the FormatException,
+                    // so we capture the inner exception.
+                    exception = ExceptionDispatchInfo.Capture(exception.InnerException).SourceException;
+                }
+
                 bindingContext.ModelState.TryAddModelError(
                     bindingContext.ModelName,
                     exception,
                     bindingContext.ModelMetadata);
 
                 // Were able to find a converter for the type but conversion failed.
-                // Tell the model binding system to skip other model binders.
-                return ModelBindingResult.FailedAsync(bindingContext.ModelName);
+                return TaskCache.CompletedTask;
             }
         }
+        
     }
 }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace MvcControlsToolkit.Core.Views
 {
@@ -18,7 +18,7 @@ namespace MvcControlsToolkit.Core.Views
         public static RenderingScope<T> Scope<T>(this IHtmlHelper h, string newPrefix, T model = default(T))
         {
             if (newPrefix == null) newPrefix = string.Empty;
-            return new RenderingScope<T>(model, combinePrefixes(h.ViewData.TemplateInfo.HtmlFieldPrefix, newPrefix), h.ViewData);
+            return new RenderingScope<T>(model, h.ViewData.GetFullHtmlFieldName(newPrefix), h.ViewData);
         }
         public static RenderingScope<T> Scope<T>(this IHtmlHelper h, T model = default(T))
         {
@@ -39,6 +39,7 @@ namespace MvcControlsToolkit.Core.Views
         {
             if (expression == null) throw new ArgumentNullException(nameof(expression));
             if (transform == null) throw new ArgumentNullException(nameof(transform));
+            transform.Context = h.ViewContext.HttpContext;
             S model = default(S);
             try
             {
@@ -51,5 +52,13 @@ namespace MvcControlsToolkit.Core.Views
             prefix = combinePrefixes(ExpressionHelper.GetExpressionText(expression), prefix);
             return Scope<I>(h, prefix, pres);
         }
+
+        public static ScopeInfos<T> CurrentScope<T>(this IHtmlHelper h)
+        {
+            var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
+            if (scope != null) return scope.Infos<T>();
+            else return null;
+        }
+
     }
 }

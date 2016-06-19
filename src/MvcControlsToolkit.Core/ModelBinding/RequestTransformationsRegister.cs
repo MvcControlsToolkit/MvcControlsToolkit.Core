@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using System.Text.RegularExpressions;
 
 namespace MvcControlsToolkit.Core.ModelBinding
 {
     public class RequestTransformationsRegister
     {
-        private static Regex indexDetector = new Regex(@"(^|\.|\])[0-9]+[\.\[$]");
+        private static Regex indexDetector = new Regex(@"(^|\.|\])[0-9]+(\.|\[|$)");
         private Dictionary<string, string> allPrefixes = new Dictionary<string, string>();
         public void Add(string prefix, string index)
         {
@@ -21,7 +20,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
             if (allPrefixes.TryGetValue(prefix, out res)) return res;
             else return null;
         }
-        public void Fill(HttpRequest x)
+        public void Fill(Microsoft.AspNetCore.Http.HttpRequest x)
         {
             if (x.HasFormContentType)
             {

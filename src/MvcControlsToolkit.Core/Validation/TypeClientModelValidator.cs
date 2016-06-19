@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using MvcControlsToolkit.Core.Types;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using MvcControlsToolkit.Core.Extensions;
-using Microsoft.AspNet.Mvc.Localization;
+using Microsoft.AspNetCore.Mvc.Localization;
 using System.Reflection;
+using System.Globalization;
 
 namespace MvcControlsToolkit.Core.Validation
 {
     public class TypeClientModelValidator : IClientModelValidator
     {
-        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+        
+        public void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
@@ -22,8 +24,21 @@ namespace MvcControlsToolkit.Core.Validation
             }
             int typeCode;
             string message = GetErrorMessage(context.ModelMetadata, out typeCode);
-            return new[] { new TypeClientModelValidationRule(message, typeCode) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-correcttype", message);
+            MergeAttribute(context.Attributes, "data-val-correcttype-type", typeCode.ToString(CultureInfo.InvariantCulture));
         }
+        private static bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
+        {
+            if (attributes.ContainsKey(key))
+            {
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
+        }
+        
         private string GetErrorMessage(ModelMetadata modelMetadata, out int typeCode)
         {
             if (modelMetadata == null)

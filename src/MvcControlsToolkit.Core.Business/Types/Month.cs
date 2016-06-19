@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.ComponentModel;
 
 namespace MvcControlsToolkit.Core.Types
 {

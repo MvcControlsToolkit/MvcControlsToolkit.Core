@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 using MvcControlsToolkit.Core.Options.Extensions;
+using MvcControlsToolkit.Core.Views;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -18,6 +19,7 @@ namespace MvcControlsToolkit.Core.Extensions
             var options = builder.ApplicationServices.GetService(typeof(IOptions<MvcControlsToolkitOptions>)) as IOptions<MvcControlsToolkitOptions>;
             MvcControlsToolkitOptions.Instance = options.Value;
             builder.UsePreferences();
+            BasicTransformationsRegistration.Registration();
             return builder.UseMiddleware<CoreMiddleware>();
         }
     }

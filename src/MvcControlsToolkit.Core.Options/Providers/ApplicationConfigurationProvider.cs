@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 namespace MvcControlsToolkit.Core.Options.Providers
 {
     public class ApplicationConfigurationProvider: IOptionsProvider

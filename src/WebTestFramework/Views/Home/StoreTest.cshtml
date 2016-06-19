@@ -1,0 +1,31 @@
+﻿@model GlobalizationTestVieModel
+@using MvcControlsToolkit.Core.Views
+@using WebTestFramework.ViewModels
+@using MvcControlsToolkit.Core.Transformations
+
+@{
+    ViewData["Title"] = "Globalization Test";
+}
+
+<h2>@ViewData["Title"].</h2>
+
+<form asp-controller="Home" asp-action="StoreTest" method="post" class="form-horizontal" role="form">
+    <hr />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    @*<store-model asp-for="@Model" encrypted="true" />*@
+    @*<scope asp-for="@Model" transformation="new JsonTransformation<GlobalizationTestVieModel>()">
+        @{var json = Html.CurrentScope<string>().Model;}
+        <input type="hidden" asp-for="@json">
+    </scope>*@
+    <scope asp-for="@Model" transformation="new JsonTransformation<GlobalizationTestVieModel>()" use-partial="StoreTestPartial"/>
+        @*@using (Html.Transform(m => m, new JsonTransformation<GlobalizationTestVieModel>()))
+            {
+                var json = Html.CurrentScope<string>().Model;
+                <input type="hidden" asp-for="@json">
+            }*@
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="submit" class="btn btn-default">Register</button>
+            </div>
+        </div>
+</form>

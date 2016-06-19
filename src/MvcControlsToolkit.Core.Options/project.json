@@ -1,31 +1,43 @@
 ﻿{
-    "version": "0.8.0-*",
-    "description": "MvcControlsToolkit.Core.Options Class Library",
-    "authors": [ "Francesco Abbruzzese" ],
-    "tags": [ "Asp.net Mvc, options, preferences" ],
-    "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
-    "licenseUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core/blob/master/LICENSE.txt",
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
-        "Newtonsoft.Json": "8.0.3",
-        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-rc1-final",
-        "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-rc1-final"
+    "description": "A Framework for handling options/preferences coming from several sources(user, browser capabilities, configuration, etc.) in Asp.net core",
+    "version": "1.0.0-rc2-final",
+    "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+    "packOptions": {
+        "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
+        "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git"
+        },
+        "tags": [
+            "aspnetcore",
+            "aspnetcoremvc"
+        ]
     },
+    "dependencies": {
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-final",
+        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-rc2-final",
+        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-rc2-final",
+        "Newtonsoft.Json": "8.0.3"
+
+    },
+
     "frameworks": {
         "net451": {
-            
+            "frameworkAssemblies": {
+
+            }
         },
-        "dotnet5.4": {
+        "netstandard1.5": {
+            "imports": [
+                "dotnet5.6",
+                "dnxcore50",
+                "portable-net45+win8"
+            ],
             "dependencies": {
-                "Microsoft.CSharp": "4.0.1-beta-23516",
-                "System.Collections": "4.0.11-beta-23516",
-                "System.ComponentModel.TypeConverter": "4.0.1-beta-23516",
-                "System.Globalization": "4.0.11-beta-23516",
-                "System.Linq": "4.0.1-beta-23516",
-                "System.Reflection": "4.1.0-beta-23516",
-                "System.Runtime": "4.0.21-beta-23516",
-                "System.Threading": "4.0.11-beta-23516",
-                "System.Runtime.Extensions": "4.0.0"
+                "NETStandard.Library": "1.5.0-rc2-24027",
+                "System.ComponentModel.TypeConverter": "4.0.1-rc2-24027",
+                "Microsoft.CSharp": "4.0.1-rc2-24027"
             }
         }
     }

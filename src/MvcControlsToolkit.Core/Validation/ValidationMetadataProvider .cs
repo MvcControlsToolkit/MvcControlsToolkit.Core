@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using MvcControlsToolkit.Core.Extensions;
-using Microsoft.AspNet.Mvc.Localization;
+using Microsoft.AspNetCore.Mvc.Localization;
 using System.Reflection;
 
 namespace MvcControlsToolkit.Core.Validation
 {
     public class ValidationMetadataProvider : IValidationMetadataProvider
     {
-        public void GetValidationMetadata(ValidationMetadataProviderContext context)
+        public void CreateValidationMetadata(ValidationMetadataProviderContext context)
         {
             Type resourceType = null;
             

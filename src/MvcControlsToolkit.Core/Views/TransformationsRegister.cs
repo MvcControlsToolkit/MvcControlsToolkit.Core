@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Globalization;
+using System.Collections.Concurrent;
 
 namespace MvcControlsToolkit.Core.Views
 {
@@ -39,17 +40,20 @@ namespace MvcControlsToolkit.Core.Views
     
     public class TransformationsRegister
     {
-        private static Dictionary<Type, TransformationItem> directDictionary = new Dictionary<Type, TransformationItem>();
-        private static Dictionary<int, TransformationItem> inverseDictionary = new Dictionary<int, TransformationItem>();
+        private static ConcurrentDictionary<Type, TransformationItem> directDictionary = new ConcurrentDictionary<Type, TransformationItem>();
+        private static ConcurrentDictionary<int, TransformationItem> inverseDictionary = new ConcurrentDictionary<int, TransformationItem>();
         private static int count = 0;
 
         public static void Add(Type m)
         {
-            var item = new TransformationItem(++count, m);
-            if (item.SType != null)
+            lock (directDictionary)
             {
-                inverseDictionary.Add(item.Index, item);
-                directDictionary[m] = item;
+                var item = new TransformationItem(++count, m);
+                if (item.SType != null)
+                {
+                    inverseDictionary.TryAdd(item.Index, item);
+                    directDictionary[m] = item;
+                }
             }
         }
         public static string GetPrefix<T>()
@@ -82,7 +86,7 @@ namespace MvcControlsToolkit.Core.Views
         private static void  matchTypes(Type[] abstractType, Type[] concreteType,  Dictionary<Type, Instantiation> instantiations)
         {
             if (abstractType.Length != concreteType.Length) return;
-            for(var i =0; i< abstractType.Length; i++)
+            for(int i =0; i<abstractType.Length; i++)
             {
                 var atype = abstractType[i];
                 var ctype = concreteType[i];
@@ -97,7 +101,7 @@ namespace MvcControlsToolkit.Core.Views
                     if (!ictype.IsGenericType) return;
                     matchTypes(atype.GetGenericArguments(), ctype.GetGenericArguments(), instantiations);
                 }
-                return;
+                else return;
             }
         }
         public static Type InverseTransform(Type destinationType, string index, out Type fitype, out Type fdtype)

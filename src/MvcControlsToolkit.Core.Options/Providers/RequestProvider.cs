@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace MvcControlsToolkit.Core.Options.Providers
 {
@@ -41,8 +41,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
                 var form = ctx.Request.Form;
                 
                 var toAdd = form.Where(m => emptyPrefix
-                  || m.Key == SourcePrefix
-                  || (m.Key.StartsWith(SourcePrefix) && m.Key[SourcePrefix.Length] == '.'))
+                  || (m.Key.StartsWith(SourcePrefix) && m.Key.Length > SourcePrefix.Length + 1 && m.Key[SourcePrefix.Length] == '.'))
                 .Select(m => new
                 {
                     Key = Prefix+"."+(emptyPrefix ? m.Key : m.Key.Substring(SourcePrefix.Length + 1)),
@@ -59,8 +58,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
             {
                 var pars = ctx.Request.Query;
                 var toAdd=pars.Where(m => emptyPrefix
-                  || m.Key == SourcePrefix
-                  || (m.Key.StartsWith(SourcePrefix) && m.Key[SourcePrefix.Length] == '.'))
+                  || (m.Key.StartsWith(SourcePrefix) && m.Key.Length> SourcePrefix.Length+1 && m.Key[SourcePrefix.Length] == '.'))
                 .Select(m => new
                 {
                     Key = Prefix + "." + (emptyPrefix ? m.Key : m.Key.Substring(SourcePrefix.Length + 1)),
