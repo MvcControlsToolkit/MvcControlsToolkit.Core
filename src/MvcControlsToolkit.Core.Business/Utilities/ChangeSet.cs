@@ -82,7 +82,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         
 
-        public async Task<bool> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true)
+        public async Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true)
             where M: class, new()
         {
 
@@ -102,7 +102,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                             .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
                             .Get();
                 if(await table.Where(deletedFilter).Where(accessFilter).CountAsync() != Deleted.Count)
-                    return false;
+                    return null;
 
             }
             if (accessFilter != null && Changed != null && Changed.Count > 0)
@@ -112,8 +112,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                             .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
                             .Get();
                 if (await table.Where(changedFilter).Where(accessFilter).CountAsync() != Changed.Count)
-                    return false;
+                    return null;
             }
+            var res = new List<M>();
             if (Deleted != null && Deleted.Count > 0)
             {
                 foreach(var key in Deleted)
@@ -134,6 +135,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     var item = new M();
                     copier.Copy(oItem, item);
                     table.Add(item);
+                    res.Add(item);
                 }
             }
             if (Changed != null && Changed.Count > 0)
@@ -171,8 +173,22 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     }
                 }
             }
-            if (aChange && saveChanges) await ctx.SaveChangesAsync();
-            return true;
+            if (aChange && saveChanges)
+            {
+                await ctx.SaveChangesAsync();
+                if(res.Count > 0)
+                {
+                    int i = 0;
+                    var keyOProperty = typeof(T).GetTypeInfo().GetProperty(keyPropName);
+                    foreach (var oItem in Inserted)
+                    {
+                        var item = res[i];
+                        keyOProperty.SetValue(oItem, keyProperty.GetValue(item));
+                        i++;
+                    }
+                }
+            }
+            return res;
         }
     }
 

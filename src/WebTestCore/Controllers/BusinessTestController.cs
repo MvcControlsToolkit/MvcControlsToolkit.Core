@@ -72,7 +72,7 @@ namespace WebTestCore.Controllers
             //pass changes to db
             try
             {
-                await changes.UpdateDatabase(ctx.TestModels, ctx, saveChanges: true);
+               var  res = await changes.UpdateDatabase(ctx.TestModels, ctx, saveChanges: true);
             }
             catch(Exception ex)
             {
