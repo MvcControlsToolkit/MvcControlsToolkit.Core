@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using MvcControlsToolkit.Core.Views;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace MvcControlsToolkit.Core.Transformations
 {
@@ -12,21 +14,25 @@ namespace MvcControlsToolkit.Core.Transformations
         {
             set
             {
-                
+                currContext = value; ;
             }
         }
 
-        
+        private HttpContext currContext;
+
+
         public T InverseTransform(string x)
         {
             if (x == null) return default(T);
-            return (T)JsonConvert.DeserializeObject(x, typeof(T)) ;
+            IOptions<MvcJsonOptions> settings = currContext.RequestServices.GetService<IOptions<MvcJsonOptions>>();
+            return (T)JsonConvert.DeserializeObject(x, typeof(T), settings.Value.SerializerSettings) ;
         }
 
         public string Transform(T x)
         {
             if (x == null) return "null";
-            return JsonConvert.SerializeObject(x);
+            IOptions<MvcJsonOptions> settings = currContext.RequestServices.GetService<IOptions<MvcJsonOptions>>();
+            return JsonConvert.SerializeObject(x, settings.Value.SerializerSettings);
         }
     }
     public class EncryptedJsonTransformation<T> : IBindingTransformation<T, string, T>

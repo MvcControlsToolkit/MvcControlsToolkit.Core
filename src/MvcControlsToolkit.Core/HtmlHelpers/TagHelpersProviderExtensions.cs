@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MvcControlsToolkit.Core.TagHelpers;
 using System.Reflection;
-
+using Microsoft.AspNetCore.Html;
 
 namespace MvcControlsToolkit.Core.HtmlHelpers
 {

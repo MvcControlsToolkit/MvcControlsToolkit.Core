@@ -20,10 +20,12 @@ namespace MvcControlsToolkit.Core.ModelBinding
     {
         Func<ModelMetadata, IModelBinder> getChildBinder;
         IModelBinder inner;
-        public TransformationModelBinder(Func<ModelMetadata, IModelBinder> getChildBinder, IModelBinder inner)
+        IModelMetadataProvider metadataProvider;
+        public TransformationModelBinder(Func<ModelMetadata, IModelBinder> getChildBinder, IModelBinder inner, IModelMetadataProvider metadataProvider)
         {
             this.getChildBinder = getChildBinder;
             this.inner = inner;
+            this.metadataProvider = metadataProvider;
         }
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -35,7 +37,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
         private Type getTransformation(ModelBindingContext bindingContext, out Type fitype, out Type fdtype, out string index)
         {
             fitype = null;  fdtype = null; index = null;
-            var httpContext = bindingContext.OperationBindingContext.HttpContext;
+            var httpContext = bindingContext.HttpContext;
             var tr = httpContext.RequestServices.GetService<RequestTransformationsRegister>();
             if (tr == null) return null;
             index = tr.GetIndex(bindingContext.ModelName ?? string.Empty);
@@ -46,8 +48,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
         private async Task innerBinding(ModelBindingContext bindingContext, Type fctype, Type fdtype, Type fitype, string index)
         {
 
-            var httpContext = bindingContext.OperationBindingContext.HttpContext;
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
+            var httpContext = bindingContext.HttpContext;
             var elementMetadata = metadataProvider.GetMetadataForType(fitype);
 
             
@@ -62,17 +63,17 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 model: null))
             {
                 await getChildBinder(elementMetadata).BindModelAsync(bindingContext);
-                result = bindingContext.Result ?? ModelBindingResult.Failed(moidelPrefix);
+                result = bindingContext.Result;
                 childValidationlState = bindingContext.ValidationState;
             }
            
             if (result.IsModelSet)
             {
                 var validator = httpContext.RequestServices.GetService<IObjectModelValidator>();
-                var options = httpContext.RequestServices.GetService<IOptions<MvcOptions>>();
-                foreach (var prov in options.Value.ModelValidatorProviders) {
-                    validator.Validate(bindingContext.OperationBindingContext.ActionContext, prov, childValidationlState, moidelPrefix, result.Model);
-                }
+                //var options = httpContext.RequestServices.GetService<IOptions<MvcOptions>>();
+                //foreach (var prov in options.Value.ModelValidatorProviders) {
+                    validator.Validate(bindingContext.ActionContext, childValidationlState, moidelPrefix, result.Model);
+                //}
                 //foreach(var pair in modelState)
                 //{
                 //    bindingContext.ModelState.Add(pair);
@@ -80,7 +81,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 IBindingTransformation trasf = Activator.CreateInstance(fctype) as IBindingTransformation;
                 trasf.Context = httpContext;
                 var fres=fctype.GetMethod("InverseTransform").Invoke(trasf, new[] { result.Model });
-                bindingContext.Result= ModelBindingResult.Success(bindingContext.ModelName, fres);
+                bindingContext.Result= ModelBindingResult.Success(fres);
                 return;
                
             }

@@ -20,7 +20,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
             }
             if (context.Metadata.IsComplexType && !context.Metadata.IsCollectionType)
             {
-                return new TransformationModelBinder(context.CreateBinder, originalComplexModelBinderProvider.GetBinder(context));
+                return new TransformationModelBinder(context.CreateBinder, originalComplexModelBinderProvider.GetBinder(context), context.MetadataProvider);
             }
             return null;
         }

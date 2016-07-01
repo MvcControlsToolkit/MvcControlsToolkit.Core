@@ -2,7 +2,7 @@
     "description": "Core feature of Mvc Controls Toolkit.",
     "title": "Mvc Controls Toolkit core code",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.0.0-rc2-final",
+    "version": "1.0.0",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
@@ -21,12 +21,13 @@
         ]
     },
     "dependencies": {
-        "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-rc2-final",
-        "Microsoft.AspNetCore.Mvc.Core": "1.0.0-rc2-final",
-        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-rc2-final",
-        "Microsoft.AspNetCore.Mvc.Localization": "1.0.0-rc2-final",
-        "MvcControlsToolkit.Core.Business": "1.0.0-rc2-final",
-        "MvcControlsToolkit.Core.Options": "1.0.0-rc2-final"
+        "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0",
+        "Microsoft.AspNetCore.Mvc.Core": "1.0.0",
+        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
+        "Microsoft.AspNetCore.Mvc.Localization": "1.0.0",
+        "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
+        "MvcControlsToolkit.Core.Business": "1.0.0",
+        "MvcControlsToolkit.Core.Options": "1.0.0"
     },
 
     "frameworks": {
@@ -35,14 +36,14 @@
 
             }
         },
-        "netstandard1.5": {
+        "netstandard1.6": {
             "imports": [
                 "dotnet5.6",
                 "dnxcore50",
                 "portable-net45+win8"
             ],
             "dependencies": {
-                "NETStandard.Library": "1.5.0-rc2-24027"
+                "NETStandard.Library": "1.6.0"
 
             }
         }
