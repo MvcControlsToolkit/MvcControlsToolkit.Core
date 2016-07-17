@@ -69,7 +69,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             else
             {
                 
-                string name = combinePrefixes(TransformationsRegister.GetPrefix(type), For.Name);
+                string name = combinePrefixes(For.Name, TransformationsRegister.GetPrefix(type));
                 string fullName = ViewContext.ViewData.GetFullHtmlFieldName(name);
                 if (string.IsNullOrWhiteSpace(Name))
                 {

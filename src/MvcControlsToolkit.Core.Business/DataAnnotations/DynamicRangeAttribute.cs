@@ -297,7 +297,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         {
             if (delayRef != null && delayRef.StartsWith("!"))
             {
-                if (TargetType == typeof(DateTime)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
+                if (TargetType == typeof(DateTime) || TargetType == typeof(Month) || TargetType == typeof(Week)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
                 else fixedDelay = Convert.ChangeType(delayRef.Substring(1), TargetType, CultureInfo.InvariantCulture);
             }
             object toAdd = fixedDelay;

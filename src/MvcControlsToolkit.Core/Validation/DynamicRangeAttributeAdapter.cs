@@ -38,6 +38,11 @@ namespace MvcControlsToolkit.Core.Validation
                         var date = ((Week)minValue).StartDate();
                         minValue = ((Week)minValue).ToString();
                     }
+                    else if (minValue is Month)
+                    {
+                        var date = ((Month)minValue).ToDateTime();
+                        minValue = ((Month)minValue).ToString();
+                    }
                     else if (minValue is IConvertible) minValue = (minValue as IConvertible).ToString(CultureInfo.InvariantCulture);
                     else if (minValue is IFormattable) minValue = (minValue as IFormattable).ToString(null, CultureInfo.InvariantCulture);
                 }
@@ -48,6 +53,11 @@ namespace MvcControlsToolkit.Core.Validation
                     {
                         var date = ((Week)maxValue).StartDate();
                         maxValue = ((Week)maxValue).ToString();
+                    }
+                    else if (maxValue is Month)
+                    {
+                        var date = ((Month)maxValue).ToDateTime();
+                        maxValue = ((Month)maxValue).ToString();
                     }
                     else if (maxValue is IConvertible) maxValue = (maxValue as IConvertible).ToString(CultureInfo.InvariantCulture);
                     else if (maxValue is IFormattable) maxValue = (maxValue as IFormattable).ToString(null, CultureInfo.InvariantCulture);

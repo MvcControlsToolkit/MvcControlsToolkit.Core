@@ -2,12 +2,12 @@
     "description": "Core feature of Mvc Controls Toolkit.",
     "title": "Mvc Controls Toolkit core code",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "First public release",
+        "releaseNotes": "Bug fix release",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -26,7 +26,7 @@
         "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
         "Microsoft.AspNetCore.Mvc.Localization": "1.0.0",
         "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
-        "MvcControlsToolkit.Core.Business": "1.0.0",
+        "MvcControlsToolkit.Core.Business": "1.0.1",
         "MvcControlsToolkit.Core.Options": "1.0.0"
     },
 
