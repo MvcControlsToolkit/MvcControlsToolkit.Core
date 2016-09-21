@@ -25,6 +25,6 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
          DefaultTemplates GetDefaultTemplates(string tagName);
 
-        IHtmlContent RenderButton(StandardButtons buttonType, string arguments, string cssClass, ContextualizedHelpers helpers, IStringLocalizer localizer, bool visibleText=false);
+        IHtmlContent RenderButton(StandardButtons buttonType, string arguments, string cssClass, ContextualizedHelpers helpers, IStringLocalizer localizer, bool visibleText=false, bool isSubmit=false);
     }
 }
