@@ -10,21 +10,25 @@ using MvcControlsToolkit.Core.Options.Providers;
 using MvcControlsToolkit.Core.ModelBinding;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using MvcControlsToolkit.Core.Options;
+using MvcControlsToolkit.Core.TagHelpers.Providers;
+using MvcControlsToolkit.Core.TagHelpers;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
     public static class CoreDIExtensions
     {
+        private static bool initialized=false;
         public static IServiceCollection AddMvcControlsToolkit(this IServiceCollection services, Action<MvcControlsToolkitOptions> setupAction=null)
         {
 
+            if (initialized) return services;
             services.AddSingleton<IValidationAttributeAdapterProvider, MvcControlsToolkit.Core.Validation.ValidationAttributeAdapterProviderExt>();
-            services.AddSingleton<MvcControlsToolkit.Core.TagHelpers.Providers.DefaultTagHelpersProvider>();
+            
             services.AddScoped<RequestTransformationsRegister>();
 
             services.AddTransient<IConfigureOptions<MvcOptions>, MvcControlsToolkitOptionsSetup>();
             services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcControlsToolkitViewOptionsSetup>();
-
+            services.AddSingleton<DefaultTagHelpersProvider>();
             services.AddPreferences()
                 .AddPreferencesClass<Html5InputSupport>("Browser.Html5InputSupport")
                 .AddPreferencesProvider(new CookieProvider("Browser", "_browser_basic_capabilities") {Priority=0 })
@@ -34,5 +38,14 @@ namespace MvcControlsToolkit.Core.Extensions
                 services.Configure(setupAction);
             return services;
         }
-    }
+        public static IServiceCollection AddTagHelpersProvider(this IServiceCollection services, Type providerType, ITagHelpersProvider instance=null)
+        {
+            if (instance == null)
+                services.AddSingleton(providerType);
+            else
+                services.AddSingleton(providerType, instance);
+            return services;
+
+        }
+     }
 }

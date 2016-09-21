@@ -6,15 +6,24 @@ using Microsoft.AspNetCore.Mvc;
 using WebTestCore.Options;
 using MvcControlsToolkit.Core.Types;
 using WebTestCore.ViewModels;
+using WebTestCore.Data;
+using System.Security.Claims;
+using WebTestCore.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebTestCore.Controllers
 {
     public class HomeController : Controller
     {
         private WelcomeMessage welcome = null;
-        public HomeController(WelcomeMessage welcome)
+        public HomeController(WelcomeMessage welcome, IHttpContextAccessor httpContextAccessor)
         {
             this.welcome = welcome;
+            if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                var id = httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            }
         }
         public IActionResult Index()
         {

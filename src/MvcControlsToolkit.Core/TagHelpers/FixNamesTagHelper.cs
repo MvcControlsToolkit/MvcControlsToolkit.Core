@@ -93,6 +93,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     output.Attributes.Add("id", Id);
                 }
             }
+            var prov=ViewContext.TagHelperProvider();
+            prov?.InputProcess?.Invoke(context, output, this);
+            
         }
     }
     [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
@@ -110,7 +113,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
     public  class FixSelectNamesTagHelper : FixNamesTagHelperBase
     {
         private const string ForAttributeName = "asp-for";
-
+        private const string OptionsListForName = "asp-options-for";
+        [HtmlAttributeName(ForAttributeName)]
+        public ModelExpression OptionsListFor { get; set; }
         public FixSelectNamesTagHelper(IOptions<MvcViewOptions> optionsAccessor) : base(optionsAccessor)
         {
 

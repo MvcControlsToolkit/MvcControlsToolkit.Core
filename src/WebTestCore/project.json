@@ -44,7 +44,7 @@
             "version": "1.0.0-preview2-final",
             "type": "build"
         },
-        "MvcControlsToolkit.Core": "1.0.0"
+        "MvcControlsToolkit.Core": "1.0.1"
     },
 
     "tools": {

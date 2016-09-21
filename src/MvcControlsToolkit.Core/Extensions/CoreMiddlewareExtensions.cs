@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using MvcControlsToolkit.Core.ModelBinding.DerivedClasses;
 using MvcControlsToolkit.Core.Options.Extensions;
 using MvcControlsToolkit.Core.Views;
 
@@ -20,6 +22,7 @@ namespace MvcControlsToolkit.Core.Extensions
             MvcControlsToolkitOptions.Instance = options.Value;
             builder.UsePreferences();
             BasicTransformationsRegistration.Registration();
+            DerivedClassesRegister.Prepare(builder.ApplicationServices.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment);
             return builder.UseMiddleware<CoreMiddleware>();
         }
     }

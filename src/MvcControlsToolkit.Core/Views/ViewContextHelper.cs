@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
+using MvcControlsToolkit.Core.Extensions;
 using MvcControlsToolkit.Core.TagHelpers;
 using MvcControlsToolkit.Core.TagHelpers.Providers;
 
@@ -41,7 +42,7 @@ namespace MvcControlsToolkit.Core.Views
             ITagHelpersProvider res = viewData[TagHelpersProviderContext.Field] as ITagHelpersProvider;
             if(res == null)
             {
-                viewData[TagHelpersProviderContext.Field]=res= context.HttpContext.RequestServices.GetService<DefaultTagHelpersProvider>();
+                viewData[TagHelpersProviderContext.Field]=res= MvcControlsToolkitOptions.Instance.DefaultProvider;
             }
             return res;
         }

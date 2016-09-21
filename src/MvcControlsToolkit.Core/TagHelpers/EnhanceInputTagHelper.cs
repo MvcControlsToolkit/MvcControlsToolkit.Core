@@ -110,8 +110,12 @@ namespace MvcControlsToolkit.Core.TagHelpers
             bool isPositive = positiveIntegerTypes.Contains(typeName);
             bool isIntegerNP = integerTypes.Contains(typeName);
             
+            
             bool isHtml5DateTime = (string.IsNullOrEmpty(InputTypeName) || InputTypeName == "date" || InputTypeName == "datetime" || InputTypeName == "datetime-local" || InputTypeName == "week" || InputTypeName == "month");
             bool isDateTimeType = typeName == "datetime" || typeName == "timespan" || typeName == "week" || typeName == "month";
+            if (isDecimal || isPositive || isIntegerNP) output.Attributes.Add("data-basic-type", "numeric");
+            else if (isDateTimeType) output.Attributes.Add("data-basic-type", "time");
+            else output.Attributes.Add("data-basic-type", "string");
             object minimum=null, maximum=null;
             RangeAttribute limits = metaData.ValidatorMetadata.Where(m => m is RangeAttribute).FirstOrDefault() as RangeAttribute;
             if (limits != null)

@@ -150,11 +150,65 @@ namespace MvcControlsToolkit.Core {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to When template is a funtion template type must be either InLine or Function.
+        /// </summary>
+        public static string InconsistentTemplateFunc {
+            get {
+                return ResourceManager.GetString("InconsistentTemplateFunc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to When template is a string template type must be either Partial or ViewComponent.
+        /// </summary>
+        public static string InconsistentTemplateName {
+            get {
+                return ResourceManager.GetString("InconsistentTemplateName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Row key was not specified, and can&apos;t be inferred by name convention.
+        /// </summary>
+        public static string NoRowKey {
+            get {
+                return ResourceManager.GetString("NoRowKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} is not a subclass of {1}.
+        /// </summary>
+        public static string NotASubclass {
+            get {
+                return ResourceManager.GetString("NotASubclass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Type {0} must be decorated with the RunTimeTypeAttribute.
+        /// </summary>
+        public static string SubclassNotRegistered {
+            get {
+                return ResourceManager.GetString("SubclassNotRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} is not a valid web address.
         /// </summary>
         public static string UrlAttribute {
             get {
                 return ResourceManager.GetString("UrlAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} must contain decimal separated by spaces.
+        /// </summary>
+        public static string WrongDecimalArrayAsString {
+            get {
+                return ResourceManager.GetString("WrongDecimalArrayAsString", resourceCulture);
             }
         }
     }

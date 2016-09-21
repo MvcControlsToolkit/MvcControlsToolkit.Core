@@ -8,7 +8,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
 {
     public class RequestTransformationsRegister
     {
-        private static Regex indexDetector = new Regex(@"(^|\.|\])[0-9]+(\.|\[|$)");
+        private static Regex indexDetector = new Regex(@"(^|\.|\])[0-9]+[_](\.|\[|$)");
         private Dictionary<string, string> allPrefixes = new Dictionary<string, string>();
         public void Add(string prefix, string index)
         {

@@ -7,11 +7,64 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using MvcControlsToolkit.Core.Linq;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace MvcControlsToolkit.Core.Business.Utilities
 {
-    public class ChangeSet
+    public abstract class ChangeSet
     {
+        protected  static readonly ConcurrentDictionary<KeyValuePair<Type, Type>, object> CopierCache = new ConcurrentDictionary<KeyValuePair<Type, Type>, object>();
+        protected static readonly ConcurrentDictionary<Type, PropertyInfo> KeyProperties = new ConcurrentDictionary<Type,PropertyInfo>();
+        protected static readonly ConcurrentDictionary<Type, IEnumerable<PropertyInfo>> AllProperties = new ConcurrentDictionary<Type, IEnumerable<PropertyInfo>>();
+        protected static readonly ConcurrentDictionary<Type, object> CompiledKeys = new ConcurrentDictionary<Type, object>();
+        protected static ObjectCopier<T, M>  GetCopier<T, M>()
+        {
+            object res = null;
+            var pair = new KeyValuePair<Type, Type>(typeof(T), typeof(M));
+            if (CopierCache.TryGetValue(pair, out res))
+                return (ObjectCopier<T, M>)res;
+            else return (ObjectCopier<T, M>)(CopierCache[pair] = new ObjectCopier<T, M>(compile: true));
+        }
+        protected static Func<T, K> GetCopiledKey<T, K>(Expression<Func<T, K>> keyExpression)
+        {
+            object res;
+            if (CompiledKeys.TryGetValue(typeof(T), out res))
+                return (Func<T, K>)res;
+            else
+            {
+                res = keyExpression.Compile();
+                CompiledKeys[typeof(T)] = res;
+                return (Func<T, K>)res;
+            }
+            
+        }
+        protected static PropertyInfo GetKeyProperty<T, K>(Expression<Func<T, K>> keyExpression, Type m)
+        {
+            PropertyInfo res;
+            if (KeyProperties.TryGetValue(m, out res))
+                return res;
+            else
+            {
+                res = m.GetTypeInfo().GetProperty(ExpressionHelper.GetExpressionText(keyExpression));
+                KeyProperties[m] = res;
+                return res;
+            }
+
+        }
+        protected static IEnumerable<PropertyInfo> GetProperties(Type m)
+        {
+            IEnumerable<PropertyInfo> res;
+            if (AllProperties.TryGetValue(m, out res))
+                return res;
+            else
+            {
+                res = m.GetTypeInfo().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                            .Where(l => !typeof(IEnumerable).IsAssignableFrom(l.PropertyType) || typeof(IConvertible).IsAssignableFrom(l.PropertyType));
+                AllProperties[m] = res;
+                return res;
+            }
+
+        }
         private static bool changed(IEnumerable<PropertyInfo> props, object oldItem, object newItem)
         {
             foreach(var prop in props)
@@ -32,7 +85,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             if (keyExpression == null) throw new ArgumentNullException(nameof(keyExpression));
             var res = new ChangeSet<T, K>();
             res.KeyExpression = keyExpression;
-            var keyFunc = keyExpression.Compile();
+            var keyFunc = GetCopiledKey(keyExpression);
             if(oldValues == null)
             {
                 res.Inserted = newValues.ToList();
@@ -49,17 +102,17 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     IEnumerable<PropertyInfo> props = null;
                     if (verifyPropertyChanges)
                     {
-                        props = typeof(T).GetTypeInfo().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                            .Where(m => !typeof(IEnumerable).IsAssignableFrom(m.PropertyType) || typeof(IConvertible).IsAssignableFrom(m.PropertyType));
+                        props = GetProperties(typeof(T));
                     }
                     foreach (var item in newValues)
                     {
                         var key = keyFunc(item);
                         if (key != null && dict.ContainsKey(key))
                         {
-                            if(!verifyPropertyChanges || changed(props, dict[key], item))
+                            var other = dict[key];
+                            if (!verifyPropertyChanges || changed(props, other, item))
                             res.Changed.Add(item);
-                            res.ChangedOldValues.Add(dict[key]);
+                            res.ChangedOldValues.Add(other);
                             dict.Remove(key);
                         }
                         else res.Inserted.Add(item);
@@ -70,6 +123,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             return res;
              
         }
+        public Action UpdateKeys { get; protected set; }
+        public abstract  Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx, Expression<Func<M, bool>> accessFilter = null, bool saveChanges = false, bool retrieveChanged = true)
+            where M : class, new();
     }
     public class ChangeSet<T,K>: ChangeSet
     {
@@ -81,20 +137,19 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public ICollection<K> Deleted { get; set; }
 
         
-
-        public async Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true)
-            where M: class, new()
+        
+        public override async Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true) 
         {
 
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (table == null) throw new ArgumentNullException(nameof(table));
             var keyPropName = ExpressionHelper.GetExpressionText(KeyExpression);
-            var keyProperty = typeof(M).GetTypeInfo().GetProperty(keyPropName);
-            var keyFunc = KeyExpression.Compile();
+            var keyProperty = GetKeyProperty(KeyExpression, typeof(M));
+            var keyFunc = GetCopiledKey(KeyExpression);
             bool aChange=false;
             IEnumerable<K> changedIds = null;
             Expression<Func<M, bool>> changedFilter = null;
-            var copier = new ObjectCopier<T, M>(keyPropName);
+            var copier = GetCopier<T, M>();
             if (accessFilter != null && Deleted != null && Deleted.Count > 0)
             {
                 var deletedIds = Deleted;
@@ -168,25 +223,30 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         aChange = true;
                         var item = new M();
                         copier.Copy(oItem, item);
-                        keyProperty.SetValue(item, keyFunc(oItem));
+                        
                         table.Attach(item);
                     }
                 }
             }
+            UpdateKeys = () =>
+             {
+                 if (res.Count > 0)
+                 {
+                     int i = 0;
+                     var keyOProperty = typeof(T).GetTypeInfo().GetProperty(keyPropName);
+                     foreach (var oItem in Inserted)
+                     {
+                         var item = res[i];
+                         keyOProperty.SetValue(oItem, keyProperty.GetValue(item));
+                         i++;
+                     }
+                 }
+                 UpdateKeys = null;
+             };
             if (aChange && saveChanges)
             {
                 await ctx.SaveChangesAsync();
-                if(res.Count > 0)
-                {
-                    int i = 0;
-                    var keyOProperty = typeof(T).GetTypeInfo().GetProperty(keyPropName);
-                    foreach (var oItem in Inserted)
-                    {
-                        var item = res[i];
-                        keyOProperty.SetValue(oItem, keyProperty.GetValue(item));
-                        i++;
-                    }
-                }
+                UpdateKeys();
             }
             return res;
         }

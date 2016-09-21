@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MvcControlsToolkit.Core.TagHelpers;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -9,5 +10,8 @@ namespace MvcControlsToolkit.Core.Extensions
     {
         internal static MvcControlsToolkitOptions Instance = null;
         public Type CustomMessagesResourceType { get; set;}
+
+        public ITagHelpersProvider DefaultProvider { get; set; }
+
     }
 }

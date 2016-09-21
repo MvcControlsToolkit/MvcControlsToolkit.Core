@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using MvcControlsToolkit.Core.ModelBinding.DerivedClasses;
 
 namespace MvcControlsToolkit.Core.Views
 {
@@ -52,13 +53,23 @@ namespace MvcControlsToolkit.Core.Views
             prefix = combinePrefixes(ExpressionHelper.GetExpressionText(expression), prefix);
             return Scope<I>(h, prefix, pres);
         }
-
+        
         public static ScopeInfos<T> CurrentScope<T>(this IHtmlHelper h)
         {
             var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
             if (scope != null) return scope.Infos<T>();
             else return null;
         }
-
+        public static ScopeInfos<T, O> CurrentScope<T, O>(this IHtmlHelper h)
+            where O : class
+        {
+            var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
+            if (scope != null)
+            {
+                return scope.TemplateInfos<T, O>();
+                
+            }
+            else return null;
+        }
     }
 }

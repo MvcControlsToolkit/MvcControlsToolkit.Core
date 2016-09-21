@@ -148,5 +148,14 @@ namespace MvcControlsToolkit.Core.Business {
                 return ResourceManager.GetString("RangeStandardError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Entity {0 has a multi-propertiy principal key, and multi-property principal keys are not supported .
+        /// </summary>
+        public static string UnsupportedMultipleKeys {
+            get {
+                return ResourceManager.GetString("UnsupportedMultipleKeys", resourceCulture);
+            }
+        }
     }
 }

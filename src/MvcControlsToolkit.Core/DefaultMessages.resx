@@ -147,7 +147,25 @@
   <data name="EmailAddressAttribute" xml:space="preserve">
     <value>{0} is not a valid e-mail</value>
   </data>
+  <data name="InconsistentTemplateFunc" xml:space="preserve">
+    <value>When template is a funtion template type must be either InLine or Function</value>
+  </data>
+  <data name="InconsistentTemplateName" xml:space="preserve">
+    <value>When template is a string template type must be either Partial or ViewComponent</value>
+  </data>
+  <data name="NoRowKey" xml:space="preserve">
+    <value>Row key was not specified, and can't be inferred by name convention</value>
+  </data>
+  <data name="NotASubclass" xml:space="preserve">
+    <value>{0} is not a subclass of {1}</value>
+  </data>
+  <data name="SubclassNotRegistered" xml:space="preserve">
+    <value>Type {0} must be decorated with the RunTimeTypeAttribute</value>
+  </data>
   <data name="UrlAttribute" xml:space="preserve">
     <value>{0} is not a valid web address</value>
+  </data>
+  <data name="WrongDecimalArrayAsString" xml:space="preserve">
+    <value>{0} must contain decimal separated by spaces</value>
   </data>
 </root>

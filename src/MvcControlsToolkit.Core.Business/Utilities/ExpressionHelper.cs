@@ -149,7 +149,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             {
                 func =lambda.Compile();
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 var parameters = parentExpression.Parameters.ToArray();
                 throw new InvalidOperationException(

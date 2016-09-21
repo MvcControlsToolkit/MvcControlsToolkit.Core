@@ -147,4 +147,7 @@
   <data name="RangeStandardError" xml:space="preserve">
     <value>{0} is not in the required range</value>
   </data>
+  <data name="UnsupportedMultipleKeys" xml:space="preserve">
+    <value>Entity {0 has a multi-propertiy principal key, and multi-property principal keys are not supported </value>
+  </data>
 </root>
