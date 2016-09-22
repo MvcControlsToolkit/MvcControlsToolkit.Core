@@ -35,7 +35,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             var rc = context.GetFatherReductionContext();
-            
+            output.TagName = string.Empty;
             if (rc.CurrentToken == TagTokens.Column)
             {
 

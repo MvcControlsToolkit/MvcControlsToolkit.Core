@@ -20,6 +20,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             if (output.Content.IsModified) res = output.Content.GetContent();
             else res = (await output.GetChildContentAsync()).GetContent();
             rc.Results.Add(new ReductionResult(TagTokens.Content, 0, new KeyValuePair<string, IHtmlContent>(ZoneName,new HtmlString(res))));
+            output.TagName = string.Empty;
         }
     }
 }
