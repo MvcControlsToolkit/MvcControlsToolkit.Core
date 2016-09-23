@@ -55,12 +55,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
         {
             bool canHaveNames = ViewContext.GenerateNames();
             bool correctNames = ViewContext.ViewData[RenderingScope.Field] as RenderingScope != null;
-            if (!correctNames)
-            {
-                copyAttributes(output);
-                return;
-            }
-            else if (!canHaveNames)
+            var prov = ViewContext.TagHelperProvider();
+            prov?.InputProcess?.Invoke(context, output, this);
+            if (!canHaveNames)
             {
                 if (!string.IsNullOrWhiteSpace(Name))
                 {
@@ -72,6 +69,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     output.Attributes.Add("id", Id);
                 }
                 else output.Attributes.Add("Id", string.Empty);
+            }
+            else if (!correctNames)
+            {
+                copyAttributes(output);
+                //return;
             }
             else
             {
@@ -93,8 +95,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     output.Attributes.Add("id", Id);
                 }
             }
-            var prov=ViewContext.TagHelperProvider();
-            prov?.InputProcess?.Invoke(context, output, this);
+            
             
         }
     }

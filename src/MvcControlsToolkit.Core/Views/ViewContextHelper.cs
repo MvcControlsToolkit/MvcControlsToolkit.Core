@@ -28,11 +28,15 @@ namespace MvcControlsToolkit.Core.Views
         public static string GetFullHtmlFieldName(this ViewDataDictionary viewData, string prefix)
         {
             var pres=prefix;
-            if (viewData[RenderingScope.Field] != null)
+            if (!string.IsNullOrEmpty(pres) && !char.IsUpper(pres[0]) && viewData[RenderingScope.Field] != null)
             {
                 var index = pres.IndexOf('.');
                 if (index < 0) return viewData.TemplateInfo.GetFullHtmlFieldName(string.Empty);
-                else return viewData.TemplateInfo.GetFullHtmlFieldName(pres.Substring(index + 1));
+                else
+                {
+                    
+                    return viewData.TemplateInfo.GetFullHtmlFieldName(pres.Substring(index + 1));
+                }
             }
             else return viewData.TemplateInfo.GetFullHtmlFieldName(pres);
         }

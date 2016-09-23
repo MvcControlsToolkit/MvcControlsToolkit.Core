@@ -39,7 +39,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 throw new ArgumentException(string.Format(DefaultMessages.NotASubclass, SubClassType.Name, For.Metadata.ModelType.Name), SubClassTypeName);
 
             if (For.Model != null && !SubClassType.GetTypeInfo().IsAssignableFrom(For.Model.GetType()))
+            {
+                output.TagName = string.Empty;
+                output.Content.SetHtmlContent(string.Empty);
                 return;
+            }
 
             var prefix = DerivedClassesRegister.GetCodeFromType(SubClassType);
             prefix = combinePrefixes(For.Name, prefix);

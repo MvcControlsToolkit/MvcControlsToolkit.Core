@@ -35,9 +35,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
     {
         
         [HtmlAttributeName("items-url")]
-        public string ItemsUrl { get; private set; }
+        public string ItemsUrl { get;  set; }
         [HtmlAttributeName("url-token")]
-        public string UrlToken { get; private set; }
+        public string UrlToken { get;  set; }
         [HtmlAttributeName("dataset-name")]
         public string DataSetName { get; set; }
         [HtmlAttributeName("max-results")]

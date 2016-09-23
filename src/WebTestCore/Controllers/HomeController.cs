@@ -96,6 +96,39 @@ namespace WebTestCore.Controllers
             }
             return View(model);
         }
+        [HttpGet]
+        public IActionResult SubClassTest()
+        {
+            return View(new SubClassViewModel()
+            {
+                Test=new Person
+                {
+                    Name="Francesco",
+                    Surname="Abbruzzese",
+                    
+                },
+                Test1 = new Customer
+                {
+                    Name = "John",
+                    Surname = "Smith",
+                    RegisterNumber = "12345678"
+                },
+                Test2 = new Employee
+                {
+                    Name = "Peter",
+                    Surname = "Black",
+                    Matr = "pg34"
+                }
+            });
+        }
+        [HttpPost]
+        public IActionResult SubClassTest(SubClassViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+            }
+            return View(model);
+        }
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";

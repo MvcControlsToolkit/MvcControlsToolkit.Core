@@ -36,6 +36,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         {
             var rc = context.GetFatherReductionContext();
             output.TagName = string.Empty;
+            output.Content.SetHtmlContent(string.Empty);
             if (rc.CurrentToken == TagTokens.Column)
             {
 

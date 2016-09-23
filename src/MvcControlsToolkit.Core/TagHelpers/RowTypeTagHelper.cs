@@ -17,7 +17,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
         [HtmlAttributeName("key")]
-        public ModelExpression KeyName { get; private set; }
+        public ModelExpression KeyName { get;  set; }
         [HtmlAttributeName("mvc-controller")]
         public Type ControllerType { get; set; }
         [HtmlAttributeName("title")]
@@ -67,6 +67,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             var res = collector.Process(this, rc.Defaults);
             if (res != null) rc.Results.Add(new ReductionResult(TagTokens.Row, 0, res));
             output.TagName = string.Empty;
+            output.Content.SetHtmlContent(string.Empty);
         }
     }
 }

@@ -64,7 +64,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 var prov = ViewContext.HttpContext.RequestServices.GetRequiredService<IModelMetadataProvider>();
                 var dict = new ViewDataDictionary(prov, ViewContext.ViewData.ModelState);
                 dict.Model = pres;
-                dict.TemplateInfo.HtmlFieldPrefix = ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(prefix);
+                dict.TemplateInfo.HtmlFieldPrefix = ViewContext.ViewData.GetFullHtmlFieldName(prefix);
                 dict[TagHelpersProviderContext.Field] = ViewContext.ViewData[TagHelpersProviderContext.Field];
                 var newContext = new ViewContext(ViewContext, ViewContext.View, dict, ViewContext.TempData, sw, 
                     new HtmlHelperOptions {

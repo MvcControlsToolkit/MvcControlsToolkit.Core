@@ -1,0 +1,165 @@
+﻿@model SubClassViewModel
+@using MvcControlsToolkit.Core.Views
+@using WebTestCore.ViewModels
+@using MvcControlsToolkit.Core.Transformations
+
+@{
+    ViewData["Title"] = "Subclass Test";
+}
+
+<h2>@ViewData["Title"].</h2>
+<form asp-controller="Home" asp-action="SubClassTest" method="post" class="form-horizontal" role="form">
+    <hr />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <h3>First Person</h3>
+    <div class="form-group">
+        <label asp-for="Test.Name" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test.Name" class="form-control" />
+            <span asp-validation-for="Test.Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Test.Surname" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test.Surname" class="form-control" />
+            <span asp-validation-for="Test.Surname" class="text-danger"></span>
+        </div>
+    </div>
+    
+    <subclass asp-for="Test" subclass-type="@typeof(Customer)">
+        @{
+            {
+                var Model = Html.CurrentScope<Customer>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                
+            }
+         }
+    </subclass>
+    <subclass asp-for="Test" subclass-type="@typeof(Employee)">
+        @{
+            {
+                var Model = Html.CurrentScope<Employee>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.Matr" class="form-control" />
+                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+            }
+        }
+    </subclass>
+
+    <h3>Second Person</h3>
+    <div class="form-group">
+        <label asp-for="Test1.Name" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test1.Name" class="form-control" />
+            <span asp-validation-for="Test1.Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Test1.Surname" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test1.Surname" class="form-control" />
+            <span asp-validation-for="Test1.Surname" class="text-danger"></span>
+        </div>
+    </div>
+    
+    <subclass asp-for="Test1" subclass-type="@typeof(Customer)">
+        @{
+            {
+                var Model = Html.CurrentScope<Customer>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+            }
+        }
+    </subclass>
+    <subclass asp-for="Test1" subclass-type="@typeof(Employee)">
+        @{
+            {
+                var Model = Html.CurrentScope<Employee>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.Matr" class="form-control" />
+                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+            }
+        }
+    </subclass>
+    <h3>Third Person</h3>
+    <div class="form-group">
+        <label asp-for="Test2.Name" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test2.Name" class="form-control" />
+            <span asp-validation-for="Test2.Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Test2.Surname" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Test2.Surname" class="form-control" />
+            <span asp-validation-for="Test2.Surname" class="text-danger"></span>
+        </div>
+    </div>
+
+    <subclass asp-for="Test" subclass-type="@typeof(Customer)">
+        @{
+            {
+                var Model = Html.CurrentScope<Customer>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+            }
+        }
+    </subclass>
+    <subclass asp-for="Test2" subclass-type="@typeof(Employee)">
+        @{
+            {
+                var Model = Html.CurrentScope<Employee>()?.Model;
+                <div class="form-group">
+                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.Matr" class="form-control" />
+                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                    </div>
+                </div>
+
+
+            }
+        }
+    </subclass>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <button type="submit" class="btn btn-default">Register</button>
+        </div>
+    </div>
+    @Model.Test.Name
+</form>

@@ -54,6 +54,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             context.SetChildrenReductionContext(nc);
             await output.GetChildContentAsync();
             output.TagName = string.Empty;
+            output.Content.SetHtmlContent(string.Empty);
             var collector = new ColumnCollector(nc);
             rc.Results.Add(new ReductionResult(TagTokens.Column, Remove ? -1 : 1, collector.Process(this, rc.Defaults)));
         }
