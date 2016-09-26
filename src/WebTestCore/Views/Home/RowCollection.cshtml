@@ -10,25 +10,38 @@
 
 <rows-collection asp-for="@Model" rows-cache-key="cache-test" tag-for-defaults="detail-form" all-properties="true">
     <column asp-for="FieldF" remove="true"/>
+    <column asp-for="FieldC">
+        <asp-template type="Edit" use-view-component="TestTemplate" />
+    </column>
+    <column asp-for="FieldD"  >
+        <asp-template type="Edit" use-partial="TestTemplate" /> 
+    </column>
     <column asp-for="FieldE">
-        <template type="Edit" >
+        <asp-template type="Edit" >
             @{ 
                 {
                     var h = Html;
-                    var Model = h.CurrentScope<string>().Model;
+                    var Model = h.CurrentScope<string>()?.Model;
                     <input asp-for="@Model"/>
                 }
             }
-        </template>
+        </asp-template>
     </column>
 </rows-collection>
 @{
     var rows = RowType.GetRowsCollection("cache-test");
     var col = rows != null ? rows[0].Columns.Where(m => m.For.Name == "FieldE").FirstOrDefault() : null;
+    var col1 = rows != null ? rows[0].Columns.Where(m => m.For.Name == "FieldD").FirstOrDefault() : null;
+    var col2 = rows != null ? rows[0].Columns.Where(m => m.For.Name == "FieldC").FirstOrDefault() : null;
 
-    ContextualizedHelpers helpers = new ContextualizedHelpers(ViewContext,Html, accessor, null, null);
+    ContextualizedHelpers helpers = new ContextualizedHelpers(ViewContext,Html, accessor, Component, null);
 }
 @if (col != null)
 {
-    @await col.InvokeEdit("prova", helpers)
+    @await col.InvokeEdit("test", helpers)
+    <br />
+    @await col1.InvokeEdit("test partial", helpers)
+    <br />
+    @await col2.InvokeEdit("test component", helpers)
+
 }

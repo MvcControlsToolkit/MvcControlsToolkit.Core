@@ -12,7 +12,7 @@ using MvcControlsToolkit.Core.Templates;
 namespace MvcControlsToolkit.Core.TagHelpers
 {
     public enum TemplateShowType {Display=0, Edit=1 }
-    [HtmlTargetElement("template", Attributes = TypeName, TagStructure = TagStructure.NormalOrSelfClosing)]
+    [HtmlTargetElement("asp-template", Attributes = TypeName, TagStructure = TagStructure.NormalOrSelfClosing)]
     public class TemplateTagHelper: TagHelper
     {
         private const string TypeName = "type";
@@ -37,6 +37,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             var rc = context.GetFatherReductionContext();
             output.TagName = string.Empty;
             output.Content.SetHtmlContent(string.Empty);
+
             if (rc.RowParsingDisabled) return;
             
             if (rc.CurrentToken == TagTokens.Column)
