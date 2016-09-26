@@ -39,7 +39,7 @@ namespace WebTestCore.Controllers
                 population.Add(curr);
                 ctx.TestModels.Add(curr);
             }
-            Expression<Func<Models.TestModel, bool>> test = m => (new int[] { 10, 3 }).Contains(m.Id);  
+            Expression<Func<Models.TestModel, bool>> test = m => (new int[] { 10, 3 }).Contains(m.Id);
             await ctx.SaveChangesAsync();
             //reset context...we are going into a different web page
             foreach (var item in population) ctx.Entry(item).State = EntityState.Detached;
@@ -66,13 +66,32 @@ namespace WebTestCore.Controllers
 
             });
             //
-            //compute change set
-            var changes = ChangeSet.Create(original, changed, m => m.Id);
-            //
-            //pass changes to db
+            var repo =
+                DefaultCRUDRepository.Create(ctx, ctx.TestModels, null, m => m.FieldA != "FieldA_0");
+            DefaultCRUDRepository<ApplicationDbContext, Models.TestModel>
+                .DeclareProjection(m => new Models.TestViewModel
+                {
+                    FieldBC = m.FieldB + " " + m.FieldC
+                });
+            
             try
             {
-               var  res = await changes.UpdateDatabase(ctx.TestModels, ctx, saveChanges: true);
+                
+                
+                repo.Add(true, new Models.TestViewModel
+                {
+                    FieldA = "FieldA_ANew2",
+                    FieldB = "FieldB_Bew2",
+                    FieldD = "FieldD_New2",
+                    FieldE = "FieldE_New",
+                    FieldF = "FieldF_New"
+
+                });
+                repo.UpdateList(false, original, changed);
+                changed[6].FieldA = "a change";
+                repo.Update(false, changed[6]);
+                repo.Delete(changed[8].Id);
+                await repo.SaveChanges();
             }
             catch(Exception ex)
             {
@@ -80,9 +99,13 @@ namespace WebTestCore.Controllers
             }
             //
             //Retrieve changed data and perform custo processing on ViewModel Projection
-            var finalData = await ctx.TestModels.Project().To<Models.TestViewModel>(m => new Models.TestViewModel {
-                FieldBC=m.FieldB+" "+m.FieldC
-            }).ToArrayAsync();
+            var finalData = await repo.GetPage<Models.TestViewModel>(null, 
+                x => x.OrderBy(m => m.FieldA),
+                1, 5);
+            var finalData1 = await repo.GetPage<Models.TestViewModel>(null,
+                x => x.OrderBy(m => m.FieldA),
+                2, 5);
+            var detail = await repo.GetById<Models.TestViewModel, int>(original[0].Id);
             return View();
         }
     }

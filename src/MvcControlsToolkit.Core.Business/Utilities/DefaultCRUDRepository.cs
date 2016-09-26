@@ -48,7 +48,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         }
     }
-    public class DefaultCRUDRepository<D,T>: ICRUDRepository
+    public class DefaultCRUDRepository
+    {
+        public static DefaultCRUDRepository<D, T> Create<D, T>(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter = null, Expression<Func<T, bool>> selectFilter = null)
+            where T : class, new()
+            where D : DbContext
+        {
+            return new DefaultCRUDRepository<D, T>(dbContext, table, accessFilter, selectFilter);
+        }
+    }
+    public class DefaultCRUDRepository<D,T>: DefaultCRUDRepository, ICRUDRepository
         where T: class, new()
         where D: DbContext
          
@@ -63,7 +72,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public Expression<Func<T, bool>> SelectFilter { get; private set; }
         private string keyName;
         private ChangeSet lastChangeSet;
-        protected DefaultCRUDRepository(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter=null, Expression<Func<T, bool>> selectFilter = null)
+        internal DefaultCRUDRepository(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter=null, Expression<Func<T, bool>> selectFilter = null)
         {
             Context = dbContext;
             Table = table;
@@ -76,12 +85,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Projections[typeof(K)] = proj;
         }
 
-        public static DefaultCRUDRepository<DI, TI>  Create<DI, TI>(DI dbContext, DbSet<TI> table, Expression<Func<TI, bool>> accessFilter = null, Expression<Func<TI, bool>> selectFilter = null)
-            where TI : class, new()
-            where DI : DbContext
-        {
-            return new DefaultCRUDRepository<DI, TI>(dbContext, table, accessFilter, selectFilter);
-        }
+        
 
         private IEnumerable<string> GetKeyNames() 
         {
@@ -125,9 +129,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 return res(o, full, x, y);
             }
             var prop = GetKeyProperty<VM>();
-            res = typeof(CRUDRepositoryHelper).GetTypeInfo().GetMethod("ChangeSetBuilder")
-                .MakeGenericMethod(new Type[] { typeof(VM), prop.PropertyType })
-                .Invoke(null, new object[] { prop })
+            var method = typeof(CRUDRepositoryHelper).GetTypeInfo().GetMethod("ChangeSetBuilder", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                .MakeGenericMethod(new Type[] { typeof(VM), prop.PropertyType });
+            res = method.Invoke(null, new object[] { prop })
                 as Func<Operation, bool, object, object, ChangeSet>;
             CreatorCache[pair] = res;
             return res(o, full, x, y);
@@ -135,40 +139,45 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public virtual void Update<T1>(bool full , params T1[] viewModel)
         {
             var cs = GetChangeset<T1>(Operation.U, full, viewModel, null);
-            cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            var res=cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            res.Wait();
         }
 
         public virtual void UpdateList<T1>(bool full, IEnumerable < T1> oldValues, IEnumerable<T1> newValues)
         {
-            var cs = GetChangeset<T1>(Operation.U, full, oldValues, newValues);
-            cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            var cs = GetChangeset<T1>(Operation.L, full, oldValues, newValues);
+            var res=cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            res.Wait();
             lastChangeSet = cs;
         }
 
         public virtual void Add<T1>(bool full, params T1[] viewModel)
         {
             var cs = GetChangeset<T1>(Operation.I, full, viewModel, null);
-            cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            var res =cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
+            res.Wait();
             lastChangeSet = cs;
         }
 
         public virtual void Delete<U>(params U[] key)
         {
             var cs = GetChangeset<T>(Operation.D, false, key, null);
-            cs.UpdateDatabase(Table, Context, AccessFilter, false, false);
+            var res = cs.UpdateDatabase(Table, Context, AccessFilter, false, false);
+            res.Wait();
         }
 
         public async Task SaveChanges()
         {
-            UpdateKeys();
             await Context.SaveChangesAsync();
+            UpdateKeys();
+            
         }
 
         public void UpdateKeys()
         {
             if(lastChangeSet != null && lastChangeSet.UpdateKeys != null)
             {
-                UpdateKeys();
+                lastChangeSet.UpdateKeys();
                 
             }
         }
@@ -219,7 +228,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             res.TotalPages = res.TotalCount / itemsPerPage;
             if (res.TotalCount % itemsPerPage > 0) res.TotalPages++;
             var sorted = sorting(proj);
-            if (page > 0) proj = sorted.Skip(page).Take(itemsPerPage);
+            if (page > 0) proj = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
             else proj = sorted.Take(itemsPerPage);
             res.Data = await proj.ToArrayAsync();
             return res;
