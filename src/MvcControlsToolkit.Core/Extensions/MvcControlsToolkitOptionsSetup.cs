@@ -11,9 +11,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using MvcControlsToolkit.Core.ModelBinding;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-
-
-
+using MvcControlsToolkit.Core.Filters;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -57,8 +55,8 @@ namespace MvcControlsToolkit.Core.Extensions
                 options.ModelBinderProviders.Remove(res);
                 options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res));
             }
-            
-          
+            options.Filters.Add(typeof(CacheViewPartsFilter));
+
         }
     }
 

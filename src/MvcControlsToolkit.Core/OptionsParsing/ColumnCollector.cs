@@ -19,7 +19,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             {
                 if (item.Token == TagTokens.DTemplate) DisplayTemplate = item.Result as Template<Column>;
                 else if (item.Token == TagTokens.ETemplate) EditTemplate = item.Result as Template<Column>;
-                else if(item.Token == TagTokens.ETemplate) ColumnConnection = item.Result as ColumnConnectionInfos;
+                else if(item.Token == TagTokens.ExternalKeyConnection) ColumnConnection = item.Result as ColumnConnectionInfos;
             }
             if (DisplayTemplate == null) DisplayTemplate = ctx.Defaults.DColumnTemplate;
             if (EditTemplate == null) EditTemplate = ctx.Defaults.EColumnTemplate;

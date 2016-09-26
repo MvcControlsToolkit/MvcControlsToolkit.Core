@@ -13,11 +13,14 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         public int CurrentSubtoken { get; private set; }
         public DefaultTemplates Defaults { get; private set; }
 
-        public ReductionContext(int token, int subToken, DefaultTemplates defaults)
+        public bool RowParsingDisabled { get; private set; }
+        public ReductionContext(int token, int subToken, DefaultTemplates defaults, bool rowParsingDisabled=false)
         {
             Results = new List<ReductionResult>();
-            CurrentToken = CurrentToken;
+            CurrentToken = token;
+            CurrentSubtoken = subToken;
             Defaults = defaults;
+            RowParsingDisabled = rowParsingDisabled;
         }
     }
 }

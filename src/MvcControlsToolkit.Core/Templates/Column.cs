@@ -108,29 +108,29 @@ namespace MvcControlsToolkit.Core.Templates
             }
             prepared = true;
         } 
-        public IHtmlContent InvokeEdit(object o, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
-            return EditTemplate.Invoke(new ModelExpression(
+            return await EditTemplate.Invoke(new ModelExpression(
                 combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)), 
                 this, helpers);
         }
-        public IHtmlContent InvokeDisplay(object o, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeDisplay(object o, ContextualizedHelpers helpers)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
-            return DisplayTemplate.Invoke(
+            return await DisplayTemplate.Invoke(
                 new ModelExpression(combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)), 
                 this, helpers);
         }
-        public IHtmlContent InvokeEdit(ContextualizedHelpers helpers, ModelExpression expression)
+        public async Task<IHtmlContent> InvokeEdit(ContextualizedHelpers helpers, ModelExpression expression)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
-            return EditTemplate.Invoke(expression, this, helpers);
+            return await EditTemplate.Invoke(expression, this, helpers);
         }
-        public IHtmlContent InvokeDisplay(ContextualizedHelpers helpers, ModelExpression expression)
+        public async Task<IHtmlContent> InvokeDisplay(ContextualizedHelpers helpers, ModelExpression expression)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
-            return DisplayTemplate.Invoke(expression, this, helpers);
+            return await DisplayTemplate.Invoke(expression, this, helpers);
         }
     }
 }

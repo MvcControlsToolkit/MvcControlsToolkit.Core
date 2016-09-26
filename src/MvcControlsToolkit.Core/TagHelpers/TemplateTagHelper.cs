@@ -37,6 +37,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
             var rc = context.GetFatherReductionContext();
             output.TagName = string.Empty;
             output.Content.SetHtmlContent(string.Empty);
+            if (rc.RowParsingDisabled) return;
+            
             if (rc.CurrentToken == TagTokens.Column)
             {
 
@@ -47,17 +49,18 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     new Template<Column>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,  
                         Partial??ViewComponent) 
                     :
-                    new Template<Column>(TemplateFunction != null ? TagHelpers.TemplateType.InLine : TagHelpers.TemplateType.Function,
+                    new Template<Column>(TemplateFunction == null ? TagHelpers.TemplateType.InLine : TagHelpers.TemplateType.Function,
                         TemplateFunction != null ? TemplateFunction
                         :
                         (x, y, z) =>
                         {
 
-                            if (output.Content.IsModified) return new HtmlString(output.Content.GetContent().ToString());
-                            var t = output.GetChildContentAsync();
+                            
+                            var t = output.GetChildContentAsync(false);
                             t.Wait();
                             return new HtmlString(t.Result.GetContent().ToString());
-                        }
+                        },
+                        ViewContext
                     )));
             }
             else
@@ -69,17 +72,18 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     new Template<RowType>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,
                         Partial ?? ViewComponent)
                     :
-                    new Template<RowType>(TemplateFunction != null ? TagHelpers.TemplateType.InLine : TagHelpers.TemplateType.Function,
+                    new Template<RowType>(TemplateFunction == null ? TagHelpers.TemplateType.InLine : TagHelpers.TemplateType.Function,
                         TemplateFunction != null ? TemplateFunction
                         :
                         (x, y, z) =>
                             {
 
-                                if (output.Content.IsModified) return new HtmlString(output.Content.GetContent().ToString());
-                                var t = output.GetChildContentAsync();
+                                
+                                var t = output.GetChildContentAsync(false);
                                 t.Wait();
                                 return new HtmlString(t.Result.GetContent().ToString());
-                            }
+                            },
+                        ViewContext
                     )));
             }
         }

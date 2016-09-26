@@ -15,6 +15,8 @@ using System.Globalization;
 using System.Security.Principal;
 using Microsoft.Extensions.Localization;
 using System.Collections;
+using Microsoft.AspNetCore.Http;
+using MvcControlsToolkit.Core.Filters;
 
 namespace MvcControlsToolkit.Core.Templates
 {
@@ -22,6 +24,7 @@ namespace MvcControlsToolkit.Core.Templates
     {
         protected static IDictionary<Type, string> conventionKeys = new ConcurrentDictionary<Type, string>();
         protected static IDictionary<Type, IEnumerable<Column>> allColumns = new ConcurrentDictionary<Type, IEnumerable<Column>>();
+        protected static ConcurrentDictionary<string , IList<RowType>> rowsCollections = new ConcurrentDictionary<string, IList<RowType>>();
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
         public IEnumerable<Column> Columns { get; private set; }
@@ -59,6 +62,21 @@ namespace MvcControlsToolkit.Core.Templates
         protected Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens;
         protected IList<Column> hiddens;
         protected Column keyColumn;
+        public static IList<RowType>  GetRowsCollection(string key)
+        {
+            IList<RowType> rowList;
+            if (rowsCollections.TryGetValue(key, out rowList)) return rowList;
+            else return null;
+        }
+        public static void CacheRowGroup(string key, IList<RowType> rowsCollection, HttpContext ctx)
+        {
+            Action action = () =>
+            {
+                rowsCollections.TryAdd(key, rowsCollection);
+            };
+            CacheViewPartsFilter.AddAction(ctx, action);
+        }
+        
         protected static string GetConventionKey(Type t)
         {
             string res;
@@ -99,21 +117,32 @@ namespace MvcControlsToolkit.Core.Templates
                 col.Prepare();
                 col.NaturalOrder = i;
                 i++;
-                if (col.Hidden.Value) hiddens.Add(col);
+                if (col.For.Metadata.PropertyName == KeyName)
+                {
+                    keyFound = true;
+                    keyColumn = col;
+                    if (!keyColumn.Hidden.HasValue) keyColumn.Hidden = true;
+                }
+                if (col.Hidden.Value)
+                {
+                    if (hiddens == null) hiddens = new List<Column>();
+                    hiddens.Add(col);
+                }
+                    
                 else
                 {
                     newCols.Add(col);
                     if (col.InputCssClass == null) col.InputCssClass = this.InputCssClass;
                     if (col.CheckboxCssClass == null) col.CheckboxCssClass = this.CheckboxCssClass;
                 }
-                if (col.For.Metadata.PropertyName == KeyName) keyFound = true;
+                
 
             }
             if (!keyFound)
             {
                 var prop = For.ModelExplorer.GetExplorerForProperty(KeyName);
                 keyColumn = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null, isDetail: IsDetail);
-                keyColumn.Hidden = true;
+                if(!keyColumn.Hidden.HasValue) keyColumn.Hidden = true;
                 hiddens.Add(keyColumn);
             }
             Columns = newCols.OrderByDescending(m => m.Order).ThenBy(m => m.NaturalOrder);
@@ -169,6 +198,7 @@ namespace MvcControlsToolkit.Core.Templates
             Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
         {
             IsDetail = isDetail;
+            For = expression;
             this.renderHiddens = renderHiddens;
             if (inheritFrom == null || inheritFrom.Columns == null) throw new ArgumentNullException(nameof(inheritFrom));
             if (KeyName == null)
@@ -188,6 +218,7 @@ namespace MvcControlsToolkit.Core.Templates
             Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
         {
             IsDetail = isDetail;
+            For = expression;
             this.renderHiddens = renderHiddens;
             if (KeyName == null)
             {
@@ -201,19 +232,20 @@ namespace MvcControlsToolkit.Core.Templates
 
                 InheritColumns(standardColumns, addColumns, removeColumns);
             }
+            PrepareColumns();
         }
-        public IHtmlContent InvokeEdit(object o, string prefix, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeEdit(object o, string prefix, ContextualizedHelpers helpers)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
-                return EditTemplate.Invoke(
+                return await EditTemplate.Invoke(
                     new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
                     this, helpers);
             
         }
-        public IHtmlContent InvokeDisplay(object o, string prefix, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeDisplay(object o, string prefix, ContextualizedHelpers helpers)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
-                return DisplayTemplate.Invoke(
+                return await DisplayTemplate.Invoke(
                 new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
                 this, helpers);
         }
@@ -231,30 +263,30 @@ namespace MvcControlsToolkit.Core.Templates
             return (string.IsNullOrEmpty(p1) ? p2 : (string.IsNullOrEmpty(p2) ? p1 : p1 + "." + p2));
 
         }
-        public IHtmlContent RenderColumn(object rowModel, Column col, bool editMode, ContextualizedHelpers ctx)
+        public async Task<IHtmlContent> RenderColumn(object rowModel, Column col, bool editMode, ContextualizedHelpers ctx)
         {
             if (col.ColumnConnection == null)
             {
                 var model = col.For.Metadata.PropertyGetter(rowModel);
-                if (editMode) return col.InvokeEdit(model, ctx);
-                else return col.InvokeDisplay(model, ctx);
+                if (editMode) return await col.InvokeEdit(model, ctx);
+                else return await col.InvokeDisplay(model, ctx);
             }
             else if (col.ColumnConnection is ColumnConnectionInfosStatic && editMode)
             {
                 var model = col.For.Metadata.PropertyGetter(rowModel);
-                return col.InvokeEdit(model, ctx);
+                return await col.InvokeEdit(model, ctx);
             }
             else if (!editMode)
             {
                 var displayFor = col.ColumnConnection.DisplayProperty;
                 var model = displayFor.Metadata.PropertyGetter(rowModel);
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, displayFor.Name), displayFor.ModelExplorer.GetExplorerForModel(model));
-                return col.InvokeDisplay(ctx, expression);
+                return await col.InvokeDisplay(ctx, expression);
             }
             else
             {
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, string.Empty), For.ModelExplorer.GetExplorerForModel(rowModel));
-                return col.InvokeEdit(ctx, expression);
+                return await col.InvokeEdit(ctx, expression);
             }
         }
 
@@ -303,57 +335,60 @@ namespace MvcControlsToolkit.Core.Templates
         private bool editComputed, displayComputed;
         public void ComputeWidths(bool edit, int gridMax)
         {
-            if((editComputed && edit) || (displayComputed && ! edit)) return;
-            var cols = Columns
-                .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
-            var levels = cols.Max(m => m.Widths != null ? m.Widths.Length : 1);
-            if (levels == 0) levels = 1;
-            var allWidths = new int[cols.Count()][];
-            
-            var i = 0;
-            foreach(var col in cols)
+            lock (this)
             {
-                if (edit)
-                    allWidths[i] = col.EditDetailWidths = new int[levels];
-                else
-                    allWidths[i] = col.DisplayDetailWidths = new int[levels];
-                i++;
-            }
-            for(int l=0; l<levels; l++)
-            {
-                int lineStart = 0;
-                while (lineStart < allWidths.Length)
-                {
-                    int lineEnd = lineStart;
-                    int intSum = 0;
-                    var toAdd = cols[lineEnd].GetWidth(l);
-                    var convToAdd = toAdd * gridMax;
-                    var intToAddB = decimal.Floor(convToAdd);
-                    int intToAdd = Convert.ToInt32(convToAdd- intToAddB>= 0.5m ? decimal.Ceiling(convToAdd): intToAddB);
-                    while (intSum+ intToAdd <= gridMax && lineEnd< allWidths.Length)
-                    {
-                        intSum += allWidths[lineEnd][l] = intToAdd;
-                        lineEnd++;
-                        toAdd = cols[lineEnd].GetWidth(l);
-                        convToAdd = toAdd * gridMax;
-                        intToAddB = decimal.Floor(convToAdd);
-                        intToAdd = Convert.ToInt32(convToAdd - intToAddB >= 0.5m ? decimal.Ceiling(convToAdd) : intToAddB);
-                    }
-                    int globalInc = (gridMax - intSum) / (lineEnd - lineStart);
-                    int minsToInc = (gridMax - intSum) % (lineEnd - lineStart);
-                    if (globalInc > 0)
-                    {
-                        for (int j = lineStart; j < lineEnd; j++)
-                            allWidths[j][l] += globalInc;
-                    }
-                    if (minsToInc > 0)
-                    {
-                        Array.Sort(allWidths, lineStart, lineEnd - lineStart, new WidthsComparer(l));
-                        for (int j = lineStart; j < lineStart+ minsToInc; j++)
-                            allWidths[j][l]++;
+                if ((editComputed && edit) || (displayComputed && !edit)) return;
+                var cols = Columns
+                    .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
+                var levels = cols.Max(m => m.Widths != null ? m.Widths.Length : 1);
+                if (levels == 0) levels = 1;
+                var allWidths = new int[cols.Count()][];
 
+                var i = 0;
+                foreach (var col in cols)
+                {
+                    if (edit)
+                        allWidths[i] = col.EditDetailWidths = new int[levels];
+                    else
+                        allWidths[i] = col.DisplayDetailWidths = new int[levels];
+                    i++;
+                }
+                for (int l = 0; l < levels; l++)
+                {
+                    int lineStart = 0;
+                    while (lineStart < allWidths.Length)
+                    {
+                        int lineEnd = lineStart;
+                        int intSum = 0;
+                        var toAdd = cols[lineEnd].GetWidth(l);
+                        var convToAdd = toAdd * gridMax;
+                        var intToAddB = decimal.Floor(convToAdd);
+                        int intToAdd = Convert.ToInt32(convToAdd - intToAddB >= 0.5m ? decimal.Ceiling(convToAdd) : intToAddB);
+                        while (intSum + intToAdd <= gridMax && lineEnd < allWidths.Length)
+                        {
+                            intSum += allWidths[lineEnd][l] = intToAdd;
+                            lineEnd++;
+                            toAdd = cols[lineEnd].GetWidth(l);
+                            convToAdd = toAdd * gridMax;
+                            intToAddB = decimal.Floor(convToAdd);
+                            intToAdd = Convert.ToInt32(convToAdd - intToAddB >= 0.5m ? decimal.Ceiling(convToAdd) : intToAddB);
+                        }
+                        int globalInc = (gridMax - intSum) / (lineEnd - lineStart);
+                        int minsToInc = (gridMax - intSum) % (lineEnd - lineStart);
+                        if (globalInc > 0)
+                        {
+                            for (int j = lineStart; j < lineEnd; j++)
+                                allWidths[j][l] += globalInc;
+                        }
+                        if (minsToInc > 0)
+                        {
+                            Array.Sort(allWidths, lineStart, lineEnd - lineStart, new WidthsComparer(l));
+                            for (int j = lineStart; j < lineStart + minsToInc; j++)
+                                allWidths[j][l]++;
+
+                        }
+                        lineStart = lineEnd;
                     }
-                    lineStart = lineEnd;
                 }
             }
 

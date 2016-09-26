@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using MvcControlsToolkit.Core.Options;
 using MvcControlsToolkit.Core.TagHelpers.Providers;
 using MvcControlsToolkit.Core.TagHelpers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using MvcControlsToolkit.Core.ViewFeatures;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -34,6 +37,7 @@ namespace MvcControlsToolkit.Core.Extensions
                 .AddPreferencesProvider(new CookieProvider("Browser", "_browser_basic_capabilities") {Priority=0 })
                 .AddPreferencesProvider(new RequestJsonProvider("Browser", "_browser_basic_capabilities"){Priority=1});
             services.AddTransient<IConfigureOptions<MvcControlsToolkitOptions>, MvcControlsToolkitSetup>();
+            services.AddScoped<IViewBufferScope, SafeMemoryPoolViewBufferScope>();
             if (setupAction != null)
                 services.Configure(setupAction);
             return services;

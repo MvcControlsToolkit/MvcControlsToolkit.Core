@@ -129,7 +129,8 @@ namespace WebTestCore.Controllers
             }
             return View(model);
         }
-        public IActionResult About()
+        
+        public IActionResult RowCollection()
         {
             ViewData["Message"] = "Your application description page.";
 

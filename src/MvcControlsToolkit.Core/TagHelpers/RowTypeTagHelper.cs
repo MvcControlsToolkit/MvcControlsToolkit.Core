@@ -43,6 +43,12 @@ namespace MvcControlsToolkit.Core.TagHelpers
             if (For == null) throw new ArgumentNullException(ForAttributeName);
             if (KeyName == null && !FromRow.HasValue) throw new ArgumentNullException(KeyAttributeName);
             var rc = context.GetFatherReductionContext();
+            if(rc.RowParsingDisabled)
+            {
+                output.TagName = string.Empty;
+                output.Content.SetHtmlContent(string.Empty);
+                return;
+            }
             var nc = new ReductionContext(TagTokens.Row, 0, rc.Defaults);
             context.SetChildrenReductionContext(nc);
             await output.GetChildContentAsync();

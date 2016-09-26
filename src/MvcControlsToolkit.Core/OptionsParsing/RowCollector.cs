@@ -35,7 +35,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         {
             var rowTag = tag as RowTypeTagHelper;
             var expression = rowTag.For;
-            if (this is RowContainerCollector)
+            if (this is RowContainerCollector && expression.Metadata.IsEnumerableType)
             {
                 var explorer = expression.ModelExplorer.GetExplorerForExpression(expression.Metadata.ElementMetadata, null);
                 expression = new ModelExpression(string.Empty, explorer);

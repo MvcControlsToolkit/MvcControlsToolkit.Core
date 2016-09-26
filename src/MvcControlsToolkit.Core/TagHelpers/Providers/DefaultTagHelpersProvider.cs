@@ -42,7 +42,7 @@ namespace MvcControlsToolkit.Core.TagHelpers.Providers
 
         public DefaultTemplates GetDefaultTemplates(string tagName)
         {
-            return null;
+            return new DefaultTemplates(true, null, null, null, null, null, null, null);
         }
 
         public Func<TagHelperContext, TagHelperOutput, TagHelper, TagProcessorOptions, ContextualizedHelpers, Task> GetTagProcessor(string tagName)

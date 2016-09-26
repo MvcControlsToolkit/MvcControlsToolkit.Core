@@ -86,5 +86,13 @@ namespace MvcControlsToolkit.Core.Templates
                 return _user;
             }
         }
+
+        public HttpContext CurrentHttpContext
+        {
+            get
+            {
+                return _httpContext;
+            }
+        }
     }
 }
