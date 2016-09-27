@@ -22,6 +22,8 @@
                 {
                     
                     var Model = Html.Item<string>();
+                    var rc = Html.Options<Column>();
+                    @rc.For.Name
                     <input asp-for="@Model"/>
                 }
             }

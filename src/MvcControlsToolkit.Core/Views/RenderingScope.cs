@@ -18,6 +18,7 @@ namespace MvcControlsToolkit.Core.Views
         internal string FatherPrefix {get{ return fatherPrefix; } }
         internal static string Field { get { return field; } }
         internal object RawModel { get { return model; } }
+        internal object Options { get { return options; } }
         private string subtractPrefix(string total, string part)
         {
             if (total == null || string.IsNullOrEmpty(part)) return total;

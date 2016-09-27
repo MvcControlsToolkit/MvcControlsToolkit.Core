@@ -69,8 +69,20 @@ namespace MvcControlsToolkit.Core.Views
         public static object Item(this IHtmlHelper h)
         {
             var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
-            if (scope != null && scope.RawModel != null) return scope.RawModel;
-            else return null;
+            return scope?.RawModel;
+        }
+        public static object Options(this IHtmlHelper h)
+        {
+            var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
+            return scope?.Options;
+            
+        }
+        public static O Options<O>(this IHtmlHelper h)
+            where O : class
+        {
+            var scope = h.ViewData[RenderingScope.Field] as RenderingScope;
+            return scope?.Options as O;
+
         }
         public static ScopeInfos<T, O> CurrentScope<T, O>(this IHtmlHelper h)
             where O : class

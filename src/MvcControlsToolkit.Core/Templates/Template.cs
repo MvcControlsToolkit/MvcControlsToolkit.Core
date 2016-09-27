@@ -95,20 +95,17 @@ namespace MvcControlsToolkit.Core.Templates
                 using (await Lock.LockAsync())
                 {
                     originalContext.HttpContext = helpers.CurrentHttpContext;
-                    if (string.IsNullOrWhiteSpace(expression.Name))
-                        return FTemplate(model.Model, options, helpers);
-                    else
+                    
+                    var origVd = originalContext.ViewData;
+                    using (new RenderingScope(
+                        expression.Model, 
+                        overridePrefix != null? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(expression.Name), 
+                        origVd, 
+                        options))
                     {
-                        var origVd = originalContext.ViewData;
-                        using (new RenderingScope(
-                            expression.Model, 
-                            overridePrefix != null? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(expression.Name), 
-                            origVd, 
-                            options))
-                        {
-                            return FTemplate(model.Model, default(O), helpers);
-                        }
+                        return FTemplate(model.Model, default(O), helpers);
                     }
+                    
                 }   
             }
             else
