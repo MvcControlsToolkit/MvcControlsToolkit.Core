@@ -20,8 +20,8 @@
         <asp-template type="Edit" >
             @{ 
                 {
-                    var h = Html;
-                    var Model = h.CurrentScope<string>()?.Model;
+                    
+                    var Model = Html.Item<string>();
                     <input asp-for="@Model"/>
                 }
             }

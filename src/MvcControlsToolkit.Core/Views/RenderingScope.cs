@@ -17,6 +17,7 @@ namespace MvcControlsToolkit.Core.Views
         const string field = "__current_prefix__";
         internal string FatherPrefix {get{ return fatherPrefix; } }
         internal static string Field { get { return field; } }
+        internal object RawModel { get { return model; } }
         private string subtractPrefix(string total, string part)
         {
             if (total == null || string.IsNullOrEmpty(part)) return total;
@@ -72,7 +73,7 @@ namespace MvcControlsToolkit.Core.Views
         {
             return new ScopeInfos<T>
             {
-                Model = (T)this.model,
+                Model = this.model == null ? default(T) : (T)this.model,
                 Prefix = this.Prefix,
                 FatherPrefix = this.fatherPrefix
             };
@@ -82,7 +83,7 @@ namespace MvcControlsToolkit.Core.Views
         {
             return new ScopeInfos<T, O>
             {
-                Model = (T)this.model,
+                Model = this.model == null ? default(T):(T)this.model,
                 Prefix = this.Prefix,
                 FatherPrefix = this.fatherPrefix,
                 Options = this.options as O
@@ -113,7 +114,7 @@ namespace MvcControlsToolkit.Core.Views
         {
             return new ScopeInfos<T, O>
             {
-                Model = (T)this.model,
+                Model = this.Model,
                 Prefix = this.Prefix,
                 FatherPrefix = this.fatherPrefix,
                 Options = this.options as O
