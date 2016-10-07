@@ -17,13 +17,26 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         protected static readonly ConcurrentDictionary<Type, PropertyInfo> KeyProperties = new ConcurrentDictionary<Type,PropertyInfo>();
         protected static readonly ConcurrentDictionary<Type, IEnumerable<PropertyInfo>> AllProperties = new ConcurrentDictionary<Type, IEnumerable<PropertyInfo>>();
         protected static readonly ConcurrentDictionary<Type, object> CompiledKeys = new ConcurrentDictionary<Type, object>();
-        protected static ObjectCopier<T, M>  GetCopier<T, M>()
+        protected static ObjectCopier<T, M>  GetCopier<T, M>(Type sourceType=null, Type destinationType=null)
         {
             object res = null;
-            var pair = new KeyValuePair<Type, Type>(typeof(T), typeof(M));
+            var pair = new KeyValuePair<Type, Type>(sourceType??typeof(T), destinationType??typeof(M));
             if (CopierCache.TryGetValue(pair, out res))
                 return (ObjectCopier<T, M>)res;
-            else return (ObjectCopier<T, M>)(CopierCache[pair] = new ObjectCopier<T, M>(compile: true));
+            else return (ObjectCopier<T, M>)(CopierCache[pair] = new ObjectCopier<T, M>(null, true, sourceType, destinationType));
+        }
+        Type lastCopierSource=null;
+        Type lastCopierDestination = null;
+        object lastCopier = null;
+        protected ObjectCopier<T, M> GetCopierOptimized<T, M>(Type sourceType = null, Type destinationType = null)
+        {
+            sourceType = sourceType ?? typeof(T);
+            destinationType = destinationType ?? typeof(M);
+            if (sourceType == lastCopierSource && destinationType == lastCopierDestination)
+                return lastCopier as ObjectCopier<T, M>;
+            var res = GetCopier<T, M>(sourceType, destinationType);
+            lastCopier = res;
+            return res;
         }
         protected static Func<T, K> GetCopiledKey<T, K>(Expression<Func<T, K>> keyExpression)
         {
@@ -65,6 +78,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             }
 
         }
+        private Type LastType;
+        private IEnumerable<PropertyInfo> LastProperties;
+        protected IEnumerable<PropertyInfo> GetPropertiesOptimized(Type m)
+        {
+            if (m == LastType) return LastProperties;
+            LastType = m;
+            return LastProperties = GetProperties(m);
+        }
         private static bool changed(IEnumerable<PropertyInfo> props, object oldItem, object newItem)
         {
             foreach(var prop in props)
@@ -100,17 +121,15 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if(newValues != null)
                 {
                     IEnumerable<PropertyInfo> props = null;
-                    if (verifyPropertyChanges)
-                    {
-                        props = GetProperties(typeof(T));
-                    }
+                    
                     foreach (var item in newValues)
                     {
                         var key = keyFunc(item);
                         if (key != null && dict.ContainsKey(key))
                         {
+                            
                             var other = dict[key];
-                            if (!verifyPropertyChanges || changed(props, other, item))
+                            if (!verifyPropertyChanges || changed(props = res.GetPropertiesOptimized(item == null ? typeof(T) : item.GetType()), other, item))
                             res.Changed.Add(item);
                             res.ChangedOldValues.Add(other);
                             dict.Remove(key);
@@ -149,7 +168,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             bool aChange=false;
             IEnumerable<K> changedIds = null;
             Expression<Func<M, bool>> changedFilter = null;
-            var copier = GetCopier<T, M>();
+            ObjectCopier<T,M> copier = null; ;
             if (accessFilter != null && Deleted != null && Deleted.Count > 0)
             {
                 var deletedIds = Deleted;
@@ -186,6 +205,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 
                 foreach (var oItem in Inserted)
                 {
+                    copier = GetCopierOptimized<T, M>(oItem.GetType());
                     aChange = true;
                     var item = new M();
                     copier.Copy(oItem, item);
@@ -209,9 +229,11 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     var dict = Changed.ToDictionary(keyFunc);
                     foreach(var item in toModify)
                     {
+                        
                         aChange = true;
                         var key = keyProperty.GetValue(item);
                         var oItem = dict[(K)key];
+                        copier = GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
                     }
                 }
@@ -222,6 +244,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     {
                         aChange = true;
                         var item = new M();
+                        copier = GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
                         
                         table.Attach(item);
