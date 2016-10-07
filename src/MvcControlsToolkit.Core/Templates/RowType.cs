@@ -104,6 +104,7 @@ namespace MvcControlsToolkit.Core.Templates
             }
             return res;
         }
+        private IEnumerable<Column> visibleAndHiddenColumns = null;
         protected virtual void PrepareColumns()
         {
             if (columnsPrepared) return;
@@ -143,8 +144,10 @@ namespace MvcControlsToolkit.Core.Templates
                 var prop = For.ModelExplorer.GetExplorerForProperty(KeyName);
                 keyColumn = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null, isDetail: IsDetail);
                 if(!keyColumn.Hidden.HasValue) keyColumn.Hidden = true;
+                if (hiddens == null) hiddens = new List<Column>();
                 hiddens.Add(keyColumn);
             }
+            visibleAndHiddenColumns = Columns;
             Columns = newCols.OrderByDescending(m => m.Order).ThenBy(m => m.NaturalOrder);
             
             columnsPrepared = true;
@@ -189,9 +192,13 @@ namespace MvcControlsToolkit.Core.Templates
             Columns = standardColumns;
             PrepareColumns();
         }
+        internal void RowInit(IList<RowType> x)
+        {
+            if (init != null) init(x);
+        }
+        private Action<IList<RowType>> init=null;
         public RowType(ModelExpression expression,
-            RowType inheritFrom,
-            string keyName = null,
+            uint inheritIndex,
             bool isDetail = false,
             IEnumerable<Column> addColumns = null,
             IEnumerable<ModelExpression> removeColumns = null,
@@ -199,15 +206,26 @@ namespace MvcControlsToolkit.Core.Templates
         {
             IsDetail = isDetail;
             For = expression;
-            this.renderHiddens = renderHiddens;
-            if (inheritFrom == null || inheritFrom.Columns == null) throw new ArgumentNullException(nameof(inheritFrom));
-            if (KeyName == null)
-            {
-                KeyName = GetConventionKey(For.Metadata.ModelType);
-                if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
-            }
-            InheritColumns(inheritFrom.Columns, addColumns, removeColumns);
-            PrepareColumns();
+            init = x =>
+             {
+                 RowType inheritFrom = null;
+                 string keyName = null;
+                 if(x != null && inheritIndex <x.Count && inheritIndex>=0)
+                 {
+                     inheritFrom = x[(int)inheritIndex];
+                     keyName=inheritFrom.KeyName;
+                 }
+                 
+                 this.renderHiddens = renderHiddens;
+                 if (inheritFrom == null || inheritFrom.Columns == null) throw new ArgumentNullException(nameof(inheritFrom));
+                 if (KeyName == null)
+                 {
+                     KeyName = GetConventionKey(For.Metadata.ModelType);
+                     if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
+                 }
+                 InheritColumns(inheritFrom.visibleAndHiddenColumns, addColumns, removeColumns);
+                 PrepareColumns();
+             };
         }
         public RowType(ModelExpression expression,
             string keyName = null,

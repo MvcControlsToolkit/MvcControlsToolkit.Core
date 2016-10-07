@@ -114,11 +114,11 @@ namespace MvcControlsToolkit.Core.Templates
                 var origVd = helpers.Context.ViewData;
                 using (new RenderingScope(
                     expression.Model, 
-                    origVd, 
-                    origVd.GetFullHtmlFieldName(expression.Name), 
+                    origVd,
+                    expression.Name, 
                     options))
                 {
-                    return FTemplate(model.Model, default(O), helpers);
+                    return FTemplate(model.Model, options, helpers);
                 }
             }
         }

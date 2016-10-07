@@ -60,7 +60,12 @@ namespace MvcControlsToolkit.Core.Views
                 fatherPrefix = combinePrefixes(subtractPrefix(oldPrefix, prev.originalPrefix), expression);
                 originalPrefix = prev.originalPrefix;
             }
-            else originalPrefix = oldPrefix;
+            else
+            {
+                originalPrefix = oldPrefix;
+                fatherPrefix = expression;
+
+            }
             viewData[Field] = this;
         }
         public void Dispose()

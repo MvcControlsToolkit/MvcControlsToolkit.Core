@@ -15,7 +15,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         public Template<RowType> EditTemplate { get; private set; }
         public IList<Column> Columns { get; private set; }
         public IList<ModelExpression> RemoveColumns { get; private set; }
-        RowType inherit;
+        uint? inherit;
         private void addColumn(Column col)
         {
             if (Columns == null) Columns = new List<Column>();
@@ -44,7 +44,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             RowType result = null;
             if (inherit != null)
             {
-                result= new RowType(expression, inherit, keyName ?? inherit.KeyName,
+                result= new RowType(expression, inherit.Value, 
                     defaults.IsDetail,
                     Columns,
                     RemoveColumns,
@@ -63,10 +63,13 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.LocalizationType = rowTag.LocalizationType;
             result.InputCssClass = rowTag.InputCssClass;
             result.CheckboxCssClass = rowTag.CheckboxCssClass;
+            result.DisplayTemplate = DisplayTemplate;
+            result.EditTemplate = EditTemplate;
+            
             return result;
         }
 
-        public RowCollector(ReductionContext ctx, RowType inherit)
+        public RowCollector(ReductionContext ctx, uint? inherit)
         {
             this.inherit = inherit;
             foreach (var item in ctx.Results)

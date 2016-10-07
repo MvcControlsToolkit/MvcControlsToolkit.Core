@@ -69,7 +69,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     }
                 }
             }
-            var collector = new RowCollector(nc, inherit);
+            var collector = new RowCollector(nc, FromRow);
             var res = collector.Process(this, rc.Defaults);
             if (res != null) rc.Results.Add(new ReductionResult(TagTokens.Row, 0, res));
             output.TagName = string.Empty;

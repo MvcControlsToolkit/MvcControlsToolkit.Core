@@ -9,14 +9,14 @@ namespace MvcControlsToolkit.Core.Templates
     public class LayoutTemplateOptions
     {
         public IList<RowType> Rows { get; private set;}
-        public IList<KeyValuePair<string, IHtmlContent>> Toolbars  { get; private set; }
+        public IList<KeyValuePair<string, string>> Toolbars  { get; private set; }
         public IEnumerable<Template<LayoutTemplateOptions>> SubTemplates { get; private set; }
         public Template<LayoutTemplateOptions> LayoutTemplate { get; private set; }
         public IHtmlContent MainContent { get; private set; }
 
         public LayoutTemplateOptions (
             IList<RowType> rows,
-            IList<KeyValuePair<string, IHtmlContent>> toolbars,
+            IList<KeyValuePair<string, string>> toolbars,
             Template<LayoutTemplateOptions> layoutTemplate,
             IEnumerable<Template<LayoutTemplateOptions>> subTemplates,
             IHtmlContent mainContent)

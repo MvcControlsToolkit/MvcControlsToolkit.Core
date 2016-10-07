@@ -48,7 +48,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             context.SetChildrenReductionContext(nc);
             await output.GetChildContentAsync();
             var collector = new RowContainerCollector(nc);
-            var res = collector.Process(this, defaultTemplates) as Tuple<IList<RowType>, IList<KeyValuePair<string, IHtmlContent>>>;
+            var res = collector.Process(this, defaultTemplates) as Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>;
             if (rows == null)
             {
                 rows = res.Item1;

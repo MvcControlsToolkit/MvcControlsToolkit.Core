@@ -7,7 +7,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 {
     public enum TemplateType {Partial,  ViewComponent, InLine, Function};
     [Flags]
-    public enum Functionalities { Edit=1, EditDetail=2, ShowDetail=4, Delete=8, Append=16, AddBefore=32, AddAfter=64, AppendDetail = 128, PrependDetail = 256, AddBeforeDetail = 512, AddAfterDetail = 1024, Prepend = 2048, AnyEdit=3, AnyAdd = 4080, FullInLine = 25, FullDetail=138, HasRowButtons=1647, EditOnlyHasRowButtons = 1646 };
+    public enum Functionalities {ReadOnly=0, Edit=1, EditDetail=2, ShowDetail=4, Delete=8, Append=16, AddBefore=32, AddAfter=64, AppendDetail = 128, PrependDetail = 256, AddBeforeDetail = 512, AddAfterDetail = 1024, Prepend = 2048, AnyEdit=3, AnyAdd = 4080, FullInLine = 25, FullDetail=138, HasRowButtons=1647, EditOnlyHasRowButtons = 1646 };
     
     public enum StandardButtons {Edit, EditDetail, ShowDetail, Delete, Append, AddBefore, AddAfter, AppendDetail, PrependDetail, AddBeforeDetail, AddAfterDetail, Prepend, Save, Undo, Redo, UndoAll, RedoAll, NextPage, LastPage, PreviousPage, FirstPage, FilterWindow, GroupWindow, SortWindow, SortAscending, SortDescending}
 }

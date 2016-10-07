@@ -77,17 +77,21 @@ namespace MvcControlsToolkit.Core.Templates
             var metaData = For.Metadata;
             if (!Hidden.HasValue) Hidden = For.Metadata.HideSurroundingHtml;
             if (!Order.HasValue) Order = For.Metadata.Order;
-            if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = metaData.GetDisplayName();
-            if (string.IsNullOrEmpty(Description)) Description = metaData.Description?? ColumnTitle;
-            if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = metaData.Placeholder;
+            
             if (ColumnConnection!= null)
             {
                 var infos = ColumnConnection.DisplayProperty.Metadata;
+                if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = infos.GetDisplayName();
+                if (string.IsNullOrEmpty(Description)) Description = infos.Description ?? ColumnTitle;
+                if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = infos.Placeholder;
                 if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = infos.DisplayFormatString;
                 if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = infos.NullDisplayText;
             }
             else
             {
+                if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = metaData.GetDisplayName();
+                if (string.IsNullOrEmpty(Description)) Description = metaData.Description ?? ColumnTitle;
+                if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = metaData.Placeholder;
                 if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = metaData.DisplayFormatString;
                 if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = metaData.NullDisplayText;
             }
@@ -96,7 +100,7 @@ namespace MvcControlsToolkit.Core.Templates
             {
                 var pair = new KeyValuePair<Type, string>(Row.For.Metadata.ModelType, For.Metadata.PropertyName);
                 ColumnLayoutAttribute res;
-                if (Layouts.TryGetValue(pair, out res)){
+                if (!Layouts.TryGetValue(pair, out res)){
                     res = Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
                         .GetCustomAttribute(typeof(ColumnLayoutAttribute), false) as ColumnLayoutAttribute;
                     Layouts[pair] = res;

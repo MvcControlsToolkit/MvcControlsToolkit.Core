@@ -7,7 +7,7 @@ namespace WebTestCore.Models
 {
     public class TestViewModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         
         public string FieldA { get; set; }
         

@@ -7,7 +7,7 @@
         "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
         "Microsoft.AspNetCore.Mvc.Localization": "1.0.0",
         "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
-        "MvcControlsToolkit.Core.Business": "1.1.0.1",
+        "MvcControlsToolkit.Core.Business": "1.1.0.3",
         "MvcControlsToolkit.Core.Options": "1.0.0"
     },
     "description": "Core feature of Mvc Controls Toolkit.",
@@ -50,5 +50,5 @@
 
     },
     "title": "Mvc Controls Toolkit core code",
-    "version": "1.1.0.47"
+    "version": "1.1.0.70"
 }

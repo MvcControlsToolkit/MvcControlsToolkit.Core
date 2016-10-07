@@ -105,7 +105,7 @@ namespace WebTestCore.Controllers
             var finalData1 = await repo.GetPage<Models.TestViewModel>(null,
                 x => x.OrderBy(m => m.FieldA),
                 2, 5);
-            var detail = await repo.GetById<Models.TestViewModel, int>(original[0].Id);
+            var detail = await repo.GetById<Models.TestViewModel, int>(original[0].Id.Value);
             return View();
         }
     }

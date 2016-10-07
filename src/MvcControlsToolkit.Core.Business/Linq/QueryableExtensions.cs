@@ -47,7 +47,9 @@ namespace MvcControlsToolkit.Core.Linq
         }
         public IQueryable<TDest> To<TDest>(Expression<Func<TSource, TDest>> custom)
         {
-            var queryExpression =  BuildExpression<TDest>(custom);
+            var queryExpression = custom == null || custom.Body.NodeType == ExpressionType.MemberInit ?
+                BuildExpression<TDest>(custom) :
+                custom;
 
             return _source.Select(queryExpression);
         }
@@ -157,14 +159,22 @@ namespace MvcControlsToolkit.Core.Linq
         }
         private static MemberAssignment BuildBinding(Expression parameterExpression, PropertyBinding binding)
         {
-            
+            var dType = (binding.Destination as PropertyInfo).PropertyType;
             if (binding.SourceNested == null)
             {
-                return Expression.Bind(binding.Destination, Expression.Property(parameterExpression, binding.Source));
+                
+                return Expression.Bind(binding.Destination, 
+                    dType == binding.Source.PropertyType ? 
+                    Expression.Property(parameterExpression, binding.Source) as Expression:
+                    Expression.Convert(Expression.Property(parameterExpression, binding.Source), dType) as Expression);
             }
             else
             {
-                return Expression.Bind(binding.Destination, Expression.Property(Expression.Property(parameterExpression, binding.Source), binding.SourceNested));
+                return Expression.Bind(binding.Destination,
+                    dType == binding.SourceNested.PropertyType ?
+                    Expression.Property(Expression.Property(parameterExpression, binding.Source), binding.SourceNested) as Expression :
+                    Expression.Convert(Expression.Property(Expression.Property(parameterExpression, binding.Source), binding.SourceNested), dType) as Expression
+                    );
             }
             
         }

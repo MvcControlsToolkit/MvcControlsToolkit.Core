@@ -15,12 +15,13 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string ZoneName { get; set; }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            output.TagName = string.Empty;
+            output.Content.SetHtmlContent(string.Empty);
             var rc = context.GetFatherReductionContext();
             string res = null;
-            if (output.Content.IsModified) res = output.Content.GetContent();
-            else res = (await output.GetChildContentAsync()).GetContent();
-            rc.Results.Add(new ReductionResult(TagTokens.Content, 0, new KeyValuePair<string, IHtmlContent>(ZoneName,new HtmlString(res))));
-            output.TagName = string.Empty;
+            res = (await output.GetChildContentAsync()).GetContent();
+            rc.Results.Add(new ReductionResult(TagTokens.Content, 0, new KeyValuePair<string, string>(ZoneName,res)));
+            
         }
     }
 }
