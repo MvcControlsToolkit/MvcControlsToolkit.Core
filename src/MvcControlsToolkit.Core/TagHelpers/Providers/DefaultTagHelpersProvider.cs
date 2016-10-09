@@ -55,7 +55,7 @@ namespace MvcControlsToolkit.Core.TagHelpers.Providers
             
         }
 
-        public IHtmlContent RenderButton(StandardButtons buttonType, string arguments, string cssClass, ContextualizedHelpers helpers, IStringLocalizer localizer, bool visibleText=false, bool isSubmit=false)
+        public IHtmlContent RenderButton(StandardButtons buttonType, string arguments, string cssClass, ContextualizedHelpers helpers, IStringLocalizer localizer, bool visibleText=false, bool isSubmit=false, string controlType=null)
         {
             return new HtmlString(string.Empty);
         }
