@@ -36,6 +36,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string Description { get; set; }
         [HtmlAttributeName("widths")]
         public decimal[] Widths { get; set; }
+        [HtmlAttributeName("detail-widths")]
+        public decimal[] DetailWidths { get; set; }
         [HtmlAttributeName("priority")]
         public int? ColumnOrder { get; set; }
         [HtmlAttributeName("colspan")]

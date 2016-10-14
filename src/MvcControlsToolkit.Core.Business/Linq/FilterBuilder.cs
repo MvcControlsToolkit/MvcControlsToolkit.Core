@@ -18,6 +18,7 @@ using System.Text;
 using System.Reflection;
 using MvcControlsToolkit.Core.Business;
 using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace MvcControlsToolkit.Core.Linq
 {
@@ -244,11 +245,27 @@ namespace MvcControlsToolkit.Core.Linq
                         fieldSelector);
                     break;
                 default:
-                    clause = createInverseCall(
-                        value.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] {typeof(F) }),
-                        null,
-                        value,
-                        fieldSelector);
+                    if (value != null && value is IEnumerable && !(value is string))
+                    {
+                        var nVal = new List<F>();
+                        foreach(var x in value as IEnumerable)
+                        {
+                            nVal.Add((F)x);
+                        }
+                        clause = createInverseCall(
+                            value.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] { typeof(F) }),
+                            null,
+                            nVal,
+                            fieldSelector);
+                    }
+                    else
+                    {
+                        clause = createInverseCall(
+                            value.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] { typeof(F) }),
+                            null,
+                            value,
+                            fieldSelector);
+                    }
                     break;
             }
             return Add(toAdd, clause as Expression<Func<T, bool>>);

@@ -47,9 +47,7 @@ namespace MvcControlsToolkit.Core.Linq
         }
         public IQueryable<TDest> To<TDest>(Expression<Func<TSource, TDest>> custom)
         {
-            var queryExpression = custom == null || custom.Body.NodeType == ExpressionType.MemberInit ?
-                BuildExpression<TDest>(custom) :
-                custom;
+            var queryExpression = BuildExpression<TDest>(custom);
 
             return _source.Select(queryExpression);
         }
@@ -67,22 +65,32 @@ namespace MvcControlsToolkit.Core.Linq
 
             return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
         }
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo(Type t)
+        {
+            var key = GetCacheKey(t);
+
+            return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
+        }
 
         private static IEnumerable<PropertyBinding> BuildBindings<TDest>()
         {
-            var res = GetCachedPropertyInfo<TDest>();
+            return BuildBindings(typeof(TDest));
+        }
+        private static IEnumerable<PropertyBinding> BuildBindings(Type t)
+        {
+            var res = GetCachedPropertyInfo(t);
             if (res != null) return res;
             var sourceProperties = typeof(TSource).GetProperties();
-            var destinationProperties = typeof(TDest).GetProperties().Where(dest => dest.CanWrite);
+            var destinationProperties = t.GetProperties().Where(dest => dest.CanWrite);
             var parameterExpression = Expression.Parameter(typeof(TSource), "src");
 
             var bindings = destinationProperties
                                 .Select(destinationProperty => BuildBindingAssociation(destinationProperty, sourceProperties))
                                 .Where(binding => binding != null);
 
-            
 
-            var key = GetCacheKey<TDest>();
+
+            var key = GetCacheKey(t);
             try
             {
                 PropertyBindingCache.TryAdd(key, bindings);
@@ -90,34 +98,64 @@ namespace MvcControlsToolkit.Core.Linq
             catch { }
             return bindings;
         }
-
+        private static MemberInitExpression completeMemberInit<TDest>(
+            MemberInitExpression node, 
+            ParameterExpression parameterExpression)
+        {
+            var customAssignements = node.Bindings.Where(m => m.BindingType == MemberBindingType.Assignment).Select(m => m as MemberAssignment).ToList();
+            var assignedProperties = customAssignements.Select(m => m.Member).ToList();
+            var bindings = BuildBindings(node.NewExpression.Type)
+                    .Where(m => !assignedProperties.Contains(m.Destination))
+                   .Select(m => BuildBinding(parameterExpression, m)).Union(customAssignements);
+            return Expression.MemberInit(node.NewExpression, bindings);
+        }
+        private static MemberInitExpression createMemberInit<TDest>(ParameterExpression parameterExpression)
+        {
+            var bindings = BuildBindings<TDest>()
+                    .Select(m => BuildBinding(parameterExpression, m));
+            return Expression.MemberInit(Expression.New(typeof(TDest)), bindings);
+        }
+        private static Expression processTreeRec<TDest>(
+            Expression node,
+            ParameterExpression parameterExpression)
+        {
+            if (node.NodeType == ExpressionType.MemberInit)
+                return completeMemberInit<TDest>(node as MemberInitExpression, parameterExpression);
+            else if (node.NodeType == ExpressionType.Conditional)
+            {
+                var cond = node as ConditionalExpression;
+                return Expression.Condition(cond.Test,
+                    processTreeRec<TDest>(cond.IfTrue, parameterExpression),
+                    processTreeRec<TDest>(cond.IfFalse, parameterExpression));
+            }
+            else if (node.NodeType == ExpressionType.Convert)
+            {
+                var conv = node as UnaryExpression;
+                return Expression.Convert(processTreeRec<TDest>(conv.Operand, parameterExpression),
+                    conv.Type, conv.Method);
+            }
+            else if (node.NodeType == ExpressionType.ConvertChecked)
+            {
+                var conv = node as UnaryExpression;
+                return Expression.ConvertChecked(processTreeRec<TDest>(conv.Operand, parameterExpression),
+                    conv.Type, conv.Method);
+            }
+            else return node;
+        }
         private static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom)
         {
             ParameterExpression parameterExpression = custom == null ? Expression.Parameter(typeof(TSource), "src") : custom.Parameters.First();
-            List<MemberAssignment> customAssignements = null;
-            List<MemberInfo> assignedProperties = null;
-            if (custom != null && custom.Body.NodeType == ExpressionType.MemberInit)
+            Expression pres;
+            if (custom == null)
             {
-                customAssignements = (custom.Body as MemberInitExpression).Bindings.Where(m => m.BindingType == MemberBindingType.Assignment).Select(m => m as MemberAssignment).ToList();
-                assignedProperties = customAssignements.Select(m => m.Member).ToList();
-            }
-            IEnumerable<MemberAssignment> bindings = null;
-            if (assignedProperties == null || assignedProperties.Count == 0)
-            {
-                bindings = BuildBindings<TDest>()
-                    .Select(m => BuildBinding(parameterExpression, m));
+                pres = createMemberInit<TDest>(parameterExpression);
             }
             else
             {
-                bindings = BuildBindings<TDest>()
-                    .Where(m => !assignedProperties.Contains(m.Destination))
-                   .Select(m => BuildBinding(parameterExpression, m)).Union(customAssignements);
-
+                pres = processTreeRec<TDest>(custom.Body, parameterExpression);
             }
-            //var bindings1 = BuildBindings<TDest>()
-            //    .Select(m => BuildBinding(parameterExpression, m));
 
-            var expression = Expression.Lambda<Func<TSource, TDest>>(Expression.MemberInit(Expression.New(typeof(TDest)), bindings), parameterExpression);
+            var expression = Expression.Lambda<Func<TSource, TDest>>(pres, parameterExpression);
             if (custom == null) { 
                 var key = GetCacheKey<TDest>();
                 try
@@ -184,7 +222,11 @@ namespace MvcControlsToolkit.Core.Linq
         {
             return string.Concat(typeof(TSource).FullName, typeof(TDest).FullName);
         }
+        private static string GetCacheKey(Type t)
+        {
+            return string.Concat(typeof(TSource).FullName, t.FullName);
+        }
 
-        
+
     }    
 }

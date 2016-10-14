@@ -15,7 +15,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
     public class SimpleTypeModelBinderExt: IModelBinder
     {
         private static Type[] allNumbers=new Type[]{typeof(byte), typeof(sbyte), typeof(short), typeof(ushort),
-            typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double) };
+            typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) };
         private readonly TypeConverter _typeConverter;
 
         public SimpleTypeModelBinderExt(Type type)

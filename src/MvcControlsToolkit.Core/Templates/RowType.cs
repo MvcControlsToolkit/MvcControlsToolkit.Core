@@ -114,7 +114,6 @@ namespace MvcControlsToolkit.Core.Templates
             foreach (var col in Columns)
             {
                 col.Row = this;
-                col.IsDetail = IsDetail;
                 col.Prepare();
                 col.NaturalOrder = i;
                 i++;
@@ -142,7 +141,7 @@ namespace MvcControlsToolkit.Core.Templates
             if (!keyFound)
             {
                 var prop = For.ModelExplorer.GetExplorerForProperty(KeyName);
-                keyColumn = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null, isDetail: IsDetail);
+                keyColumn = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null);
                 if(!keyColumn.Hidden.HasValue) keyColumn.Hidden = true;
                 if (hiddens == null) hiddens = new List<Column>();
                 hiddens.Add(keyColumn);
@@ -155,14 +154,22 @@ namespace MvcControlsToolkit.Core.Templates
         protected virtual IEnumerable<Column> StandardColumns(bool isDetail)
         {
             IEnumerable<Column> res;
-            if (allColumns.TryGetValue(For.Metadata.ModelType, out res)) return res;
+            if (allColumns.TryGetValue(For.Metadata.ModelType, out res))
+            {
+                return res.Select(m => m.CopyBasic());
+            }
             var pres = new List<Column>();
+            var ti = For.Metadata.ModelType.GetTypeInfo();
             foreach (var prop in For.ModelExplorer.Properties)
             {
+                
                 if (prop.Metadata.IsComplexType
                     ||
+                    prop.Metadata.IsReadOnly
+                    ||
                     (!(prop.Metadata.ModelType == typeof(string)) && prop.Metadata.IsEnumerableType)) continue;
-                var col = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null, isDetail: isDetail);
+                if (ti.GetProperty(prop.Metadata.PropertyName) == null) continue;
+                var col = new Column(new ModelExpression(prop.Metadata.PropertyName, prop), null);
                 if (col.For.Metadata.PropertyName == KeyName) col.Hidden = true;
                 pres.Add(col);
             }
@@ -269,7 +276,7 @@ namespace MvcControlsToolkit.Core.Templates
         }
         public IHtmlContent RenderHiddens(ContextualizedHelpers ctx, object rowModel)
         {
-            if (renderHiddens != null) return new HtmlString(string.Empty);
+            if (renderHiddens == null) return new HtmlString(string.Empty);
             else return renderHiddens(hiddens, ctx, rowModel);
         }
         public IHtmlContent RenderKey(object rowModel)
@@ -358,7 +365,7 @@ namespace MvcControlsToolkit.Core.Templates
                 if ((editComputed && edit) || (displayComputed && !edit)) return;
                 var cols = Columns
                     .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
-                var levels = cols.Max(m => m.Widths != null ? m.Widths.Length : 1);
+                var levels = cols.Max(m => m.DetailWidths != null ? m.DetailWidths.Length : 1);
                 if (levels == 0) levels = 1;
                 var allWidths = new int[cols.Count()][];
 
@@ -378,21 +385,30 @@ namespace MvcControlsToolkit.Core.Templates
                     {
                         int lineEnd = lineStart;
                         int intSum = 0;
+                        decimal requirementsSum = 0;
                         var toAdd = cols[lineEnd].GetWidth(l);
-                        var convToAdd = toAdd * gridMax;
+                        requirementsSum += toAdd;
+                        var convToAdd = (toAdd * gridMax)/100;
+                        if (convToAdd > gridMax) convToAdd = gridMax;
                         var intToAddB = decimal.Floor(convToAdd);
                         int intToAdd = Convert.ToInt32(convToAdd - intToAddB >= 0.5m ? decimal.Ceiling(convToAdd) : intToAddB);
-                        while (intSum + intToAdd <= gridMax && lineEnd < allWidths.Length)
+                        intSum += allWidths[lineEnd][l] = intToAdd;
+                        while (lineEnd < allWidths.Length - 1 && requirementsSum+(toAdd = cols[lineEnd+1].GetWidth(l)) < 102 )
                         {
-                            intSum += allWidths[lineEnd][l] = intToAdd;
                             lineEnd++;
-                            toAdd = cols[lineEnd].GetWidth(l);
-                            convToAdd = toAdd * gridMax;
+                            
+                            requirementsSum += toAdd;
+                            convToAdd = (toAdd * gridMax)/100;
+                            if (convToAdd > gridMax) convToAdd = gridMax;
                             intToAddB = decimal.Floor(convToAdd);
                             intToAdd = Convert.ToInt32(convToAdd - intToAddB >= 0.5m ? decimal.Ceiling(convToAdd) : intToAddB);
+                            var diff = gridMax - intSum - intToAdd;
+                            if (diff < 0) intToAdd += diff;
+                             intSum += allWidths[lineEnd][l] = intToAdd;
                         }
-                        int globalInc = (gridMax - intSum) / (lineEnd - lineStart);
-                        int minsToInc = (gridMax - intSum) % (lineEnd - lineStart);
+                        
+                        int globalInc = (gridMax - intSum) / (lineEnd - lineStart+1);
+                        int minsToInc = (gridMax - intSum) % (lineEnd - lineStart+1);
                         if (globalInc > 0)
                         {
                             for (int j = lineStart; j < lineEnd; j++)
@@ -405,7 +421,8 @@ namespace MvcControlsToolkit.Core.Templates
                                 allWidths[j][l]++;
 
                         }
-                        lineStart = lineEnd;
+                       
+                        lineStart = lineEnd+1;
                     }
                 }
             }

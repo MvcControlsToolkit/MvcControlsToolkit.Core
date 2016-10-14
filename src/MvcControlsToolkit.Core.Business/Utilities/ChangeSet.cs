@@ -224,8 +224,17 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         changedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
                             .Get();
-                    
-                    var toModify = await table.Where(changedFilter).ToListAsync();
+                    var connections = Changed.SelectMany(m => GetCopierOptimized<T, M>(m.GetType()).GetNeededConnections(m as IUpdateConnections))
+                        .Distinct();
+                    var query = table.Where(changedFilter);
+                    if(connections != null)
+                    {
+                        foreach(var conn in connections)
+                        {
+                            query = query.Include(conn.Name);
+                        }
+                    }
+                    var toModify = await query.ToListAsync();
                     var dict = Changed.ToDictionary(keyFunc);
                     foreach(var item in toModify)
                     {

@@ -9,15 +9,17 @@ using MvcControlsToolkit.Core.TagHelpers;
 using MvcControlsToolkit.Core.DataAnnotations;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text;
+using System.Globalization;
 
 namespace MvcControlsToolkit.Core.Templates
 {
+    public enum SupportedGridSystems {Bootstrap3, Bootstrap4 };
     public class Column
     {
         protected static IDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute> Layouts = new ConcurrentDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute>();
         public RowType Row { get; internal set; }
         public ModelExpression For { get; private set; }
-        public bool IsDetail { get;  set; }
         public Template<Column> EditTemplate { get; set; }
         public Template<Column> DisplayTemplate { get; set; }
         public string ColumnTitle { get; set; }
@@ -29,6 +31,7 @@ namespace MvcControlsToolkit.Core.Templates
         public string NullDisplayText { get; set; }
         public string Description { get; set; }
         public decimal[] Widths { get; set; }
+        public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
         public int[] EditDetailWidths { get; set; }
         public string ColumnCssClass { get; set; }
@@ -54,11 +57,11 @@ namespace MvcControlsToolkit.Core.Templates
         public decimal GetWidth(int i)
         {
             if (i < 0) i = 0;
-            if (Widths == null || Widths.Length == 0) return 100;
-            if (i >= Widths.Length) i = Widths.Length - 1;
-            return Widths[i];
+            if (DetailWidths == null || DetailWidths.Length == 0) return 100;
+            if (i >= DetailWidths.Length) i = DetailWidths.Length - 1;
+            return DetailWidths[i];
         }
-        public Column(ModelExpression expression, Template<Column> displayTemplate, Template<Column> editTemplate =null, bool isDetail=false)
+        public Column(ModelExpression expression, Template<Column> displayTemplate, Template<Column> editTemplate =null)
         {
             if (expression == null) throw new ArgumentNullException(nameof(expression));
             For = expression;
@@ -70,6 +73,56 @@ namespace MvcControlsToolkit.Core.Templates
         {
             return (string.IsNullOrEmpty(p1) ? p2 : (string.IsNullOrEmpty(p2) ? p1 : p1 + "." + p2));
 
+        }
+        internal Column CopyBasic()
+        {
+            var res = new Column(For, null);
+            res.Hidden = Hidden;
+            if (prepared)
+            {
+                res.Order = Order;
+                res.Widths = Widths;
+                res.DetailWidths = DetailWidths;
+                res.ColumnTitle = ColumnTitle;
+                res.Description = Description ?? res.ColumnTitle;
+                res.PlaceHolder = PlaceHolder;
+                res.DisplayFormat = DisplayFormat;
+                res.NullDisplayText = NullDisplayText;
+                res.prepared = true;
+            }
+            return res;
+        }
+        public string GetTotalClass(SupportedGridSystems gs, bool edit)
+        {
+            string[] allStyles;
+            
+            var cssClass = ColumnCssClass ?? "form-group";
+            
+            var currWidths = edit ? EditDetailWidths : DisplayDetailWidths;
+            if (currWidths != null && currWidths.Length > 0)
+            {
+                if (gs == SupportedGridSystems.Bootstrap3)
+                    allStyles = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-" };
+                else if (gs == SupportedGridSystems.Bootstrap4)
+                    allStyles = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-", ".col-xl-" };
+                else throw new NotImplementedException();
+                var toBuild = new StringBuilder();
+                toBuild.Append(cssClass);
+                for (int i = 0; i < Math.Min(allStyles.Length, currWidths.Length); i++)
+                {
+                    if (currWidths[i] == 0 || (i != 0 && currWidths[i] == currWidths[i - 1]))
+                    {
+                        continue;
+                    }
+                    toBuild.Append(" ");
+                    toBuild.Append(allStyles[i]);
+                    toBuild.Append(currWidths[i].ToString(CultureInfo.InvariantCulture));
+
+                }
+                cssClass = toBuild.ToString();
+            }
+            else cssClass += " col-xs-12";
+            return cssClass;
         }
         public void Prepare()
         {
@@ -96,7 +149,7 @@ namespace MvcControlsToolkit.Core.Templates
                 if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = metaData.NullDisplayText;
             }
             
-            if(Widths == null)
+            if(Widths == null || DetailWidths == null)
             {
                 var pair = new KeyValuePair<Type, string>(Row.For.Metadata.ModelType, For.Metadata.PropertyName);
                 ColumnLayoutAttribute res;
@@ -107,7 +160,13 @@ namespace MvcControlsToolkit.Core.Templates
                     if (res != null) res.Prepare();
                     
                  }
-                if (res != null) Widths = IsDetail ? res.DetailWidths : res.Widths;
+                if (res != null)
+                {
+                    if(Widths==null)
+                        Widths =  res.Widths;
+                    if(DetailWidths == null)
+                        DetailWidths = res.DetailWidths;
+                }
                 
             }
             prepared = true;

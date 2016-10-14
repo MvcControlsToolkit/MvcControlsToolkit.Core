@@ -39,6 +39,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             res.PlaceHolder = colTag.PlaceHolder;
             res.ReadOnly = colTag.ReadOnly;
             res.Widths = colTag.Widths;
+            res.DetailWidths = colTag.DetailWidths;
             res.ColumnCssClass = colTag.ColumnCssClass;
             res.ColSpan = colTag.ColSpan;
             res.InputCssClass = colTag.InputCssClass;

@@ -4,6 +4,7 @@ using MvcControlsToolkit.Core.Views;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -51,11 +52,12 @@ namespace MvcControlsToolkit.Core.TagHelpers
             }
         }
 
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public  override void Process(TagHelperContext context, TagHelperOutput output)
         {
             bool canHaveNames = ViewContext.GenerateNames();
             bool correctNames = ViewContext.ViewData[RenderingScope.Field] as RenderingScope != null;
             var prov = ViewContext.TagHelperProvider();
+            
             prov?.InputProcess?.Invoke(context, output, this);
             if (!canHaveNames)
             {
@@ -96,7 +98,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 }
             }
             
-            
+
         }
     }
     [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
@@ -106,24 +108,26 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         public FixInputNamesTagHelper(IOptions<MvcViewOptions> optionsAccessor):base(optionsAccessor)
         {
-
+            
         }
     }
 
-    [HtmlTargetElement("select", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
-    public  class FixSelectNamesTagHelper : FixNamesTagHelperBase
+    [HtmlTargetElement("select", Attributes = ForAttributeName, TagStructure = TagStructure.NormalOrSelfClosing)]
+    public class FixSelectNamesTagHelper : FixNamesTagHelperBase
     {
         private const string ForAttributeName = "asp-for";
         private const string OptionsListForName = "asp-options-for";
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression OptionsListFor { get; set; }
+        
         public FixSelectNamesTagHelper(IOptions<MvcViewOptions> optionsAccessor) : base(optionsAccessor)
         {
 
         }
+        
     }
-
-    [HtmlTargetElement("textarea", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    
+    [HtmlTargetElement("textarea", Attributes = ForAttributeName, TagStructure = TagStructure.NormalOrSelfClosing)]
     public  class FixTextAreaNamesTagHelper : FixNamesTagHelperBase
     {
         private const string ForAttributeName = "asp-for";
@@ -132,5 +136,6 @@ namespace MvcControlsToolkit.Core.TagHelpers
         {
 
         }
+        
     }
 }

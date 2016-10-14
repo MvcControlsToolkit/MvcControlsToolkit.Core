@@ -6,31 +6,47 @@ using System.Threading.Tasks;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    public class CollectionInfo<T>
+    public class TypeProto<T>
     {
         public Type ElementType { get; set; }
-        public T Proto { get; set; }
+        public T Model { get; set; }
     }
+    
     public static class IEnumerableHelpers
     {
+        
         public static T Element<T>(this IEnumerable<T> x)
         {
             return default(T);
         }
-        public static CollectionInfo<T> Info<T>(this IEnumerable<T> x)
+        public static TypeProto<T> Info<T>(this IEnumerable<T> x)
         {
-            return new CollectionInfo<T>
+            return new TypeProto<T>
             {
                 ElementType = typeof(T)
+            };
+        }
+        public static T SubElement<T>(this object x)
+            where T : class
+        {
+            return x as T;
+        }
+        public static TypeProto<T> SubInfo<T>(this object x)
+            where T: class
+        {
+            return new TypeProto<T>
+            {
+                ElementType = typeof(T),
+                Model=x as T
             };
         }
         public static T SubElement<T>(this IEnumerable x)
         {
             return default(T);
         }
-        public static CollectionInfo<T> SubInfo<T>(this IEnumerable x)
+        public static TypeProto<T> SubInfo<T>(this IEnumerable x)
         {
-            return new CollectionInfo<T>
+            return new TypeProto<T>
             {
                 ElementType = typeof(T)
             };

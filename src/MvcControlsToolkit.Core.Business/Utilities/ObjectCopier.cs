@@ -15,8 +15,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         List<KeyValuePair<PropertyInfo, List<KeyValuePair<PropertyInfo, PropertyInfo>>>> allNestedProps = new List<KeyValuePair<PropertyInfo, List<KeyValuePair<PropertyInfo, PropertyInfo>>>>();
         public ObjectCopier(string noCopyPropertyName=null, bool compile=false, Type sourceType = null, Type destinationType = null)
         {
-            var tInfo = (destinationType ?? typeof(T)).GetTypeInfo();
-            var sInfo = (sourceType ?? typeof(M)).GetTypeInfo();
+            sourceType = sourceType ?? typeof(M);
+            destinationType = destinationType ?? typeof(T);
+            var tInfo = destinationType.GetTypeInfo();
+            var sInfo = sourceType.GetTypeInfo();
             var props= sInfo.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
             
             foreach (var prop in props)
@@ -27,33 +29,41 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if (tProp != null && tProp.PropertyType.IsAssignableFrom(prop.PropertyType)) allProps.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, tProp));
                 
             }
-            TypeInfo infos;
-            foreach (var tProp in tInfo.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty))
-            {
-                if ((infos = tProp.PropertyType.GetTypeInfo()).IsClass)
+            if(typeof(IUpdateConnections).IsAssignableFrom(sourceType)){
+                TypeInfo infos;
+                foreach (var tProp in tInfo.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty))
                 {
-                    List<KeyValuePair<PropertyInfo, PropertyInfo>> entry=null;
-                    foreach (var nestedTProp in infos.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty))
+                    if ((infos = tProp.PropertyType.GetTypeInfo()).IsClass)
                     {
-                        if ((typeof(IEnumerable).IsAssignableFrom(nestedTProp.PropertyType) && !typeof(IConvertible).IsAssignableFrom(nestedTProp.PropertyType))) continue;
-                        var nestedProp = sInfo.GetProperty(tProp.Name + nestedTProp.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
-                        if (nestedProp != null && nestedTProp.PropertyType.IsAssignableFrom(nestedProp.PropertyType))
+                        List<KeyValuePair<PropertyInfo, PropertyInfo>> entry = null;
+                        foreach (var nestedTProp in infos.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty))
                         {
-                            if (entry == null) entry = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
-                            entry.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(nestedTProp, nestedProp));
+                            if ((typeof(IEnumerable).IsAssignableFrom(nestedTProp.PropertyType) && !typeof(IConvertible).IsAssignableFrom(nestedTProp.PropertyType))) continue;
+                            var nestedProp = sInfo.GetProperty(tProp.Name + nestedTProp.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+                            if (nestedProp != null && nestedTProp.PropertyType.IsAssignableFrom(nestedProp.PropertyType))
+                            {
+                                if (entry == null) entry = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
+                                entry.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(nestedTProp, nestedProp));
+                            }
                         }
-                    }
-                    if(entry!= null)
-                    {
-                        allNestedProps.Add(new KeyValuePair<PropertyInfo, List<KeyValuePair<PropertyInfo, PropertyInfo>>>(tProp, entry));
+                        if (entry != null)
+                        {
+                            allNestedProps.Add(new KeyValuePair<PropertyInfo, List<KeyValuePair<PropertyInfo, PropertyInfo>>>(tProp, entry));
+                        }
                     }
                 }
             }
             if (compile)
             {
-                compiled = buildExpression().Compile();
+                compiled = buildExpression(sourceType, destinationType).Compile();
             }
         }
+        public IEnumerable<PropertyInfo> GetNeededConnections(IUpdateConnections x)
+        {
+            if (x == null || allNestedProps==null) return null;
+            return allNestedProps.Where(m => x.MayUpdate(m.Key.Name)).Select(m => m.Key);
+        }
+        
         public T Copy(M origin, T target)
         {
             if (compiled != null)
@@ -67,6 +77,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     pair.Value.SetValue(target, pair.Key.GetValue(origin));
                 foreach(var nested in allNestedProps)
                 {
+                    if (!(origin as IUpdateConnections).MayUpdate(nested.Key.PropertyType.Name)) continue;
                     var nestedOb = nested.Key.GetValue(target);
                     if (nestedOb == null)
                     {
@@ -84,8 +95,11 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         }
         private Expression<Action<M, T>> buildExpression(Type sourceType = null, Type destinationType = null)
         {
-            var parX = Expression.Parameter(sourceType??typeof(M), "x");
-            var parY = Expression.Parameter(destinationType??typeof(T), "y");
+            var refVerify=typeof(IUpdateConnections).GetMethod("MayUpdate", new Type[] {typeof(string) });
+            sourceType = sourceType ?? typeof(M);
+            destinationType = destinationType ?? typeof(T);
+            var parX = Expression.Parameter(typeof(M), "x");
+            var parY = Expression.Parameter(typeof(T), "y");
             var convParX = sourceType == null || sourceType == typeof(M) ? parX :
                 Expression.Convert(parX, sourceType) as Expression;
             var convParY = destinationType == null || destinationType == typeof(T) ? parY :
@@ -99,17 +113,27 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             }
             foreach (var nested in allNestedProps)
             {
+                List<Expression> innerBlock = new List<Expression>();
                 var test = Expression.Equal(Expression.MakeMemberAccess(convParY, nested.Key),
                     Expression.Constant(null)
                     );
-                var cond = Expression.Condition(test, Expression.New(nested.Key.PropertyType), Expression.Constant(null));
-                assignements.Add(cond);
+                var cond = Expression.IfThen(test, Expression.Assign(Expression.MakeMemberAccess(convParY, nested.Key), Expression.New(nested.Key.PropertyType)));
+                innerBlock.Add(cond);
                 foreach (var pair in nested.Value)
                 {
                     var left = Expression.MakeMemberAccess(Expression.MakeMemberAccess(convParY, nested.Key), pair.Key);
                     var right = Expression.MakeMemberAccess(convParX, pair.Value);
-                    assignements.Add(Expression.Assign(left, right));
+                    innerBlock.Add(Expression.Assign(left, right));
                 }
+                //verify if inner block must be executed
+                ;
+                var call=Expression.Call(Expression.Convert(parX, typeof(IUpdateConnections)),
+                    refVerify,
+                    Expression.Constant(nested.Key.Name, typeof(string))
+                    );
+                var innerCond =
+                    Expression.IfThen(call, Expression.Block(innerBlock));
+                assignements.Add(innerCond);
             }
             return Expression.Lambda<Action<M, T>>(
                 Expression.Block(assignements),
