@@ -74,6 +74,7 @@ namespace MvcControlsToolkit.Core.Templates
                 else
                     vd.TemplateInfo.HtmlFieldPrefix = origVd.GetFullHtmlFieldName(combinePrefixes(fatherPrefix, expression.Name));
                 vd["Options"] = options;
+                vd["ContextualizedHelpers"] = helpers;
                 vd["LocalizerFactory"] = helpers.LocalizerFactory;
                 vd.Remove(RenderingScope.Field);
                 return await h.PartialAsync(TemplateName, model.Model, vd);
@@ -87,11 +88,13 @@ namespace MvcControlsToolkit.Core.Templates
                     model = model.Model,
                     options = options,
                     prefix = overridePrefix != null ? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(combinePrefixes(fatherPrefix, expression.Name)),
-                    modelState = origVd.ModelState, localizerFactory = helpers.LocalizerFactory });
+                    modelState = origVd.ModelState, localizerFactory = helpers.LocalizerFactory, helpers=helpers });
                 
             }
             else if (Type == TemplateType.InLine)
             {
+                var res = helpers.GetCachedTemplateResult(this);
+                if (res != null) return res;
                 using (await Lock.LockAsync())
                 {
                     originalContext.HttpContext = helpers.CurrentHttpContext;
@@ -99,7 +102,7 @@ namespace MvcControlsToolkit.Core.Templates
                     var origVd = originalContext.ViewData;
                     using (new RenderingScope(
                         expression.Model, 
-                        overridePrefix != null? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(expression.Name), 
+                        overridePrefix != null? combinePrefixes(overridePrefix, expression.Name) : helpers.Context.ViewData.GetFullHtmlFieldName(expression.Name), 
                         origVd, 
                         options))
                     {

@@ -225,6 +225,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                             .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
                             .Get();
                     var connections = Changed.SelectMany(m => GetCopierOptimized<T, M>(m.GetType()).GetNeededConnections(m as IUpdateConnections))
+                        .Where(m => m!= null)
                         .Distinct();
                     var query = table.Where(changedFilter);
                     if(connections != null)

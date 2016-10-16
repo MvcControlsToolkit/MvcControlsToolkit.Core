@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using MvcControlsToolkit.Core.OptionsParsing;
 using MvcControlsToolkit.Core.Templates;
@@ -30,19 +33,49 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-
+        private bool cloned = false;
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            
+            if (Partial == null && ViewComponent == null && !cloned)
+            {
+                var clone = this.MemberwiseClone() as TemplateTagHelper;
+                clone.cloned = true;
+                 var fun = typeof(TagHelperOutput).GetTypeInfo()
+                    .GetField("_getChildContentAsync", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(output) as Func<bool, HtmlEncoder, Task<TagHelperContent>>;
+                var exContext = fun.Target as TagHelperExecutionContext;
+                var _startTagHelperWritingScope = typeof(TagHelperExecutionContext)
+                    .GetField("_startTagHelperWritingScope", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(exContext) as Action<HtmlEncoder>;
+                var _endTagHelperWritingScope = typeof(TagHelperExecutionContext)
+                    .GetField("_endTagHelperWritingScope", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(exContext) as Func<TagHelperContent>;
+                var _executeChildContentAsync = typeof(TagHelperExecutionContext)
+                    .GetField("_executeChildContentAsync", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(exContext) as Func<Task>;
+                var newExContext = new TagHelperExecutionContext("asp-template", TagMode.StartTagAndEndTag, exContext.Items, context.UniqueId,
+                    _executeChildContentAsync,
+                    _startTagHelperWritingScope,
+                    _endTagHelperWritingScope
+                    );
+                newExContext.TagHelpers.Add(exContext.TagHelpers[0]);
+                newExContext.AddHtmlAttribute(context.AllAttributes["type"]);
+                clone.Process(newExContext.Context, newExContext.Output);
+                output.SuppressOutput();
+                return;
+            }
             var rc = context.GetFatherReductionContext();
-            output.TagName = string.Empty;
-            output.Content.SetHtmlContent(string.Empty);
+
+            output.SuppressOutput();
 
             if (rc.RowParsingDisabled) return;
-            
+             
             if (rc.CurrentToken == TagTokens.Column)
             {
 
+                
                 rc.Results.Add(new ReductionResult(
                     TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : TagTokens.ETemplate,
                     0,
@@ -56,7 +89,6 @@ namespace MvcControlsToolkit.Core.TagHelpers
                         (x, y, z) =>
                         {
 
-                            
                             var t = output.GetChildContentAsync(false);
                             t.Wait();
                             return new HtmlString(t.Result.GetContent().ToString());
@@ -79,7 +111,6 @@ namespace MvcControlsToolkit.Core.TagHelpers
                         (x, y, z) =>
                             {
 
-                                
                                 var t = output.GetChildContentAsync(false);
                                 t.Wait();
                                 return new HtmlString(t.Result.GetContent().ToString());

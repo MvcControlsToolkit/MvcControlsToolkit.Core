@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,6 +24,7 @@ namespace MvcControlsToolkit.Core.Templates
         private IUrlHelper _urlHelper;
         private HttpContext _httpContext;
         private IPrincipal _user;
+        private IDictionary<object, IHtmlContent> cachedTemplateResult;
         public ContextualizedHelpers(ViewContext context, IHtmlHelper html, IHttpContextAccessor httpAccessor, IViewComponentHelper component, IUrlHelperFactory urlHelperFactory, IStringLocalizerFactory localizerFactory = null)
         {
             _html = html;
@@ -34,7 +36,7 @@ namespace MvcControlsToolkit.Core.Templates
             LocalizerFactory = localizerFactory;
 
         }
-        public ContextualizedHelpers(ViewContext context, IHtmlHelper html, IPrincipal user, IViewComponentHelper component, IUrlHelper urlHelper, IStringLocalizerFactory localizerFactory = null)
+        public ContextualizedHelpers(ViewContext context, IHtmlHelper html, IPrincipal user, IViewComponentHelper component, IUrlHelper urlHelper, IStringLocalizerFactory localizerFactory)
         {
             _html = html;
             _component = component;
@@ -42,8 +44,27 @@ namespace MvcControlsToolkit.Core.Templates
             _htmlIsContextualized = true;
             _componentIsContextualized = true;
             _user = user;
+            _httpContext = context.HttpContext;
             _urlHelper = urlHelper;
             LocalizerFactory = localizerFactory;
+        }
+        public ContextualizedHelpers CreateChild(ViewContext context, IHtmlHelper html, IPrincipal user= null, IViewComponentHelper component= null, IUrlHelper urlHelper= null, IStringLocalizerFactory localizerFactory= null)
+        {
+            var res = new ContextualizedHelpers(context, html, user??_user, component??_component, urlHelper??_urlHelper, localizerFactory??LocalizerFactory);
+            res.cachedTemplateResult = cachedTemplateResult;
+            return res;
+        }
+        public void AddCachedTemplateResult(object template, IHtmlContent result)
+        {
+            if (cachedTemplateResult == null) cachedTemplateResult = new Dictionary<object, IHtmlContent>();
+            cachedTemplateResult[template] = result;
+        }
+        public IHtmlContent GetCachedTemplateResult(object template)
+        {
+            if (cachedTemplateResult == null) return null;
+            IHtmlContent res;
+            if (cachedTemplateResult.TryGetValue(template, out res)) return res;
+            else return null;
         }
         public IStringLocalizerFactory LocalizerFactory { get; private set; }
         public IHtmlHelper Html

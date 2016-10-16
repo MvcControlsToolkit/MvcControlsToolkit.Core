@@ -171,19 +171,19 @@ namespace MvcControlsToolkit.Core.Templates
             }
             prepared = true;
         } 
-        public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers, string overridePrefix=null)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
             return await EditTemplate.Invoke(new ModelExpression(
                 combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)), 
-                this, helpers);
+                this, helpers, overridePrefix);
         }
-        public async Task<IHtmlContent> InvokeDisplay(object o, ContextualizedHelpers helpers)
+        public async Task<IHtmlContent> InvokeDisplay(object o, ContextualizedHelpers helpers, string overridePrefix = null)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
             return await DisplayTemplate.Invoke(
                 new ModelExpression(combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)), 
-                this, helpers);
+                this, helpers, overridePrefix);
         }
         public async Task<IHtmlContent> InvokeEdit(ContextualizedHelpers helpers, ModelExpression expression)
         {

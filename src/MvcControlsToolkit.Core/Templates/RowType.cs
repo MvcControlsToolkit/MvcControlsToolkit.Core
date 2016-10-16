@@ -262,6 +262,7 @@ namespace MvcControlsToolkit.Core.Templates
         public async Task<IHtmlContent> InvokeEdit(object o, string prefix, ContextualizedHelpers helpers)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
+            //await PrerenderInLineColumnTemplates(o, prefix, helpers);
                 return await EditTemplate.Invoke(
                     new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
                     this, helpers);
@@ -270,9 +271,31 @@ namespace MvcControlsToolkit.Core.Templates
         public async Task<IHtmlContent> InvokeDisplay(object o, string prefix, ContextualizedHelpers helpers)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
-                return await DisplayTemplate.Invoke(
+            //await PrerenderInLineColumnTemplates(o, prefix, helpers);
+            return await DisplayTemplate.Invoke(
                 new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
                 this, helpers);
+        }
+        protected async Task PrerenderInLineColumnTemplates(object o, string prefix, ContextualizedHelpers helpers)
+        {
+            foreach(var col in Columns)
+            {
+                if(col.DisplayTemplate != null && col.DisplayTemplate.Type == TemplateType.InLine)
+                {
+                    var model = col.For.Metadata.PropertyGetter(o);
+                    var expression = new ModelExpression(combinePrefixes(prefix, combinePrefixes(col.AdditionalPrefix, col.For.Name)),
+                        col.For.ModelExplorer.GetExplorerForModel(model));
+                    helpers.AddCachedTemplateResult(col.DisplayTemplate,await col.InvokeDisplay(helpers, expression));
+                }
+                if (col.EditTemplate != null && col.EditTemplate.Type == TemplateType.InLine)
+                {
+                    var model = col.For.Metadata.PropertyGetter(o);
+                    var expression = new ModelExpression(combinePrefixes(prefix, combinePrefixes(col.AdditionalPrefix, col.For.Name)),
+                        col.For.ModelExplorer.GetExplorerForModel(model));
+                    helpers.AddCachedTemplateResult(col.EditTemplate, await col.InvokeEdit(helpers, expression));
+
+                }
+            }
         }
         public IHtmlContent RenderHiddens(ContextualizedHelpers ctx, object rowModel)
         {

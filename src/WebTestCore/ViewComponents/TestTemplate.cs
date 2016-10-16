@@ -11,10 +11,11 @@ namespace WebTestCore.ViewComponents
 {
     public class TestTemplate: ViewComponent
     {
-        public async Task<IViewComponentResult> InvokeAsync(object model, Column options, string prefix, ModelStateDictionary modelState, IStringLocalizerFactory localizerFactory)
+        public async Task<IViewComponentResult> InvokeAsync(object model, Column options, string prefix, ModelStateDictionary modelState, IStringLocalizerFactory localizerFactory, ContextualizedHelpers helpers)
         {
             ViewData.TemplateInfo.HtmlFieldPrefix = prefix;
             ViewData["LocalizerFactory"] = localizerFactory;
+            ViewData["ContextualizedHelpers"] = helpers;
             ModelState.Merge(modelState);
             return View(model);
         }

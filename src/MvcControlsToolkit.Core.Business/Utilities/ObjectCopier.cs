@@ -60,7 +60,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         }
         public IEnumerable<PropertyInfo> GetNeededConnections(IUpdateConnections x)
         {
-            if (x == null || allNestedProps==null) return null;
+            if (x == null || allNestedProps==null) return new PropertyInfo[0];
             return allNestedProps.Where(m => x.MayUpdate(m.Key.Name)).Select(m => m.Key);
         }
         
