@@ -39,7 +39,15 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             if(first != null)
             {
                 if (Rows == null) addRow(first as RowType);
-                else Rows.Insert(0, first as RowType);
+                else
+                {
+                    foreach(var row in Rows)
+                    {
+                        row.ControllerType = row.ControllerType ?? (first as RowType).ControllerType;
+                        row.RequiredFunctionalities = row.RequiredFunctionalities ?? (first as RowType).RequiredFunctionalities;
+                    }
+                    Rows.Insert(0, first as RowType);
+                }
             }
             uint i = 0;
             if (Rows != null) foreach (var row in Rows)
