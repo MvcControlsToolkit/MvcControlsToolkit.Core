@@ -341,12 +341,12 @@ namespace MvcControlsToolkit.Core.Templates
         public IHtmlContent RenderUrl(ContextualizedHelpers helpers, string actionMethod, object parameters)
         {
             if (ControllerType == null) return null;
-            return new HtmlString(helpers.UrlHelper.Action(actionMethod, ControllerType.Name.Substring(0, ControllerType.Name.Length - 10)));
+            return new HtmlString(helpers.UrlHelper.Action(actionMethod, ControllerType.Name.Substring(0, ControllerType.Name.Length - 10), parameters));
         }
 
         public IHtmlContent RenderRowAttributes(object currentRow)
         {
-            return new HtmlString(string.Format(CultureInfo.InvariantCulture, "data-row:'{0}' data-key='{1}'", 
+            return new HtmlString(string.Format(CultureInfo.InvariantCulture, "data-row='{0}' data-key='{1}'", 
                 Order,
                 keyColumn.For.Metadata.PropertyGetter(currentRow)));
 

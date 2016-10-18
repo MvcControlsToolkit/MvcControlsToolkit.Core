@@ -65,7 +65,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.CheckboxCssClass = rowTag.CheckboxCssClass;
             result.DisplayTemplate = DisplayTemplate;
             result.EditTemplate = EditTemplate;
-            
+            result.ControllerType = rowTag.ControllerType;
             return result;
         }
 

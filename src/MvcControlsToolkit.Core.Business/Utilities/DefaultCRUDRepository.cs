@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     res.KeyExpression = keyExpression;
                     if (o == Operation.D)
                     {
-                        res.Deleted = x as ICollection<VK>;
+                        IList<VK> conv = new List<VK>();
+                        foreach (var el in x as IEnumerable)
+                            conv.Add((VK)el);
+                        res.Deleted = conv;
                     }
                     else if (o == Operation.I)
                     {
