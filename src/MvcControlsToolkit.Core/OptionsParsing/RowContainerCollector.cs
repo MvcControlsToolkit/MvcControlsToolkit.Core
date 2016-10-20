@@ -38,13 +38,21 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             var first = ctx.RowParsingDisabled? null : base.Process(tag, defaults);
             if(first != null)
             {
+                if ((first as RowType).RowId == null) (first as RowType).RowId = RowType.DefaultIdBase;
                 if (Rows == null) addRow(first as RowType);
                 else
                 {
-                    foreach(var row in Rows)
+                    int j = 1;
+                    foreach (var row in Rows)
                     {
                         row.ControllerType = row.ControllerType ?? (first as RowType).ControllerType;
                         row.RequiredFunctionalities = row.RequiredFunctionalities ?? (first as RowType).RequiredFunctionalities;
+                        row.LocalizationType = row.LocalizationType ?? (first as RowType).LocalizationType;
+                        row.RowCssClass = row.RowCssClass ?? (first as RowType).RowCssClass;
+                        row.InputCssClass = row.InputCssClass ?? (first as RowType).InputCssClass;
+                        row.CheckboxCssClass = row.CheckboxCssClass ?? (first as RowType).CheckboxCssClass;
+                        if (row.RowId == null) row.RowId = (first as RowType).RowId + j;
+                        j++;
                     }
                     Rows.Insert(0, first as RowType);
                 }

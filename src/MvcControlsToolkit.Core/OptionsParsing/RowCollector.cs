@@ -66,6 +66,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.DisplayTemplate = DisplayTemplate;
             result.EditTemplate = EditTemplate;
             result.ControllerType = rowTag.ControllerType;
+            result.RowId = rowTag.RowId;
             return result;
         }
 

@@ -22,12 +22,14 @@ namespace MvcControlsToolkit.Core.Templates
 {
     public class RowType
     {
+        internal const string DefaultIdBase = "default";
         protected static IDictionary<Type, string> conventionKeys = new ConcurrentDictionary<Type, string>();
         protected static IDictionary<Type, IEnumerable<Column>> allColumns = new ConcurrentDictionary<Type, IEnumerable<Column>>();
         protected static ConcurrentDictionary<string , IList<RowType>> rowsCollections = new ConcurrentDictionary<string, IList<RowType>>();
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
         public IEnumerable<Column> Columns { get; private set; }
+        public string RowId { get; internal set; }
         public string KeyName { get; private set; }
         public Type ControllerType { get; set; }
         public string RowTitle { get; set; }
@@ -346,9 +348,11 @@ namespace MvcControlsToolkit.Core.Templates
 
         public IHtmlContent RenderRowAttributes(object currentRow)
         {
-            return new HtmlString(string.Format(CultureInfo.InvariantCulture, "data-row='{0}' data-key='{1}'", 
+            return new HtmlString(string.Format(CultureInfo.InvariantCulture, "data-row='{0}' data-key='{1}' data-row-id='{2}'", 
                 Order,
-                keyColumn.For.Metadata.PropertyGetter(currentRow)));
+                keyColumn.For.Metadata.PropertyGetter(currentRow),
+                RowId??string.Empty
+                ));
 
         }
         public IStringLocalizer GetLocalizer(IStringLocalizerFactory factory)

@@ -16,6 +16,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         private const string KeyAttributeName = "asp-for";
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
+        [HtmlAttributeName("row-id")]
+        public string RowId { get; set; }
         [HtmlAttributeName("key")]
         public ModelExpression KeyName { get;  set; }
         [HtmlAttributeName("mvc-controller")]
