@@ -253,7 +253,7 @@ namespace MvcControlsToolkit.Core.Linq
                             nVal.Add((F)x);
                         }
                         clause = createInverseCall(
-                            value.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] { typeof(F) }),
+                            nVal.GetType().GetMethod("Contains") ?? contains.MakeGenericMethod(new Type[] { typeof(F) }),
                             null,
                             nVal,
                             fieldSelector);

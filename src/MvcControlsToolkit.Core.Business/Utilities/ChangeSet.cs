@@ -168,14 +168,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             bool aChange=false;
             IEnumerable<K> changedIds = null;
             Expression<Func<M, bool>> changedFilter = null;
+            Expression<Func<M, bool>> deletedFilter = null;
             ObjectCopier<T,M> copier = null; ;
             if (accessFilter != null && Deleted != null && Deleted.Count > 0)
             {
                 var deletedIds = Deleted;
-                var deletedFilter = new FilterBuilder<M>()
+                deletedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
                             .Get();
-                if(await table.Where(deletedFilter).Where(accessFilter).CountAsync() != Deleted.Count)
+                if(await table.Where(deletedFilter).Where(accessFilter).CountAsync() !=
+                    await table.Where(deletedFilter).CountAsync())
                     return null;
 
             }
@@ -185,13 +187,26 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 changedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
                             .Get();
-                if (await table.Where(changedFilter).Where(accessFilter).CountAsync() != Changed.Count)
+                if (await table.Where(changedFilter).Where(accessFilter).CountAsync() !=
+                    await table.Where(changedFilter).Where(accessFilter).CountAsync())
                     return null;
             }
             var res = new List<M>();
             if (Deleted != null && Deleted.Count > 0)
             {
-                foreach(var key in Deleted)
+                if (retrieveChanged)
+                {
+                    var deletedIds = Deleted;
+                    if (deletedFilter == null)
+                        deletedFilter = new FilterBuilder<M>()
+                            .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
+                            .Get();
+                    Deleted = await table.Where(deletedFilter).Project().To<T>().Select(KeyExpression)
+                        .ToListAsync();
+                    
+                }
+                
+                foreach (var key in Deleted)
                 {
                     aChange = true;
                     var item = new M();
@@ -199,6 +214,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     table.Attach(item);
                     ctx.Entry(item).State = EntityState.Deleted;
                 }
+                
             }
             if (Inserted != null && Inserted.Count > 0)
             {

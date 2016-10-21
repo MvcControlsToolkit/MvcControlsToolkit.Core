@@ -14,7 +14,13 @@ namespace MvcControlsToolkit.Core.TagHelpers
     
     public static class IEnumerableHelpers
     {
-        
+
+        public static string CleanPrefix(this string x)
+        {
+            if (string.IsNullOrEmpty(x)) return x;
+            return string.Join(".", x.Split('.').Where(m => !Char.IsDigit(m[0]) ));
+        }
+
         public static T Element<T>(this IEnumerable<T> x)
         {
             return default(T);
