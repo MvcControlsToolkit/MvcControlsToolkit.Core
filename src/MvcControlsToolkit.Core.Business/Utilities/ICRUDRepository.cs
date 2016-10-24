@@ -21,5 +21,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         Task SaveChanges();
         void UpdateKeys();
+
+        Func<object, object> GetKey { get; }
+        
     }
 }

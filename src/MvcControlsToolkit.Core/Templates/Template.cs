@@ -88,7 +88,7 @@ namespace MvcControlsToolkit.Core.Templates
                     model = model.Model,
                     options = options,
                     prefix = overridePrefix != null ? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(combinePrefixes(fatherPrefix, expression.Name)),
-                    modelState = origVd.ModelState, localizerFactory = helpers.LocalizerFactory, helpers=helpers });
+                    modelState = origVd.ModelState });
                 
             }
             else if (Type == TemplateType.InLine)

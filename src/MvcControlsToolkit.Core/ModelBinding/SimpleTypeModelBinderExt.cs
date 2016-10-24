@@ -82,8 +82,13 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 var value = valueProviderResult.FirstValue;
 
                 object model = null;
+                
                 if (!string.IsNullOrWhiteSpace(value))
                 {
+                    if (allNumbers.Contains(bindingContext.ModelMetadata.UnderlyingOrModelType))
+                    {
+                        value = value.Replace(valueProviderResult.Culture.NumberFormat.NumberGroupSeparator, string.Empty);
+                    }
                     model = _typeConverter.ConvertFrom(
                         context: null,
                         culture: valueProviderResult.Culture,

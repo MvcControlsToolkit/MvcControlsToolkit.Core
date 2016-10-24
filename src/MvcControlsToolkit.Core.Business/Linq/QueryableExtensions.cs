@@ -142,7 +142,7 @@ namespace MvcControlsToolkit.Core.Linq
             }
             else return node;
         }
-        private static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom)
+        public static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom)
         {
             ParameterExpression parameterExpression = custom == null ? Expression.Parameter(typeof(TSource), "src") : custom.Parameters.First();
             Expression pres;

@@ -52,6 +52,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         }
     }
+    
     public class DefaultCRUDRepository
     {
         public static DefaultCRUDRepository<D, T> Create<D, T>(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter = null, Expression<Func<T, bool>> selectFilter = null)
@@ -69,6 +70,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         private static readonly ConcurrentDictionary<Type, Func<Operation, bool, object, object, ChangeSet>> CreatorCache = new ConcurrentDictionary<Type, Func<Operation, bool, object, object, ChangeSet>>();
         private static readonly ConcurrentDictionary<Type, PropertyInfo> KeyProperty = new ConcurrentDictionary<Type, PropertyInfo>();
         private static readonly ConcurrentDictionary<Type, object> Projections = new ConcurrentDictionary<Type, object>();
+        private static readonly ConcurrentDictionary<Type, object> CompiledProjections = new ConcurrentDictionary<Type, object>();
         public D Context { get; private set; }
         public DbSet<T> Table { get; private set; }
 
@@ -86,9 +88,23 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         public static void DeclareProjection<K>(Expression<Func<T, K>> proj)
         {
+            if (proj == null) return;
             Projections[typeof(K)] = proj;
+            
         }
-
+        public static Func<T, K> GetCompiledExpression<K>()
+        {
+            object res;
+            if (CompiledProjections.TryGetValue(typeof(K), out res))
+            {
+                return res as Func<T, K>;
+            }
+            object pres=null;
+            Projections.TryGetValue(typeof(K), out pres);
+            var fres=ProjectionExpression<T>.BuildExpression<K>(pres as Expression<Func<T, K>>).Compile();
+            CompiledProjections[typeof(K)] = fres;
+            return fres;
+        }
         
 
         private IEnumerable<string> GetKeyNames() 
@@ -145,6 +161,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var cs = GetChangeset<T1>(Operation.U, full, viewModel, null);
             var res=cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
             res.Wait();
+            lastChangeSet = cs;
+            
         }
 
         public virtual void UpdateList<T1>(bool full, IEnumerable < T1> oldValues, IEnumerable<T1> newValues)
@@ -153,6 +171,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var res=cs.UpdateDatabase(Table, Context, AccessFilter, false, !full);
             res.Wait();
             lastChangeSet = cs;
+            
         }
 
         public virtual void Add<T1>(bool full, params T1[] viewModel)
@@ -162,7 +181,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             res.Wait();
             lastChangeSet = cs;
         }
-
+        public virtual Func<object, object> GetKey { get { return lastChangeSet.GetKey; } }
         public virtual void Delete<U>(params U[] key)
         {
             var cs = GetChangeset<T>(Operation.D, false, key, null);

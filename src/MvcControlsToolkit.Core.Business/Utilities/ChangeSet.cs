@@ -103,6 +103,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         }
         public static ChangeSet<T, K>   Create<T, K> (IEnumerable<T> oldValues, IEnumerable<T> newValues, Expression<Func<T, K>> keyExpression, bool verifyPropertyChanges=true)
         {
+            bool supposeModify = Nullable.GetUnderlyingType(typeof(K)) != null;
             if (keyExpression == null) throw new ArgumentNullException(nameof(keyExpression));
             var res = new ChangeSet<T, K>();
             res.KeyExpression = keyExpression;
@@ -125,14 +126,19 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     foreach (var item in newValues)
                     {
                         var key = keyFunc(item);
-                        if (key != null && dict.ContainsKey(key))
+                        if (key != null && (supposeModify || dict.ContainsKey(key)))
                         {
-                            
-                            var other = dict[key];
-                            if (!verifyPropertyChanges || changed(props = res.GetPropertiesOptimized(item == null ? typeof(T) : item.GetType()), other, item))
-                            res.Changed.Add(item);
-                            res.ChangedOldValues.Add(other);
-                            dict.Remove(key);
+
+                            T other = default(T);
+                            dict.TryGetValue(key, out other);
+                            if (other == null || !verifyPropertyChanges || changed(props = res.GetPropertiesOptimized(item == null ? typeof(T) : item.GetType()), other, item))
+                                res.Changed.Add(item);
+                            if (other != null)
+                            {
+                                res.ChangedOldValues.Add(other);
+                                dict.Remove(key);
+                            }
+                            else res.ChangedOldValues.Add(item);
                         }
                         else res.Inserted.Add(item);
                     }
@@ -145,18 +151,25 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public Action UpdateKeys { get; protected set; }
         public abstract  Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx, Expression<Func<M, bool>> accessFilter = null, bool saveChanges = false, bool retrieveChanged = true)
             where M : class, new();
+        public abstract object GetKey(object x);
     }
     public class ChangeSet<T,K>: ChangeSet
     {
 
         public Expression<Func<T, K>> KeyExpression { get; set; }
+        public Func<T, K> CompiledKeyExpression { get { return GetCopiledKey(KeyExpression); } }
         public ICollection<T> Inserted { get; set; }
         public ICollection<T>  Changed { get; set; }
         public ICollection<T> ChangedOldValues { get; set; }
         public ICollection<K> Deleted { get; set; }
 
-        
-        
+        public override object GetKey(object x)
+        {
+
+            if (x == null) return null;
+            return CompiledKeyExpression((T)x);
+        }
+
         public override async Task<List<M>> UpdateDatabase<M>(DbSet<M> table, DbContext ctx,  Expression<Func<M, bool>> accessFilter=null, bool saveChanges=false, bool retrieveChanged=true) 
         {
 
@@ -170,7 +183,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Expression<Func<M, bool>> changedFilter = null;
             Expression<Func<M, bool>> deletedFilter = null;
             ObjectCopier<T,M> copier = null; ;
-            if (accessFilter != null && Deleted != null && Deleted.Count > 0)
+            if (!retrieveChanged && accessFilter != null && Deleted != null && Deleted.Count > 0)
             {
                 var deletedIds = Deleted;
                 deletedFilter = new FilterBuilder<M>()
@@ -181,7 +194,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     return null;
 
             }
-            if (accessFilter != null && Changed != null && Changed.Count > 0)
+            if (!retrieveChanged && accessFilter != null && Changed != null && Changed.Count > 0)
             {
                 changedIds = Changed.Select(m => keyFunc(m));
                 changedFilter = new FilterBuilder<M>()
@@ -201,9 +214,13 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         deletedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
                             .Get();
-                    Deleted = await table.Where(deletedFilter).Project().To<T>().Select(KeyExpression)
-                        .ToListAsync();
-                    
+                    if (accessFilter != null)
+                        Deleted = await table.Where(deletedFilter).Project().To<T>().Select(KeyExpression)
+                            .ToListAsync();
+                    else
+                        Deleted = await table.Where(deletedFilter).Where(accessFilter).Project().To<T>().Select(KeyExpression)
+                            .ToListAsync();
+
                 }
                 
                 foreach (var key in Deleted)
@@ -244,7 +261,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         .Where(m => m!= null)
                         .Distinct();
                     var query = table.Where(changedFilter);
-                    if(connections != null)
+                    if (accessFilter != null) query = query.Where(accessFilter);
+                    if (connections != null)
                     {
                         foreach(var conn in connections)
                         {
@@ -261,6 +279,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         var oItem = dict[(K)key];
                         copier = GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
+                        
                     }
                 }
                 else
@@ -272,7 +291,6 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         var item = new M();
                         copier = GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
-                        
                         table.Attach(item);
                     }
                 }
