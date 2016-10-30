@@ -2,13 +2,13 @@
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "copyright": "Mvc Controls Toolkit Team",
     "dependencies": {
-        "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0",
-        "Microsoft.AspNetCore.Mvc.Core": "1.0.0",
-        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
-        "Microsoft.AspNetCore.Mvc.Localization": "1.0.0",
+        "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.1",
+        "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
+        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.1",
+        "Microsoft.AspNetCore.Mvc.Localization": "1.0.1",
         "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
-        "MvcControlsToolkit.Core.Business": "1.1.0.33",
-        "MvcControlsToolkit.Core.Options": "1.0.0"
+        "MvcControlsToolkit.Core.Business": "1.1.2",
+        "MvcControlsToolkit.Core.Options": "1.0.1"
     },
     "description": "Core feature of Mvc Controls Toolkit.",
     "frameworks": {
@@ -32,7 +32,7 @@
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Bug fix release",
+        "releaseNotes": "Added Rows/Columns, Templates, and associated TagHelpers. Added the whole Taghelper Provider Logic",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -50,5 +50,5 @@
 
     },
     "title": "Mvc Controls Toolkit core code",
-    "version": "1.1.0.163"
+    "version": "1.1.2"
 }

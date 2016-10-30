@@ -214,7 +214,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         deletedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
                             .Get();
-                    if (accessFilter != null)
+                    if (accessFilter == null)
                         Deleted = await table.Where(deletedFilter).Project().To<T>().Select(KeyExpression)
                             .ToListAsync();
                     else

@@ -2,12 +2,12 @@
     "description": "A Framework for handling options/preferences coming from several sources(user, browser capabilities, configuration, etc.) in Asp.net core",
     "title": "Mvc Controls Toolkit Options framework",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "First public release",
+        "releaseNotes": "Updated dependencies",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -21,8 +21,8 @@
         ]
     },
     "dependencies": {
-        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
-        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
+        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1",
         "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0",
         "Newtonsoft.Json": "9.0.1"
 
@@ -46,5 +46,8 @@
                 "Microsoft.CSharp": "4.0.1"
             }
         }
+    },
+    "scripts": {
+        "postcompile": [ "dotnet pack --no-build --output /LocalNugetFeed --configuration %compile:Configuration% %project:Directory%" ]
     }
 }

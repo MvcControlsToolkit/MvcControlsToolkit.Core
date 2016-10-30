@@ -2,12 +2,12 @@
     "description": "Data annotations, database utilities, and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.",
     "title": "Mvc Controls Toolkit business Layer tools",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.1.0.33",
+    "version": "1.1.2",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Bug fix release",
+        "releaseNotes": "Improved Linq/Database tools, and added CRUDRepository class",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -44,7 +44,7 @@
         }
     },
     "dependencies": {
-        "Microsoft.EntityFrameworkCore": "1.0.0"
+        "Microsoft.EntityFrameworkCore": "1.0.1"
 
     },
     "scripts": {
