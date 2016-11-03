@@ -31,6 +31,7 @@ namespace MvcControlsToolkit.Core.Extensions
 
             services.AddTransient<IConfigureOptions<MvcOptions>, MvcControlsToolkitOptionsSetup>();
             services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcControlsToolkitViewOptionsSetup>();
+            services.Configure<MvcJsonOptions>(o => o.SerializerSettings.ContractResolver = new RuntimeTypeContractResolver());
             services.AddSingleton<DefaultTagHelpersProvider>();
             services.AddPreferences()
                 .AddPreferencesClass<Html5InputSupport>("Browser.Html5InputSupport")

@@ -77,19 +77,16 @@ namespace WebTestCore.Controllers
         [HttpGet]
         public IActionResult StoreTest()
         {
-            return View(new GlobalizationTestVieModel()
+            return View(new Employee()
             {
-                ADatetime = new DateTime(2016, 4, 10),
-                ADate = new DateTime(2016, 4, 10),
-                AFloat = 12f,
-                ATime = new TimeSpan(12, 10, 0),
-                AWeek = new Week(2016, 25),
-                AMonth = new Month(2016, 4)
+                Name="John",
+                Surname = "Smith",
+                Matr = "aaaaa"
             });
         }
 
         [HttpPost]
-        public IActionResult StoreTest(GlobalizationTestVieModel model)
+        public IActionResult StoreTest(Person model)
         {
             if (ModelState.IsValid)
             {

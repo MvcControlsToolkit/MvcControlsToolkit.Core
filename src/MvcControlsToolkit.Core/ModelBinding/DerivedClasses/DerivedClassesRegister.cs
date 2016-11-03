@@ -31,16 +31,28 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
         protected static KeyValuePair<Type, int>[] InverseAllRunTimeTypes;
         internal static void Prepare(IHostingEnvironment env)
         {
-            int i = 0;
-            InverseAllRunTimeTypes = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(env.ApplicationName).
-                Where(m=>!m.Name.StartsWith("MvcControlsToolkit"))
-                .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic 
-                && m.GetCustomAttribute(typeof(MvcControlsToolkit.Core.DataAnnotations.RunTimeTypeAttribute))!= null)
-                .Select(m => m.AsType())
-                .Select(m => new KeyValuePair<Type, int>(m, i++))
-                .ToArray();
             
-            AllRunTimeTypes=InverseAllRunTimeTypes
+            var tenum = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(env.ApplicationName).
+                Where(m => !m.Name.StartsWith("MvcControlsToolkit"))
+                .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic
+                && m.GetCustomAttribute(typeof(MvcControlsToolkit.Core.DataAnnotations.RunTimeTypeAttribute)) != null)
+                .Select(m => m.AsType());
+            var tlist = new List<Type>();
+            foreach(var t in tenum)
+            {
+                
+                var st = t;
+                while(st != null && st != typeof(object))
+                {
+                    tlist.Add(st);
+                    st = st.GetTypeInfo().BaseType;
+                }
+            }
+            int i = 0;
+            InverseAllRunTimeTypes = tlist.Distinct().Select(m => new KeyValuePair<Type, int>(m, i++))
+            .ToArray();
+
+            AllRunTimeTypes =InverseAllRunTimeTypes
                 .ToDictionary(m => m.Key, m=> m.Value);
         }
         internal static Type GetTypeFromCode(string index)
