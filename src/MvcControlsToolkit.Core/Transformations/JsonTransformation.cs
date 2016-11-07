@@ -50,14 +50,19 @@ namespace MvcControlsToolkit.Core.Transformations
         {
             if (x == null) return default(T);
             IDataProtectionProvider provider = currContext.RequestServices.GetService<IDataProtectionProvider>();
-            return (T)JsonConvert.DeserializeObject(provider.CreateProtector("EncryptedJsonTransformation").Unprotect(x), typeof(T), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+            IOptions<MvcJsonOptions> settings = currContext.RequestServices.GetService<IOptions<MvcJsonOptions>>();
+            return (T)JsonConvert.DeserializeObject(provider.CreateProtector("EncryptedJsonTransformation").Unprotect(x), typeof(T), settings.Value.SerializerSettings);
         }
 
         public string Transform(T x)
         {
             string res;
             if (x == null) res = "null";
-            else res= JsonConvert.SerializeObject(x, new JsonSerializerSettings() {TypeNameHandling= TypeNameHandling.Auto });
+            else
+            {
+                IOptions<MvcJsonOptions> settings = currContext.RequestServices.GetService<IOptions<MvcJsonOptions>>();
+                res = JsonConvert.SerializeObject(x, settings.Value.SerializerSettings);
+            }
             IDataProtectionProvider provider = currContext.RequestServices.GetService<IDataProtectionProvider>();
             return provider.CreateProtector("EncryptedJsonTransformation").Protect(res);
         }

@@ -1,4 +1,4 @@
-﻿@model GlobalizationTestVieModel
+﻿@model Person
 @using MvcControlsToolkit.Core.Views
 @using WebTestCore.ViewModels
 @using MvcControlsToolkit.Core.Transformations
@@ -12,12 +12,12 @@
 <form asp-controller="Home" asp-action="StoreTest" method="post" class="form-horizontal" role="form">
     <hr />
     <div asp-validation-summary="All" class="text-danger"></div>
-    @*<store-model asp-for="@Model" encrypted="true" />*@
+    <store-model asp-for="@Model" encrypted="true" />
     @*<scope asp-for="@Model" transformation="new JsonTransformation<GlobalizationTestVieModel>()">
         @{var json = Html.CurrentScope<string>().Model;}
         <input type="hidden" asp-for="@json">
     </scope>*@
-    <scope asp-for="@Model" transformation="new JsonTransformation<GlobalizationTestVieModel>()" use-partial="StoreTestPartial"/>
+    @*<scope asp-for="@Model" transformation="new JsonTransformation<GlobalizationTestVieModel>()" use-partial="StoreTestPartial"/>*@
         @*@using (Html.Transform(m => m, new JsonTransformation<GlobalizationTestVieModel>()))
             {
                 {
