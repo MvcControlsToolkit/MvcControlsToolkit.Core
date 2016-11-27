@@ -119,7 +119,7 @@ namespace MvcControlsToolkit.Core.Templates
                 col.Prepare();
                 col.NaturalOrder = i;
                 i++;
-                if (col.For.Metadata.PropertyName == KeyName)
+                if (col.For != null && col.For.Metadata.PropertyName == KeyName)
                 {
                     keyFound = true;
                     keyColumn = col;
@@ -182,7 +182,7 @@ namespace MvcControlsToolkit.Core.Templates
         protected virtual void InheritColumns(
             IEnumerable<Column> inherited,
             IEnumerable<Column> addColumns = null,
-            IEnumerable<ModelExpression> removeColumns = null)
+            IEnumerable<string> removeColumns = null)
         {
             var standardColumns = inherited;
             if (removeColumns != null || addColumns != null)
@@ -190,12 +190,12 @@ namespace MvcControlsToolkit.Core.Templates
                 IEnumerable<string> toRemove;
                 if (removeColumns != null)
                 {
-                    toRemove = removeColumns.Select(m => m.Metadata.PropertyName);
-                    if (addColumns != null) toRemove = toRemove.Union(addColumns.Select(m => m.For.Metadata.PropertyName));
+                    toRemove = removeColumns;
+                    if (addColumns != null) toRemove = toRemove.Union(addColumns.Select(m => m.Name));
                 }
-                else toRemove = addColumns.Select(m => m.For.Metadata.PropertyName);
+                else toRemove = addColumns.Select(m => m.Name);
                 var set = new HashSet<string>(toRemove);
-                standardColumns = standardColumns.Where(m => !set.Contains(m.For.Metadata.PropertyName));
+                standardColumns = standardColumns.Where(m => !set.Contains(m.Name));
             }
             if (addColumns != null) standardColumns = standardColumns.Union(addColumns);
             Columns = standardColumns;
@@ -210,7 +210,7 @@ namespace MvcControlsToolkit.Core.Templates
             uint inheritIndex,
             bool isDetail = false,
             IEnumerable<Column> addColumns = null,
-            IEnumerable<ModelExpression> removeColumns = null,
+            IEnumerable<string> removeColumns = null,
             Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
         {
             IsDetail = isDetail;
@@ -241,7 +241,7 @@ namespace MvcControlsToolkit.Core.Templates
             bool isDetail = false,
             IEnumerable<Column> addColumns = null,
             bool allProperties = false,
-            IEnumerable<ModelExpression> removeColumns = null,
+            IEnumerable<string> removeColumns = null,
             Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
         {
             IsDetail = isDetail;
@@ -315,7 +315,12 @@ namespace MvcControlsToolkit.Core.Templates
         }
         public async Task<IHtmlContent> RenderColumn(object rowModel, Column col, bool editMode, ContextualizedHelpers ctx)
         {
-            if (col.ColumnConnection == null)
+            if(col.For == null)
+            {
+                var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, string.Empty), For.ModelExplorer.GetExplorerForModel(rowModel));
+                return editMode ? await col.InvokeEdit(ctx, expression) : await col.InvokeDisplay(ctx, expression);
+            }
+            else if (col.ColumnConnection == null )
             {
                 var model = col.For.Metadata.PropertyGetter(rowModel);
                 if (editMode) return await col.InvokeEdit(model, ctx);

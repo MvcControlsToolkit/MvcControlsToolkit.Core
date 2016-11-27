@@ -14,7 +14,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         public Template<RowType> DisplayTemplate { get; private set; }
         public Template<RowType> EditTemplate { get; private set; }
         public IList<Column> Columns { get; private set; }
-        public IList<ModelExpression> RemoveColumns { get; private set; }
+        public IList<string> RemoveColumns { get; private set; }
         uint? inherit;
         private void addColumn(Column col)
         {
@@ -23,13 +23,13 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         }
         private void removeColumn(Column col)
         {
-            if (RemoveColumns == null) RemoveColumns = new List<ModelExpression>();
-            RemoveColumns.Add(col.For);
+            if (RemoveColumns == null) RemoveColumns = new List<string>();
+            RemoveColumns.Add(col.Name);
         }
         private void removeExpression(ModelExpression exp)
         {
-            if (RemoveColumns == null) RemoveColumns = new List<ModelExpression>();
-            RemoveColumns.Add(exp);
+            if (RemoveColumns == null) RemoveColumns = new List<string>();
+            RemoveColumns.Add(exp.Metadata.PropertyName);
         }
         public override object Process(TagHelper tag, DefaultTemplates defaults)
         {

@@ -27,8 +27,10 @@ namespace MvcControlsToolkit.Core.OptionsParsing
 
         public override object Process(TagHelper tag, DefaultTemplates defaults)
         {
-            var colTag = tag as ColumnTagHelper;
-            Column res = new Column(colTag.For, DisplayTemplate, EditTemplate);
+            var colTag = tag as ColumnBaseTagHelper;
+            Column res = tag is ColumnTagHelper ? 
+                new Column((colTag as ColumnTagHelper).For, DisplayTemplate, EditTemplate):
+                new Column ((colTag as CustomColumnTagHelper).Name, DisplayTemplate, EditTemplate);
             res.Description = colTag.Description;
             res.ColumnTitle = colTag.ColumnTitle;
             res.DisplayFormat = colTag.DisplayFormat;

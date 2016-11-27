@@ -42,6 +42,11 @@ namespace MvcControlsToolkit.Core.Templates
         public string InputCssClass { get; set; }
         public string CheckboxCssClass { get; set; }
 
+        private string name;
+        public string Name {get
+            {
+                return For == null ? name : For.Metadata.PropertyName;
+            } }
         public ColumnConnectionInfos ColumnConnection { get; set; }
 
     protected bool prepared;
@@ -68,6 +73,14 @@ namespace MvcControlsToolkit.Core.Templates
             DisplayTemplate = displayTemplate;
             EditTemplate = editTemplate;
             
+        }
+        public Column(string name, Template<Column> displayTemplate, Template<Column> editTemplate = null)
+        {
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            this.name = name;
+            DisplayTemplate = displayTemplate;
+            EditTemplate = editTemplate;
+
         }
         protected static string combinePrefixes(string p1, string p2)
         {
@@ -127,6 +140,12 @@ namespace MvcControlsToolkit.Core.Templates
         public void Prepare()
         {
             if (prepared) return;
+            if (For == null)
+            {
+                if (!Hidden.HasValue) Hidden = false;
+                    prepared = true;
+                return;
+            }
             var metaData = For.Metadata;
             if (!Hidden.HasValue) Hidden = For.Metadata.HideSurroundingHtml;
             if (!Order.HasValue) Order = For.Metadata.Order;

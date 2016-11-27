@@ -30,12 +30,12 @@
     <subclass asp-for="Test" subclass-type="@typeof(Customer)">
         @{
             {
-                var Model = Html.CurrentScope<Customer>()?.Model;
+                var customer = Model.Test as Customer;
                 <div class="form-group">
-                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <label asp-for="@customer.RegisterNumber" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.RegisterNumber" class="form-control" />
-                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                        <input asp-for="@customer.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@customer.RegisterNumber" class="text-danger"></span>
                     </div>
                 </div>
                 
@@ -46,12 +46,12 @@
     <subclass asp-for="Test" subclass-type="@typeof(Employee)">
         @{
             {
-                var Model = Html.CurrentScope<Employee>()?.Model;
+                var employee = Model.Test as Employee;
                 <div class="form-group">
-                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <label asp-for="@employee.Matr" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.Matr" class="form-control" />
-                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                        <input asp-for="@employee.Matr" class="form-control" />
+                        <span asp-validation-for="@employee.Matr" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -79,12 +79,12 @@
     <subclass asp-for="Test1" subclass-type="@typeof(Customer)">
         @{
             {
-                var Model = Html.CurrentScope<Customer>()?.Model;
+                var customer = Model.Test1 as Customer;
                 <div class="form-group">
-                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <label asp-for="@customer.RegisterNumber" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.RegisterNumber" class="form-control" />
-                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                        <input asp-for="@customer.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@customer.RegisterNumber" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -95,12 +95,12 @@
     <subclass asp-for="Test1" subclass-type="@typeof(Employee)">
         @{
             {
-                var Model = Html.CurrentScope<Employee>()?.Model;
+                var employee = Model.Test1 as Employee;
                 <div class="form-group">
-                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <label asp-for="@employee.Matr" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.Matr" class="form-control" />
-                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                        <input asp-for="@employee.Matr" class="form-control" />
+                        <span asp-validation-for="@employee.Matr" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -124,15 +124,15 @@
         </div>
     </div>
 
-    <subclass asp-for="Test" subclass-type="@typeof(Customer)">
+    <subclass asp-for="Test2" subclass-type="@typeof(Customer)">
         @{
             {
-                var Model = Html.CurrentScope<Customer>()?.Model;
+                var customer = Model.Test2 as Customer;
                 <div class="form-group">
-                    <label asp-for="@Model.RegisterNumber" class="col-md-2 control-label"></label>
+                    <label asp-for="@customer.RegisterNumber" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.RegisterNumber" class="form-control" />
-                        <span asp-validation-for="@Model.RegisterNumber" class="text-danger"></span>
+                        <input asp-for="@customer.RegisterNumber" class="form-control" />
+                        <span asp-validation-for="@customer.RegisterNumber" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -143,12 +143,12 @@
     <subclass asp-for="Test2" subclass-type="@typeof(Employee)">
         @{
             {
-                var Model = Html.CurrentScope<Employee>()?.Model;
+                var employee = Model.Test2 as Employee;
                 <div class="form-group">
-                    <label asp-for="@Model.Matr" class="col-md-2 control-label"></label>
+                    <label asp-for="@employee.Matr" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        <input asp-for="@Model.Matr" class="form-control" />
-                        <span asp-validation-for="@Model.Matr" class="text-danger"></span>
+                        <input asp-for="@employee.Matr" class="form-control" />
+                        <span asp-validation-for="@employee.Matr" class="text-danger"></span>
                     </div>
                 </div>
 

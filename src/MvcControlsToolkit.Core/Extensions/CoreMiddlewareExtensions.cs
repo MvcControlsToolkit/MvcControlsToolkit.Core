@@ -22,7 +22,9 @@ namespace MvcControlsToolkit.Core.Extensions
             MvcControlsToolkitOptions.Instance = options.Value;
             builder.UsePreferences();
             BasicTransformationsRegistration.Registration();
-            DerivedClassesRegister.Prepare(builder.ApplicationServices.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment);
+            var env = builder.ApplicationServices.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
+            DerivedClassesRegister.Prepare(env);
+            TagHelpers.TagHelpersProviderExtensionsRegister.Prepare(env);
             return builder.UseMiddleware<CoreMiddleware>();
         }
     }

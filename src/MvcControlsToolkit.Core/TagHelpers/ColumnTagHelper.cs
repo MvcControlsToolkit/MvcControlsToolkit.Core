@@ -7,13 +7,12 @@ using MvcControlsToolkit.Core.OptionsParsing;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    [HtmlTargetElement("column", Attributes = ForAttributeName)]
-    public class ColumnTagHelper : TagHelper
+    
+    public abstract class ColumnBaseTagHelper : TagHelper
     {
-        private const string ForAttributeName = "asp-for";
+        
 
-        [HtmlAttributeName(ForAttributeName)]
-        public ModelExpression For { get; set; }
+        
 
         [HtmlAttributeName("remove")]
         public bool Remove { get; set; }
@@ -50,7 +49,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string CheckboxCssClass { get; set; }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            if (For == null) throw new ArgumentNullException(ForAttributeName);
+            
             var rc = context.GetFatherReductionContext();
             if (rc.RowParsingDisabled)
             {
@@ -67,5 +66,20 @@ namespace MvcControlsToolkit.Core.TagHelpers
             rc.Results.Add(new ReductionResult(TagTokens.Column, Remove ? -1 : 1, collector.Process(this, rc.Defaults)));
         }
 
+    }
+    [HtmlTargetElement("column", Attributes = ForAttributeName)]
+    public class ColumnTagHelper : ColumnBaseTagHelper
+    {
+        private const string ForAttributeName = "asp-for";
+        [HtmlAttributeName(ForAttributeName)]
+        public ModelExpression For { get; set; }
+    }
+
+    [HtmlTargetElement("column", Attributes = NameAttributeName)]
+    public class CustomColumnTagHelper : ColumnBaseTagHelper
+    {
+        private const string NameAttributeName = "name";
+        [HtmlAttributeName(NameAttributeName)]
+        public string Name { get; set; }
     }
 }
