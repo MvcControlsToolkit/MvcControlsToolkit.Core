@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MvcControlsToolkit.Core.Linq
 {
+    /*
     public static class IncludeByStringsExtensions
     {
         private static MethodInfo _include = typeof(EntityFrameworkQueryableExtensions)
@@ -78,5 +79,5 @@ namespace MvcControlsToolkit.Core.Linq
 
             return query;
         }
-    }
+    }*/
 }

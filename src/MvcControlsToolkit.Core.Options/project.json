@@ -2,12 +2,12 @@
     "description": "A Framework for handling options/preferences coming from several sources(user, browser capabilities, configuration, etc.) in Asp.net core",
     "title": "Mvc Controls Toolkit Options framework",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.0.1",
+    "version": "1.1.5",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Updated dependencies",
+        "releaseNotes": "Moved to Asp.net 1.1",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -21,11 +21,12 @@
         ]
     },
     "dependencies": {
-        "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
-        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1",
-        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0",
-        "Newtonsoft.Json": "9.0.1"
-
+        "Newtonsoft.Json": "9.0.1",
+        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0",
+        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.1.0",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
+        "NETStandard.Library": "1.6.1",
+        "System.ComponentModel.TypeConverter": "4.3.0"
     },
 
     "frameworks": {
@@ -41,13 +42,11 @@
                 "portable-net45+win8"
             ],
             "dependencies": {
-                "NETStandard.Library": "1.6.0",
-                "System.ComponentModel.TypeConverter": "4.1.0",
-                "Microsoft.CSharp": "4.0.1"
+                "Microsoft.CSharp": "4.3.0"
             }
         }
     },
     "scripts": {
-        "postcompile": [ "dotnet pack --no-build --output /LocalNugetFeed --configuration %compile:Configuration% %project:Directory%" ]
+        "postcompile": [ "dotnet pack --no-build --output /Nuget --configuration %compile:Configuration% %project:Directory%" ]
     }
 }

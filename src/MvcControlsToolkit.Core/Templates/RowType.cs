@@ -457,6 +457,8 @@ namespace MvcControlsToolkit.Core.Templates
                         lineStart = lineEnd+1;
                     }
                 }
+                if (edit) editComputed = true;
+                else displayComputed = true;
             }
 
         }

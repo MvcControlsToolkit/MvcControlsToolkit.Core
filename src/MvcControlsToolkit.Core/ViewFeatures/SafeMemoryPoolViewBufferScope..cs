@@ -14,7 +14,7 @@ namespace MvcControlsToolkit.Core.ViewFeatures
         private IViewBufferScope scopedBuffer = null;
         private ArrayPool<ViewBufferValue> viewBufferPool;
         private ArrayPool<char> charPool;
-        private IServiceProvider provider;
+        
         private List<IDisposable> toDispose;
         private IHttpContextAccessor contextAccessor;
         public SafeMemoryPoolViewBufferScope(ArrayPool<ViewBufferValue> viewBufferPool, ArrayPool<char> charPool, IHttpContextAccessor contextAccessor)
