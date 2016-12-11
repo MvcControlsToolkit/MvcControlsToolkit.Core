@@ -18,6 +18,7 @@ namespace MvcControlsToolkit.Core.Templates
     public class Column
     {
         protected static IDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute> Layouts = new ConcurrentDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute>();
+        protected static IDictionary<KeyValuePair<Type, string>, QueryAttribute> QueryOptionsDictionary = new ConcurrentDictionary<KeyValuePair<Type, string>, QueryAttribute>();
         public RowType Row { get; internal set; }
         public ModelExpression For { get; private set; }
         public Template<Column> EditTemplate { get; set; }
@@ -41,14 +42,13 @@ namespace MvcControlsToolkit.Core.Templates
         public int? ColSpan { get; set; }
         public string InputCssClass { get; set; }
         public string CheckboxCssClass { get; set; }
-
+        public QueryOptions? Queries { get; set;}
         private string name;
         public string Name {get
             {
                 return For == null ? name : For.Metadata.PropertyName;
             } }
         public ColumnConnectionInfos ColumnConnection { get; set; }
-
     protected bool prepared;
         private TypeInfo _TypeInfos = null;
         public TypeInfo TypeInfos
@@ -188,6 +188,34 @@ namespace MvcControlsToolkit.Core.Templates
                 }
                 
             }
+            if (Row.QueryEnabled.HasValue && Row.QueryEnabled.Value)
+            {
+                string propertyName = ColumnConnection != null && ColumnConnection.QueryDisplay ?
+                    ColumnConnection.DisplayProperty.Metadata.PropertyName :
+                    For.Metadata.PropertyName;
+
+                Type propertyType = ColumnConnection != null && ColumnConnection.QueryDisplay ?
+                    ColumnConnection.DisplayProperty.Metadata.ModelType :
+                    For.Metadata.ModelType;
+
+                var pair = new KeyValuePair<Type, string>(Row.For.Metadata.ModelType, propertyName);
+                QueryAttribute res;
+                if (!QueryOptionsDictionary.TryGetValue(pair, out res))
+                {
+                    res = Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
+                        .GetCustomAttribute(typeof(QueryAttribute), false) as QueryAttribute;
+                    QueryOptionsDictionary[pair] = res;
+                    
+
+                }
+                if (res != null)
+                {
+                    if (Queries.HasValue) Queries = res.AllowedForProperty(Queries.Value, propertyType);
+                    else Queries = res.AllowedForProperty(propertyType);
+                }
+                else  Queries = QueryOptions.None;
+            }
+            else Queries = QueryOptions.None;
             prepared = true;
         } 
         public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers, string overridePrefix=null)

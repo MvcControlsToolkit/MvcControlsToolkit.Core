@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using MvcControlsToolkit.Core.DataAnnotations;
 using MvcControlsToolkit.Core.OptionsParsing;
 
 
@@ -73,6 +74,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         private const string ForAttributeName = "asp-for";
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
+        public QueryOptions? Queries { get; set; }
     }
 
     [HtmlTargetElement("column", Attributes = NameAttributeName)]

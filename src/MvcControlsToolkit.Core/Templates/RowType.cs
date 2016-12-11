@@ -40,6 +40,7 @@ namespace MvcControlsToolkit.Core.Templates
         public string InputCssClass { get; set; }
         public string CheckboxCssClass { get; set; }
         public Type LocalizationType { get; set; }
+        public bool? QueryEnabled { get; set; }
         public uint Order { get; set; }
         private TypeInfo _TypeInfos = null;
         private int _ColumnsCount=-1;

@@ -15,14 +15,18 @@ namespace MvcControlsToolkit.Core.Templates
 
         public string ItemsValueProperty { get; private set; }
 
+        public bool QueryDisplay { get; private set; }
+
         public ColumnConnectionInfos(
             ModelExpression displayProperty,
             string itemsDisplayProperty,
-            string itemsValueProperty)
+            string itemsValueProperty,
+            bool queryDisplay=false)
         {
             DisplayProperty = displayProperty;
             ItemsDisplayProperty = itemsDisplayProperty;
             ItemsValueProperty = itemsValueProperty;
+            QueryDisplay = queryDisplay;
 
         }
         
@@ -41,11 +45,13 @@ namespace MvcControlsToolkit.Core.Templates
         string itemsUrl,
         string urlToken,
         uint maxResults, 
-        string dataSetName
+        string dataSetName,
+        bool queryDisplay = false
         )
             : base(displayProperty,
                  itemsDisplayProperty,
-                 itemsValueProperty)
+                 itemsValueProperty,
+                 queryDisplay)
         {
             ItemsUrl = itemsUrl;
             UrlToken = urlToken;
@@ -62,10 +68,12 @@ namespace MvcControlsToolkit.Core.Templates
         string itemsDisplayProperty,
         string itemsValueProperty,
         Func<object, Task<IEnumerable>> itemsSelector,
-        string clientItemsSelector)
+        string clientItemsSelector,
+        bool queryDisplay = false)
             : base(displayProperty,
                  itemsDisplayProperty,
-                 itemsValueProperty)
+                 itemsValueProperty,
+                 queryDisplay)
         {
             ClientItemsSelector = clientItemsSelector;
             ItemsSelector = itemsSelector;

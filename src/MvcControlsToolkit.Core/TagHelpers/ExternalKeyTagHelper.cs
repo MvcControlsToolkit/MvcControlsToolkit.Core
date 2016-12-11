@@ -18,6 +18,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string ItemsDisplayProperty { get; set; }
         [HtmlAttributeName("items-value-property")]
         public string ItemsValueProperty { get; set; }
+        [HtmlAttributeName("query-display")]
+        public bool QueryDisplay { get;  set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (DisplayProperty == null) new ArgumentNullException("display-property");
@@ -54,7 +56,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 ItemsUrl, 
                 UrlToken,
                 MaxResults,
-                DataSetName);
+                DataSetName,
+                QueryDisplay);
         }
 
     }
@@ -76,7 +79,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 ItemsDisplayProperty,
                 ItemsValueProperty,
                 ItemsSelector,
-                ClientItemsSelector);
+                ClientItemsSelector,
+                QueryDisplay);
         }
 
     }

@@ -40,6 +40,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string CheckboxCssClass { get; set; }
         [HtmlAttributeName("localization-type")]
         public Type LocalizationType { get; set; }
+        [HtmlAttributeName("enable-query")]
+        public bool? QueryEnabled { get; set; }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (For == null) throw new ArgumentNullException(ForAttributeName);

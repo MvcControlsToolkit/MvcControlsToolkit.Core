@@ -52,6 +52,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
                         row.InputCssClass = row.InputCssClass ?? (first as RowType).InputCssClass;
                         row.CheckboxCssClass = row.CheckboxCssClass ?? (first as RowType).CheckboxCssClass;
                         if (row.RowId == null) row.RowId = (first as RowType).RowId + j;
+                        if (!row.QueryEnabled.HasValue) row.QueryEnabled = (first as RowType).QueryEnabled;
                         j++;
                     }
                     Rows.Insert(0, first as RowType);

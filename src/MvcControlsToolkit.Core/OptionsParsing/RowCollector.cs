@@ -67,6 +67,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.EditTemplate = EditTemplate;
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
+            result.QueryEnabled = rowTag.QueryEnabled;
             return result;
         }
 
