@@ -15,6 +15,9 @@ using MvcControlsToolkit.Core.TagHelpers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using MvcControlsToolkit.Core.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -51,6 +54,31 @@ namespace MvcControlsToolkit.Core.Extensions
                 services.AddSingleton(providerType, instance);
             return services;
 
+        }
+        public static IServiceCollection AddTagHelpersExtension<T>(this IServiceCollection services)
+            where T: ITagHelpersExtension, new()
+        {
+            var extension = new T();
+            if(extension.Providers != null)
+            {
+                foreach (var x in extension.Providers) services.AddSingleton(x.GetType(), x);
+            }
+            if(extension.ProviderExtensions != null)
+            {
+                foreach (var x in extension.ProviderExtensions) TagHelpersProviderExtensionsRegister.Register(x);
+            }
+            if (extension.HasEmbeddedFiles)
+            {
+                services.Configure<RazorViewEngineOptions>(options =>
+                {
+                    var assembly = typeof(T).GetTypeInfo().Assembly;
+                    options.FileProviders.Add(
+                      new EmbeddedFileProvider(assembly,
+                      assembly?.GetName()?.Name));
+                }
+            );
+            }
+            return services;
         }
      }
 }

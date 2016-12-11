@@ -76,7 +76,6 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         public Expression<Func<T, bool>> AccessFilter { get; private set; }
         public Expression<Func<T, bool>> SelectFilter { get; private set; }
-        private string keyName;
         private ChangeSet lastChangeSet;
         public DefaultCRUDRepository(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter=null, Expression<Func<T, bool>> selectFilter = null)
         {

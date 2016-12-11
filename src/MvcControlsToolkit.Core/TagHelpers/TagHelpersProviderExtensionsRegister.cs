@@ -38,11 +38,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
             var tenum = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(env.ApplicationName).
                Where(m => !m.Name.StartsWith("MvcControlsToolkit"))
                .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic
-               && m.GetInterfaces().Contains(typeof(ITagHelperproviderExtension)))
+               && m.GetInterfaces().Contains(typeof(ITagHelpersProviderExtension)))
                .Select(m => m.AsType());
             foreach(var x in tenum)
             {
-                ITagHelperproviderExtension curr = Activator.CreateInstance(x) as ITagHelperproviderExtension;
+                ITagHelpersProviderExtension curr = Activator.CreateInstance(x) as ITagHelpersProviderExtension;
                 var res = GetProcessors(curr.For);
                 if (res.Count == 0) allExtensions[curr.For] = res;
                 res.AddRange(curr.TagProcessors);
@@ -50,6 +50,16 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 if (res1.Count == 0) allTemplates[curr.For] = res1;
                 res.AddRange(curr.TagProcessors);
             }
+        }
+        internal static void Register(ITagHelpersProviderExtension x)
+        {
+            ITagHelpersProviderExtension curr =x ;
+            var res = GetProcessors(curr.For);
+            if (res.Count == 0) allExtensions[curr.For] = res;
+            res.AddRange(curr.TagProcessors);
+            var res1 = GetTemplates(curr.For);
+            if (res1.Count == 0) allTemplates[curr.For] = res1;
+            res.AddRange(curr.TagProcessors);
         }
         public static List<KeyValuePair<string,
             Func<TagHelperContext,

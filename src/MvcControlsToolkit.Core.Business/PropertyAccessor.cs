@@ -13,7 +13,6 @@ namespace MvcControlsToolkit.Core
     {
         private object destination;
         private PropertyInfo property;
-        private PropertyInfo metaProperty;
         private bool metaDataOnly = false;
         private bool createWhenNeeded = true;
         public object Value
@@ -42,13 +41,7 @@ namespace MvcControlsToolkit.Core
             {
                 if (property == null) return null;
                 object[] res0 = property.GetCustomAttributes(attributetType, true).ToArray();
-                if (metaProperty == null) return res0;
-                object[] res1 = metaProperty.GetCustomAttributes(attributetType, true).ToArray();
-
-                if (res1 == null || res1.Length == 0) return res0;
-                else return res1;
-
-
+                return res0;
             }
         }
         protected DisplayAttribute Display

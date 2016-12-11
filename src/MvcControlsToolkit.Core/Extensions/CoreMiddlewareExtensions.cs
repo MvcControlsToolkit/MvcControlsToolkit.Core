@@ -24,7 +24,7 @@ namespace MvcControlsToolkit.Core.Extensions
             BasicTransformationsRegistration.Registration();
             var env = builder.ApplicationServices.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
             DerivedClassesRegister.Prepare(env);
-            TagHelpers.TagHelpersProviderExtensionsRegister.Prepare(env);
+            //TagHelpers.TagHelpersProviderExtensionsRegister.Prepare(env);
             return builder.UseMiddleware<CoreMiddleware>();
         }
     }

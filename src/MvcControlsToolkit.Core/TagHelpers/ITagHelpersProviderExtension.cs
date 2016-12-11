@@ -7,7 +7,7 @@ using MvcControlsToolkit.Core.Templates;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    public interface ITagHelperproviderExtension
+    public interface ITagHelpersProviderExtension
     {
         Type For { get; }
         IEnumerable<KeyValuePair<string, 
