@@ -23,7 +23,7 @@
             "version": "1.0.0-preview2-final",
             "type": "build"
         },
-        "MvcControlsToolkit.Core": "1.1.5.1",
+        "MvcControlsToolkit.Core": "1.1.5.3",
         "BundlerMinifier.Core": "2.2.306",
         "Microsoft.ApplicationInsights.AspNetCore": "1.0.2",
         "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0",

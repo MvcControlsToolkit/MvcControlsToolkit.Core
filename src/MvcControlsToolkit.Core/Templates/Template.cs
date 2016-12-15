@@ -21,6 +21,7 @@ namespace MvcControlsToolkit.Core.Templates
         public String TemplateName { get; private set; }
         protected AsyncLock Lock;
         protected ViewContext originalContext;
+        protected ITagHelpersProvider OriginalProvider;
         protected const string viewLockName = "_view_lock_";
         public Template(TemplateType templateType, string templateName)
         {
@@ -50,7 +51,8 @@ namespace MvcControlsToolkit.Core.Templates
                 if(Lock == null)
                 {
                     originalContext.ViewData[viewLockName] = Lock = new AsyncLock();
-                } 
+                }
+                OriginalProvider = originalContext.TagHelperProvider();
             }
         }
         public async Task<IHtmlContent>  Invoke(ModelExpression expression, O options, ContextualizedHelpers helpers, string overridePrefix=null)
@@ -100,13 +102,16 @@ namespace MvcControlsToolkit.Core.Templates
                     originalContext.HttpContext = helpers.CurrentHttpContext;
                     
                     var origVd = originalContext.ViewData;
-                    using (new RenderingScope(
-                        expression.Model, 
-                        overridePrefix != null? combinePrefixes(overridePrefix, expression.Name) : helpers.Context.ViewData.GetFullHtmlFieldName(expression.Name), 
-                        origVd, 
-                        options))
+                    using (new TagHelpersProviderContext(OriginalProvider, originalContext))
                     {
-                        return FTemplate(model.Model, default(O), helpers);
+                        using (new RenderingScope(
+                            expression.Model,
+                            overridePrefix != null ? combinePrefixes(overridePrefix, expression.Name) : helpers.Context.ViewData.GetFullHtmlFieldName(expression.Name),
+                            origVd,
+                            options))
+                        {
+                            return FTemplate(model.Model, default(O), helpers);
+                        }
                     }
                     
                 }   

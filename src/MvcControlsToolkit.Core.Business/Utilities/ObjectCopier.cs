@@ -5,9 +5,40 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Collections;
 using System.Linq.Expressions;
+using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.Business.Utilities
 {
+    internal static class ObjectCopierHelper
+    {
+        private static IDictionary<KeyValuePair<Type, Type>, Func<object, object>> converters =
+            new Dictionary<KeyValuePair<Type, Type>, Func<object, object>>();
+
+        static ObjectCopierHelper ()
+        {
+            converters[new KeyValuePair<Type, Type>(typeof(DateTime), typeof(Month))]
+                = x => (DateTime)((Month)x);
+            converters[new KeyValuePair<Type, Type>(typeof(Month), typeof(DateTime))]
+                = x => (Month)((DateTime)x);
+
+            converters[new KeyValuePair<Type, Type>(typeof(DateTime), typeof(Week))]
+                = x => (DateTime)((Week)x);
+            converters[new KeyValuePair<Type, Type>(typeof(Week), typeof(DateTime))]
+                = x => (Week)((DateTime)x);
+        }
+        internal static object SafeAcces(PropertyInfo prop, object obj, Type destinationType)
+        {
+            if (prop.PropertyType == destinationType) return obj;
+            Func<object, object> res = null;
+            if (converters.TryGetValue(new KeyValuePair<Type, Type>(destinationType, prop.PropertyType), out res))
+            {
+                return res(obj);
+            }
+            else return Convert.ChangeType(obj, destinationType);
+            
+        }
+
+    }
     public class ObjectCopier<M,T>
     {
         List<KeyValuePair<PropertyInfo, PropertyInfo>> allProps = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
@@ -74,7 +105,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             else
             {
                 foreach (var pair in allProps)
-                    pair.Value.SetValue(target, pair.Key.GetValue(origin));
+                    pair.Value.SetValue(target, 
+                        ObjectCopierHelper.SafeAcces(pair.Key, pair.Key.GetValue(origin), pair.Value.PropertyType));
                 foreach(var nested in allNestedProps)
                 {
                     if (!(origin as IUpdateConnections).MayUpdate(nested.Key.PropertyType.Name)) continue;
@@ -86,7 +118,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     }
                     foreach(var pair in nested.Value)
                     {
-                        pair.Key.SetValue(nestedOb, pair.Value.GetValue(origin));
+                        pair.Key.SetValue(nestedOb,
+                            ObjectCopierHelper.SafeAcces(pair.Value, pair.Value.GetValue(origin), pair.Key.PropertyType));
                     }
                 }
                 return target;
@@ -108,7 +141,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             foreach (var pair in allProps)
             {
                 var left = Expression.MakeMemberAccess(convParY, pair.Value);
-                var right = Expression.MakeMemberAccess(convParX, pair.Key);
+                var right = pair.Key.PropertyType == pair.Value.PropertyType ?
+                    (Expression)Expression.MakeMemberAccess(convParX, pair.Key) :
+                    (Expression)Expression.Convert(Expression.MakeMemberAccess(convParX, pair.Key), pair.Value.PropertyType);
                 assignements.Add(Expression.Assign(left, right)); 
             }
             foreach (var nested in allNestedProps)
@@ -122,7 +157,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 foreach (var pair in nested.Value)
                 {
                     var left = Expression.MakeMemberAccess(Expression.MakeMemberAccess(convParY, nested.Key), pair.Key);
-                    var right = Expression.MakeMemberAccess(convParX, pair.Value);
+                    var right = pair.Value.PropertyType == pair.Key.PropertyType ?
+                        (Expression)Expression.MakeMemberAccess(convParX, pair.Value) :
+                        (Expression)Expression.Convert(Expression.MakeMemberAccess(convParX, pair.Value), pair.Key.PropertyType);
                     innerBlock.Add(Expression.Assign(left, right));
                 }
                 //verify if inner block must be executed

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using MvcControlsToolkit.Core.Validation;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -39,6 +40,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         [HtmlAttributeName("id")]
         public string Id { get; set; }
+        [HtmlAttributeName("asp-type-validation")]
+        public bool ForceTypeClientValidation { get; set; }
 
         private void copyAttributes(TagHelperOutput output)
         {
@@ -97,7 +100,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     output.Attributes.Add("id", Id);
                 }
             }
-            
+            if(!ViewContext.ClientValidationEnabled && ForceTypeClientValidation)
+            {
+                var toAdd = TypeClientModelValidator.GetAttributes(For.Metadata);
+                foreach (var pair in toAdd) output.Attributes.Add(pair.Key, pair.Value);
+            }
 
         }
     }

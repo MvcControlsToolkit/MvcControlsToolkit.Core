@@ -38,8 +38,17 @@ namespace MvcControlsToolkit.Core.Validation
             attributes.Add(key, value);
             return true;
         }
-        
-        private string GetErrorMessage(ModelMetadata modelMetadata, out int typeCode)
+        public static List<KeyValuePair<string, string>> GetAttributes(ModelMetadata modelMetadata)
+        {
+            var res = new List<KeyValuePair<string, string>>();
+            int typeCode;
+            string message = GetErrorMessage(modelMetadata, out typeCode);
+            res.Add(new KeyValuePair<string, string>("data-val", "true"));
+            res.Add(new KeyValuePair<string, string>("data-val-correcttype", message));
+            res.Add(new KeyValuePair<string, string>("data-val-correcttype-type", typeCode.ToString(CultureInfo.InvariantCulture)));
+            return res;
+        }
+        public static string GetErrorMessage(ModelMetadata modelMetadata, out int typeCode)
         {
             if (modelMetadata == null)
             {
@@ -101,7 +110,7 @@ namespace MvcControlsToolkit.Core.Validation
             return string.Empty;
         }
 
-        private string GetResourceMessage(string name)
+        private static string GetResourceMessage(string name)
         {
             PropertyInfo property = null;
             if (MvcControlsToolkitOptions.Instance.CustomMessagesResourceType != null)

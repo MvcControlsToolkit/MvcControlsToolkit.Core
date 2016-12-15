@@ -27,6 +27,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             this.context = context;
             oldProviderContext = context.ViewData[field] as TagHelpersProviderContext ??
                 new TagHelpersProviderContext(context.HttpContext.RequestServices.GetService<DefaultTagHelpersProvider>());
+            if (oldProviderContext == provider) return;
             oldProviderContext.provider.UnPrepareViewContext(context);
             context.ViewData[field] = this;
             context.ClientValidationEnabled = provider.RequireUnobtrusiveValidation;
@@ -37,6 +38,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         public void Dispose()
         {
+            if (oldProviderContext == provider) return;
             provider.UnPrepareViewContext(context);
             context.ViewData[field]  = oldProviderContext;
             context.ClientValidationEnabled = oldProviderContext.provider.RequireUnobtrusiveValidation;
