@@ -1,14 +1,31 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace MvcControlsToolkit.Core.DataAnnotations
 {
-    public enum QueryOptions { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, OrderBy=1024, GroupBy=2048}
+
+    [Flags]
+    public enum QueryOptions: uint { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, OrderBy=1024, GroupBy=2048}
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryAttribute: Attribute
     {
+        private static KeyValuePair<string, string>[] decoder = new KeyValuePair<string, string>[]
+        {
+            new KeyValuePair<string, string>("=", "eq"),
+            new KeyValuePair<string, string>("<>", "ne"),
+            new KeyValuePair<string, string>("<", "lt"),
+            new KeyValuePair<string, string>("<=", "le"),
+            new KeyValuePair<string, string>(">", "gt"),
+            new KeyValuePair<string, string>(">=", "ge"),
+            new KeyValuePair<string, string>("starts with", "startswith"),
+            new KeyValuePair<string, string>("ends with", "endswith"),
+            new KeyValuePair<string, string>("contains", "contains"),
+            new KeyValuePair<string, string>("is contained in", "inv-contains"),
+
+        };
         public QueryOptions Allow { get; set; }
         public QueryOptions Deny { get; set; }
 
@@ -151,6 +168,18 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 conditions = conditions & (~QueryOptions.Contains);
             }
             return conditions;
+        }
+
+        public static IEnumerable<KeyValuePair<string, string>> QueryOptionsToEnum(QueryOptions options)
+        {
+            QueryOptions run = (QueryOptions)1;
+            var res = new List<KeyValuePair<string, string>>();
+            for(int i=0; i< decoder.Length; i++)
+            {
+                if ((run & options) == run) res.Add(decoder[i]);
+                run = (QueryOptions)((uint)run >> 1);
+            }
+            return res;
         }
 
     }
