@@ -25,6 +25,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 = x => (DateTime)((Week)x);
             converters[new KeyValuePair<Type, Type>(typeof(Week), typeof(DateTime))]
                 = x => (Week)((DateTime)x);
+
+            converters[new KeyValuePair<Type, Type>(typeof(DateTime?), typeof(Month?))]
+                = x => (DateTime?)((Month?)x);
+            converters[new KeyValuePair<Type, Type>(typeof(Month?), typeof(DateTime?))]
+                = x => (Month?)((DateTime?)x);
+
+            converters[new KeyValuePair<Type, Type>(typeof(DateTime?), typeof(Week?))]
+                = x => (DateTime?)((Week?)x);
+            converters[new KeyValuePair<Type, Type>(typeof(Week?), typeof(DateTime?))]
+                = x => (Week?)((DateTime?)x);
         }
         internal static object SafeAcces(PropertyInfo prop, object obj, Type destinationType)
         {
@@ -57,7 +67,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if (prop.Name == noCopyPropertyName) continue;
                 else if (prop.Name == noCopyPropertyName || (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) && !typeof(IConvertible).IsAssignableFrom(prop.PropertyType))) continue;
                 var tProp = tInfo.GetProperty(prop.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
-                if (tProp != null && tProp.PropertyType.IsAssignableFrom(prop.PropertyType)) allProps.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, tProp));
+                if (tProp != null ) allProps.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, tProp));
                 
             }
             if(typeof(IUpdateConnections).IsAssignableFrom(sourceType)){
@@ -71,7 +81,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         {
                             if ((typeof(IEnumerable).IsAssignableFrom(nestedTProp.PropertyType) && !typeof(IConvertible).IsAssignableFrom(nestedTProp.PropertyType))) continue;
                             var nestedProp = sInfo.GetProperty(tProp.Name + nestedTProp.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
-                            if (nestedProp != null && nestedTProp.PropertyType.IsAssignableFrom(nestedProp.PropertyType))
+                            if (nestedProp != null )
                             {
                                 if (entry == null) entry = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
                                 entry.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(nestedTProp, nestedProp));
