@@ -18,7 +18,7 @@
                 force: true
             },
             datetime: {
-                force: false
+                force: true
             },
             month: {
                 force: true

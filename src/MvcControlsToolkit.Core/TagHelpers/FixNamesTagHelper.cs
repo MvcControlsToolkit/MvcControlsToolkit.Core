@@ -40,8 +40,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         [HtmlAttributeName("id")]
         public string Id { get; set; }
-        [HtmlAttributeName("asp-type-validation")]
-        public bool ForceTypeClientValidation { get; set; }
+        
 
         private void copyAttributes(TagHelperOutput output)
         {
@@ -57,10 +56,12 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         public  override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            bool canHaveNames = ViewContext.GenerateNames();
-            bool correctNames = ViewContext.ViewData[RenderingScope.Field] as RenderingScope != null;
             var prov = ViewContext.TagHelperProvider();
-            
+            bool canHaveNames = prov.GenerateNames;
+            bool correctNames = ViewContext.ViewData[RenderingScope.Field] as RenderingScope != null;
+            bool filtering = ViewContext.IsFilterRendering();
+
+
             prov?.InputProcess?.Invoke(context, output, this);
             if (!canHaveNames)
             {
@@ -68,17 +69,27 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 {
                     output.Attributes.Add("name", Name);
                 }
-                else output.Attributes.Add("name", string.Empty);
+                else output.Attributes.Add("name", null);
                 if (!string.IsNullOrWhiteSpace(Id))
                 {
                     output.Attributes.Add("id", Id);
                 }
-                else output.Attributes.Add("Id", string.Empty);
+                else output.Attributes.Add("Id", null);
             }
             else if (!correctNames)
             {
-                copyAttributes(output);
-                //return;
+                if (!string.IsNullOrWhiteSpace(Name))
+                {
+                    output.Attributes.Add("name", Name);
+                }
+                if (!string.IsNullOrWhiteSpace(Id))
+                {
+                    output.Attributes.Add("id", Id);
+                }
+                else if (filtering)
+                {
+                    output.Attributes.Add("id", null);
+                }
             }
             else
             {
@@ -91,16 +102,25 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 {
                     output.Attributes.Add("name", Name);
                 }
-                if (string.IsNullOrWhiteSpace(Id))
+                
+                
+                
+                if (!string.IsNullOrWhiteSpace(Id))
                 {
-                    output.Attributes.Add("id", TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement));
+                    output.Attributes.Add("id", Id);
+                        
+                }
+                else if (filtering)
+                {
+                    output.Attributes.Add("id", null);
                 }
                 else
                 {
-                    output.Attributes.Add("id", Id);
+                    output.Attributes.Add("id", TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement));
                 }
+                
             }
-            if(!ViewContext.ClientValidationEnabled && ForceTypeClientValidation)
+            if(filtering && prov.RequireUnobtrusiveValidation)
             {
                 var toAdd = TypeClientModelValidator.GetAttributes(For.Metadata);
                 foreach (var pair in toAdd) output.Attributes.Add(pair.Key, pair.Value);
