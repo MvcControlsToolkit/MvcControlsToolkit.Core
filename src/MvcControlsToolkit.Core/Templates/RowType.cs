@@ -118,6 +118,7 @@ namespace MvcControlsToolkit.Core.Templates
             {
                 col.Row = this;
                 col.Prepare();
+                col.PrepareQueryOptions();
                 col.NaturalOrder = i;
                 i++;
                 if (col.For != null && col.For.Metadata.PropertyName == KeyName)
@@ -183,7 +184,7 @@ namespace MvcControlsToolkit.Core.Templates
         protected virtual void InheritColumns(
             IEnumerable<Column> inherited,
             IEnumerable<Column> addColumns = null,
-            IEnumerable<string> removeColumns = null)
+            IEnumerable<string> removeColumns = null, bool cloneInherited=false)
         {
             var standardColumns = inherited;
             if (removeColumns != null || addColumns != null)
@@ -198,6 +199,7 @@ namespace MvcControlsToolkit.Core.Templates
                 var set = new HashSet<string>(toRemove);
                 standardColumns = standardColumns.Where(m => !set.Contains(m.Name));
             }
+            if (cloneInherited) standardColumns = standardColumns.Select(m => m.CloneColumn());
             if (addColumns != null) standardColumns = standardColumns.Union(addColumns);
             Columns = standardColumns;
             PrepareColumns();
@@ -233,7 +235,7 @@ namespace MvcControlsToolkit.Core.Templates
                      KeyName = GetConventionKey(For.Metadata.ModelType);
                      if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
                  }
-                 InheritColumns(inheritFrom.visibleAndHiddenColumns, addColumns, removeColumns);
+                 InheritColumns(inheritFrom.visibleAndHiddenColumns, addColumns, removeColumns, true);
                  PrepareColumns();
              };
         }
@@ -314,7 +316,7 @@ namespace MvcControlsToolkit.Core.Templates
             return (string.IsNullOrEmpty(p1) ? p2 : (string.IsNullOrEmpty(p2) ? p1 : p1 + "." + p2));
 
         }
-        public async Task<IHtmlContent> RenderColumn(object rowModel, Column col, bool editMode, ContextualizedHelpers ctx)
+        public async Task<IHtmlContent> RenderColumn(object rowModel, Column col, bool editMode, ContextualizedHelpers ctx, bool filterMode=false)
         {
             if(col.For == null)
             {
@@ -326,6 +328,13 @@ namespace MvcControlsToolkit.Core.Templates
                 var model = col.For.Metadata.PropertyGetter(rowModel);
                 if (editMode) return await col.InvokeEdit(model, ctx);
                 else return await col.InvokeDisplay(model, ctx);
+            }
+            else if (filterMode && col.ColumnConnection.QueryDisplay)
+            {
+                var displayFor = col.ColumnConnection.DisplayProperty;
+                var model = displayFor.Metadata.PropertyGetter(rowModel);
+                var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, displayFor.Name), displayFor.ModelExplorer.GetExplorerForModel(model));
+                return await col.InvokeDisplay(ctx, expression);
             }
             else if (col.ColumnConnection is ColumnConnectionInfosStatic && editMode)
             {
@@ -400,15 +409,21 @@ namespace MvcControlsToolkit.Core.Templates
                     .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
                 var levels = cols.Max(m => m.DetailWidths != null ? m.DetailWidths.Length : 1);
                 if (levels == 0) levels = 1;
-                var allWidths = new int[cols.Count()][];
+                var allWidths = new int[cols.Length][];
 
                 var i = 0;
                 foreach (var col in cols)
                 {
                     if (edit)
+                    {
                         allWidths[i] = col.EditDetailWidths = new int[levels];
+                        col.EditDetailEndRow = -1;
+                    }
                     else
+                    {
                         allWidths[i] = col.DisplayDetailWidths = new int[levels];
+                        col.DisplayDetailEndRow = -1;
+                    }
                     i++;
                 }
                 for (int l = 0; l < levels; l++)
@@ -439,17 +454,26 @@ namespace MvcControlsToolkit.Core.Templates
                             if (diff < 0) intToAdd += diff;
                              intSum += allWidths[lineEnd][l] = intToAdd;
                         }
-                        
+                        if (edit)
+                        {
+                            if(cols[lineEnd].EditDetailEndRow<0 && lineEnd< cols.Length-1)
+                                cols[lineEnd].EditDetailEndRow = l;
+                        }   
+                        else
+                        {
+                            if (cols[lineEnd].DisplayDetailEndRow < 0 && lineEnd < cols.Length - 1)
+                                cols[lineEnd].DisplayDetailEndRow = l;
+                        }  
                         int globalInc = (gridMax - intSum) / (lineEnd - lineStart+1);
                         int minsToInc = (gridMax - intSum) % (lineEnd - lineStart+1);
                         if (globalInc > 0)
                         {
-                            for (int j = lineStart; j < lineEnd; j++)
+                            for (int j = lineStart; j <= lineEnd; j++)
                                 allWidths[j][l] += globalInc;
                         }
                         if (minsToInc > 0)
                         {
-                            Array.Sort(allWidths, lineStart, lineEnd - lineStart, new WidthsComparer(l));
+                            Array.Sort(allWidths, lineStart, lineEnd - lineStart+1, new WidthsComparer(l));
                             for (int j = lineStart; j < lineStart + minsToInc; j++)
                                 allWidths[j][l]++;
 

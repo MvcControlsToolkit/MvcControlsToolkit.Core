@@ -35,6 +35,8 @@ namespace MvcControlsToolkit.Core.Templates
         public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
         public int[] EditDetailWidths { get; set; }
+        public int DisplayDetailEndRow { get; set; }
+        public int EditDetailEndRow { get; set; }
         public string ColumnCssClass { get; set; }
         public int? Order { get; set; }
         public int NaturalOrder { get; set; }
@@ -49,7 +51,11 @@ namespace MvcControlsToolkit.Core.Templates
                 return For == null ? name : For.Metadata.PropertyName;
             } }
         public ColumnConnectionInfos ColumnConnection { get; set; }
-    protected bool prepared;
+        public Column CloneColumn()
+        {
+            return this.MemberwiseClone() as Column;
+        }
+        protected bool prepared;
         private TypeInfo _TypeInfos = null;
         public TypeInfo TypeInfos
         {
@@ -188,6 +194,11 @@ namespace MvcControlsToolkit.Core.Templates
                 }
                 
             }
+            
+            prepared = true;
+        } 
+        internal void PrepareQueryOptions()
+        {
             if (Row.QueryEnabled.HasValue && Row.QueryEnabled.Value)
             {
                 string propertyName = ColumnConnection != null && ColumnConnection.QueryDisplay ?
@@ -205,7 +216,7 @@ namespace MvcControlsToolkit.Core.Templates
                     res = Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
                         .GetCustomAttribute(typeof(QueryAttribute), false) as QueryAttribute;
                     QueryOptionsDictionary[pair] = res;
-                    
+
 
                 }
                 if (res != null)
@@ -213,11 +224,10 @@ namespace MvcControlsToolkit.Core.Templates
                     if (Queries.HasValue) Queries = res.AllowedForProperty(Queries.Value, propertyType);
                     else Queries = res.AllowedForProperty(propertyType);
                 }
-                else  Queries = QueryOptions.None;
+                else Queries = QueryOptions.None;
             }
             else Queries = QueryOptions.None;
-            prepared = true;
-        } 
+        }
         public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers, string overridePrefix=null)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
