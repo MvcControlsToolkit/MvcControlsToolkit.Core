@@ -19,6 +19,10 @@ namespace MvcControlsToolkit.Core.Templates
     {
         protected static IDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute> Layouts = new ConcurrentDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute>();
         protected static IDictionary<KeyValuePair<Type, string>, QueryAttribute> QueryOptionsDictionary = new ConcurrentDictionary<KeyValuePair<Type, string>, QueryAttribute>();
+        protected string[] bootstrap3Grid = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-" };
+        protected string[] bootstrap4Grid = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-", "col-xl-" };
+        protected string[] bootstrap3Visibility = new string[] { "clearfix visible-xs-block", "clearfix visible-sm-block", "clearfix visible-md-block", "clearfix visible-lg-block" };
+        protected string[] bootstrap4Visibility = new string[] { "clearfix hidden-sm-up", "clearfix hidden-xs-down hidden-md-up", "clearfix hidden-sm-down hidden-lg-up", "clearfix hidden-md-down hidden-xl-up", "clearfix hidden-lg-down" };
         public RowType Row { get; internal set; }
         public ModelExpression For { get; private set; }
         public Template<Column> EditTemplate { get; set; }
@@ -35,8 +39,8 @@ namespace MvcControlsToolkit.Core.Templates
         public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
         public int[] EditDetailWidths { get; set; }
-        public int DisplayDetailEndRow { get; set; }
-        public int EditDetailEndRow { get; set; }
+        public bool[] DisplayDetailEndRow { get; set; }
+        public bool[] EditDetailEndRow { get; set; }
         public string ColumnCssClass { get; set; }
         public int? Order { get; set; }
         public int NaturalOrder { get; set; }
@@ -111,6 +115,18 @@ namespace MvcControlsToolkit.Core.Templates
             }
             return res;
         }
+        public string GetLineBreakClass(SupportedGridSystems gs, bool edit, int level)
+        {
+
+            string[] allClasses = gs == SupportedGridSystems.Bootstrap3 ? bootstrap3Visibility : bootstrap4Visibility;
+            bool[] allEnds;
+            if (edit) allEnds = EditDetailEndRow;
+            else allEnds = DisplayDetailEndRow;
+            if(allEnds==null || allEnds.Length==0) return null;
+            if (level < 0) level = 0;
+            else if (level >= allEnds.Length) return null;
+            return allEnds[level] ? allClasses[level] : null;
+        }
         public string GetTotalClass(SupportedGridSystems gs, bool edit)
         {
             string[] allStyles;
@@ -121,9 +137,9 @@ namespace MvcControlsToolkit.Core.Templates
             if (currWidths != null && currWidths.Length > 0)
             {
                 if (gs == SupportedGridSystems.Bootstrap3)
-                    allStyles = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-" };
+                    allStyles = bootstrap3Grid;
                 else if (gs == SupportedGridSystems.Bootstrap4)
-                    allStyles = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-", ".col-xl-" };
+                    allStyles = bootstrap4Grid;
                 else throw new NotImplementedException();
                 var toBuild = new StringBuilder();
                 toBuild.Append(cssClass);

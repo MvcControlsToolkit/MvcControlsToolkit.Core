@@ -417,12 +417,12 @@ namespace MvcControlsToolkit.Core.Templates
                     if (edit)
                     {
                         allWidths[i] = col.EditDetailWidths = new int[levels];
-                        col.EditDetailEndRow = -1;
+                        col.EditDetailEndRow = new bool[levels];
                     }
                     else
                     {
                         allWidths[i] = col.DisplayDetailWidths = new int[levels];
-                        col.DisplayDetailEndRow = -1;
+                        col.DisplayDetailEndRow = new bool[levels];
                     }
                     i++;
                 }
@@ -456,13 +456,13 @@ namespace MvcControlsToolkit.Core.Templates
                         }
                         if (edit)
                         {
-                            if(cols[lineEnd].EditDetailEndRow<0 && lineEnd< cols.Length-1)
-                                cols[lineEnd].EditDetailEndRow = l;
+                            if(lineEnd< cols.Length-1)
+                                cols[lineEnd].EditDetailEndRow[l]=true;
                         }   
                         else
                         {
-                            if (cols[lineEnd].DisplayDetailEndRow < 0 && lineEnd < cols.Length - 1)
-                                cols[lineEnd].DisplayDetailEndRow = l;
+                            if (lineEnd < cols.Length - 1)
+                                cols[lineEnd].DisplayDetailEndRow[l]=true;
                         }  
                         int globalInc = (gridMax - intSum) / (lineEnd - lineStart+1);
                         int minsToInc = (gridMax - intSum) % (lineEnd - lineStart+1);
