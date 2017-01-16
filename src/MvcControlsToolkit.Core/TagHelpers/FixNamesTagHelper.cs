@@ -120,10 +120,14 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 }
                 
             }
-            if(filtering && prov.RequireUnobtrusiveValidation)
+            if(filtering )
             {
-                var toAdd = TypeClientModelValidator.GetAttributes(For.Metadata);
-                foreach (var pair in toAdd) output.Attributes.Add(pair.Key, pair.Value);
+                output.Attributes.Add("data-clr-type", For.Metadata.UnderlyingOrModelType.Name);
+                if (prov.RequireUnobtrusiveValidation)
+                {
+                    var toAdd = TypeClientModelValidator.GetAttributes(For.Metadata);
+                    foreach (var pair in toAdd) output.Attributes.Add(pair.Key, pair.Value);
+                }
             }
 
         }

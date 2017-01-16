@@ -105,11 +105,29 @@ namespace MvcControlsToolkit.Core.Business {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Nested properties are not allowed as aggregation results: {0}.
+        /// </summary>
+        public static string NestedPropertyNotAllowed {
+            get {
+                return ResourceManager.GetString("NestedPropertyNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to enumerable of type {0} has neither () not (int) constructor.
         /// </summary>
         public static string NoConstructor {
             get {
                 return ResourceManager.GetString("NoConstructor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No {0} public property found.
+        /// </summary>
+        public static string NoPublicProperty {
+            get {
+                return ResourceManager.GetString("NoPublicProperty", resourceCulture);
             }
         }
         
@@ -128,6 +146,33 @@ namespace MvcControlsToolkit.Core.Business {
         public static string NotSupportedInterface {
             get {
                 return ResourceManager.GetString("NotSupportedInterface", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Operation {0} is not supported.
+        /// </summary>
+        public static string NotSupportedOperation {
+            get {
+                return ResourceManager.GetString("NotSupportedOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Operation {0} is not supported on {1}.
+        /// </summary>
+        public static string NotSupportedOperationOn {
+            get {
+                return ResourceManager.GetString("NotSupportedOperationOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Property {0} is not allowed in queries.
+        /// </summary>
+        public static string PropertyNotAllowed {
+            get {
+                return ResourceManager.GetString("PropertyNotAllowed", resourceCulture);
             }
         }
         

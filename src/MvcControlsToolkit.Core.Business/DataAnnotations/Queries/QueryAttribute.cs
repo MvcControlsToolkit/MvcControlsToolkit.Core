@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
+using MvcControlsToolkit.Core.DataAnnotations.Queries;
 
 namespace MvcControlsToolkit.Core.DataAnnotations
 {
 
     [Flags]
-    public enum QueryOptions: uint { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, OrderBy=1024, GroupBy=2048}
+    public enum QueryOptions: uint { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, Search=1024, OrderBy=2048, GroupBy=4096}
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class QuerySearchAttribute : Attribute
+    {
+    }
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class QueryAttribute: Attribute
     {
+
         private static KeyValuePair<string, string>[] decoder = new KeyValuePair<string, string>[]
         {
             new KeyValuePair<string, string>("=", "eq"),
@@ -45,7 +51,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 QueryOptions.GroupBy
                 ;
             Deny = QueryOptions.IsContainedIn |
-                QueryOptions.Contains;
+                QueryOptions.Contains | QueryOptions.Search;
         }
         public bool Allowed(QueryOptions condition)
         {
@@ -62,20 +68,14 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             if (type == null) throw new ArgumentException(nameof(type));
             if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentException(nameof(propertyName));
 
-            PropertyAccessor pa = null;
-            try
-            {
-                pa = new PropertyAccessor(propertyName, type);
-            }
-            catch { }
-            if (pa == null) throw new ArgumentException(nameof(propertyName));
-            type = pa.Property.PropertyType;
-            QueryAttribute[] attributes = pa[typeof(QueryAttribute)] as QueryAttribute[];
-            if (attributes.Length == 0) return QueryOptions.None;
+            var pInfo = QueryNodeCache.GetPath(type, propertyName);
+            type = pInfo.Item1[pInfo.Item1.Count - 1].PropertyType;
+           
+            if (pInfo.Item2 == null) return QueryOptions.None;
             if (type == typeof(bool) || type == typeof(bool?))
             {
                 conditions = conditions & QueryOptions.Equal;
-                return attributes[0].Filter(conditions);
+                return pInfo.Item2.Filter(conditions);
             }
             if (type != typeof(string))
             {
@@ -86,7 +86,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             {
                 conditions = conditions & (~QueryOptions.Contains);
             }
-            return attributes[0].Filter(conditions);
+            return pInfo.Item2.Filter(conditions);
         }
         public QueryOptions AllowedForProperty(QueryOptions conditions, Type propertyType)
         {
@@ -116,18 +116,12 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             if (type == null) throw new ArgumentException(nameof(type));
             if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentException(nameof(propertyName));
 
-            PropertyAccessor pa = null;
-            try
-            {
-                pa = new PropertyAccessor(propertyName, type);
-            }
-            catch { }
-            if (pa == null) throw new ArgumentException(nameof(propertyName));
-            type = pa.Property.PropertyType;
-            QueryAttribute[] attributes = pa[typeof(QueryAttribute)] as QueryAttribute[];
-            if (attributes.Length == 0) return QueryOptions.None;
+            var pInfo = QueryNodeCache.GetPath(type, propertyName);
+            type = pInfo.Item1[pInfo.Item1.Count - 1].PropertyType;
 
-            QueryOptions conditions = attributes[0].Allow & (~attributes[0].Deny);
+            if (pInfo.Item2 == null) return QueryOptions.None;
+
+            QueryOptions conditions = pInfo.Item2.Allow & (~pInfo.Item2.Deny);
             if (type == typeof(bool) || type == typeof(bool?))
             {
                 conditions = conditions & QueryOptions.Equal;

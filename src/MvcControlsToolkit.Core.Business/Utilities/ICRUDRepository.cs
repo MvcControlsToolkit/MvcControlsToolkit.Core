@@ -17,7 +17,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
         Task<DataPage<T>> GetPage<T>(Expression<Func<T, bool>> filter,
             Func<IQueryable<T>, IOrderedQueryable<T>> sorting,
-            int page, int itemsPerPage);
+            int page, int itemsPerPage, Func<IQueryable<T>, IQueryable<T>> grouping);
 
         Task SaveChanges();
         void UpdateKeys();

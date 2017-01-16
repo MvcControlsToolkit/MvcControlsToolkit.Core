@@ -26,6 +26,17 @@ namespace MvcControlsToolkit.Core.Options.Extensions
             DefaultPreferencesService.OptionsObjectsInfos[typeof(T)] = prefix;
             return services;
         }
+        public static IServiceCollection AddPreferencesClass<I, T>(this IServiceCollection services, string prefix)
+            where T : class, I, new()
+            where I : class
+        {
+            if (string.IsNullOrWhiteSpace(prefix)) throw new ArgumentException("prefix");
+            services.AddScoped<I>(x =>
+                x.GetService<IPreferencesService>().BuildOptionsObject<T>());
+            DefaultPreferencesService.OptionsObjectsInfos[typeof(T)] = prefix;
+            DefaultPreferencesService.OptionsObjectsInfos[typeof(I)] = prefix;
+            return services;
+        }
         public static IServiceCollection AddPreferencesProvider(this IServiceCollection services, IOptionsProvider provider)
         {
             if (provider == null) throw new ArgumentException("provider");

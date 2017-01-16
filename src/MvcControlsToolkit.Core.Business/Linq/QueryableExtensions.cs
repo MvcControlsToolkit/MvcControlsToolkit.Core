@@ -10,9 +10,46 @@ namespace MvcControlsToolkit.Core.Linq
 {
     public static class QueryableExtensions
     {
+        private static MethodInfo findMethod(string methodName) {
+            return typeof(Queryable).GetMethods().Single(
+                    method => method.Name == methodName
+                            && method.IsGenericMethodDefinition
+                            && method.GetGenericArguments().Length == 2
+                            && method.GetParameters().Length == 2);
+        }
+        private static MethodInfo orderBy = findMethod("OrderBy");
+        private static MethodInfo orderByDescending = findMethod("OrderByDescending");
+        private static MethodInfo thenBy = findMethod("ThenBy");
+        private static MethodInfo thenByDescending = findMethod("ThenByDescending");
+
         public static ProjectionExpression<TSource> Project<TSource>(this IQueryable<TSource> source)
         {
             return new ProjectionExpression<TSource>(source);
+        }
+        public static IOrderedQueryable<T> OrderBy<T>(this IQueryable<T> source, LambdaExpression property)
+        {
+            return ApplyOrder<T>(source, property, orderBy);
+        }
+        public static IOrderedQueryable<T> OrderByDescending<T>(this IQueryable<T> source, LambdaExpression property)
+        {
+            return ApplyOrder<T>(source, property, orderByDescending);
+        }
+        public static IOrderedQueryable<T> ThenBy<T>(this IOrderedQueryable<T> source, LambdaExpression property)
+        {
+            return ApplyOrder<T>(source, property, thenBy);
+        }
+        public static IOrderedQueryable<T> ThenByDescending<T>(this IOrderedQueryable<T> source, LambdaExpression property)
+        {
+            return ApplyOrder<T>(source, property, thenByDescending);
+        }
+        static IOrderedQueryable<T> ApplyOrder<T>(IQueryable<T> source, LambdaExpression property, MethodInfo genericMethod)
+        {
+            
+
+            object result = genericMethod
+                    .MakeGenericMethod(typeof(T), property.ReturnType)
+                    .Invoke(null, new object[] { source, property });
+            return (IOrderedQueryable<T>)result;
         }
     }
     internal class PropertyBinding

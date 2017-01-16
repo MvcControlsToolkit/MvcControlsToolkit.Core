@@ -223,7 +223,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Expression<Func<T1, bool>> filter, 
             Func<IQueryable<T1>, IOrderedQueryable<T1>> sorting, 
             int page, 
-            int itemsPerPage)
+            int itemsPerPage,
+            Func<IQueryable<T1>, IQueryable<T1>> grouping=null
+            )
         {
 
             if (sorting == null) throw new ArgumentNullException(nameof(sorting));
@@ -240,7 +242,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             else
                 proj = start.Project().To<T1>();
             if (filter != null) proj = proj.Where(filter);
-
+            if (grouping != null) proj = grouping(proj);
             var res = new DataPage<T1>
             {
                 TotalCount=await proj.CountAsync(),

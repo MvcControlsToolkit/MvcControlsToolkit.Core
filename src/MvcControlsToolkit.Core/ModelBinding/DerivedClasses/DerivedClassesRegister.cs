@@ -29,6 +29,7 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
     {
         protected static IDictionary<Type, int> AllRunTimeTypes;
         protected static KeyValuePair<Type, int>[] InverseAllRunTimeTypes;
+        protected static List<Type> DefaultTypes;
         internal static void Prepare(IHostingEnvironment env)
         {
             
@@ -37,6 +38,7 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
                 .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic
                 && m.GetCustomAttribute(typeof(MvcControlsToolkit.Core.DataAnnotations.RunTimeTypeAttribute)) != null)
                 .Select(m => m.AsType());
+            if (DefaultTypes != null) tenum = tenum.Union(DefaultTypes);
             var tlist = new List<Type>();
             foreach(var t in tenum)
             {
@@ -71,6 +73,11 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
             if (AllRunTimeTypes.TryGetValue(type, out res)) return res.ToString(CultureInfo.InvariantCulture) + "_";
             else if (quiet) return null;
             else throw new ArgumentException(string.Format(DefaultMessages.SubclassNotRegistered, type.Name), nameof(type)); 
+        }
+        public static void AddDefaultType<T>()
+        {
+            if (DefaultTypes == null) DefaultTypes = new List<Type>();
+            DefaultTypes.Add(typeof(T));
         }
     }
 }

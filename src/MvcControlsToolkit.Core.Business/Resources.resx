@@ -132,14 +132,29 @@
   <data name="InvalidFormat" xml:space="preserve">
     <value>Range Limits of DynamicRangeAttribute have invalid format</value>
   </data>
+  <data name="NestedPropertyNotAllowed" xml:space="preserve">
+    <value>Nested properties are not allowed as aggregation results: {0}</value>
+  </data>
   <data name="NoConstructor" xml:space="preserve">
     <value>enumerable of type {0} has neither () not (int) constructor</value>
+  </data>
+  <data name="NoPublicProperty" xml:space="preserve">
+    <value>No {0} public property found</value>
   </data>
   <data name="NotSupportedEnumerables" xml:space="preserve">
     <value>enumerables are non supported by {0}</value>
   </data>
   <data name="NotSupportedInterface" xml:space="preserve">
     <value>interfaces are not supported by {0}</value>
+  </data>
+  <data name="NotSupportedOperation" xml:space="preserve">
+    <value>Operation {0} is not supported</value>
+  </data>
+  <data name="NotSupportedOperationOn" xml:space="preserve">
+    <value>Operation {0} is not supported on {1}</value>
+  </data>
+  <data name="PropertyNotAllowed" xml:space="preserve">
+    <value>Property {0} is not allowed in queries</value>
   </data>
   <data name="PropertyNotFound" xml:space="preserve">
     <value>type {0} has no property named {1}</value>

@@ -44,6 +44,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             {
                 return res(obj);
             }
+            
             else return Convert.ChangeType(obj, destinationType);
             
         }
@@ -67,7 +68,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if (prop.Name == noCopyPropertyName) continue;
                 else if (prop.Name == noCopyPropertyName || (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) && !typeof(IConvertible).IsAssignableFrom(prop.PropertyType))) continue;
                 var tProp = tInfo.GetProperty(prop.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
-                if (tProp != null ) allProps.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, tProp));
+                if (tProp != null)
+                {
+                    allProps.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(prop, tProp));
+                }
                 
             }
             if(typeof(IUpdateConnections).IsAssignableFrom(sourceType)){
@@ -83,6 +87,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                             var nestedProp = sInfo.GetProperty(tProp.Name + nestedTProp.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
                             if (nestedProp != null )
                             {
+
                                 if (entry == null) entry = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
                                 entry.Add(new KeyValuePair<PropertyInfo, PropertyInfo>(nestedTProp, nestedProp));
                             }
@@ -115,8 +120,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             else
             {
                 foreach (var pair in allProps)
-                    pair.Value.SetValue(target, 
-                        ObjectCopierHelper.SafeAcces(pair.Key, pair.Key.GetValue(origin), pair.Value.PropertyType));
+                {
+                    var orig = pair.Key.GetValue(origin);
+                    if (orig == null && Nullable.GetUnderlyingType(pair.Key.PropertyType) == pair.Value.PropertyType)
+                        continue;
+                    pair.Value.SetValue(target,
+                        ObjectCopierHelper.SafeAcces(pair.Key, orig, pair.Value.PropertyType));
+                }
+                    
                 foreach(var nested in allNestedProps)
                 {
                     if (!(origin as IUpdateConnections).MayUpdate(nested.Key.PropertyType.Name)) continue;
@@ -154,6 +165,11 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 var right = pair.Key.PropertyType == pair.Value.PropertyType ?
                     (Expression)Expression.MakeMemberAccess(convParX, pair.Key) :
                     (Expression)Expression.Convert(Expression.MakeMemberAccess(convParX, pair.Key), pair.Value.PropertyType);
+                if (Nullable.GetUnderlyingType(pair.Key.PropertyType) == pair.Value.PropertyType)
+                {
+                    assignements.Add(Expression.IfThen(Expression.NotEqual(Expression.MakeMemberAccess(convParX, pair.Key), Expression.Constant(null)), Expression.Assign(left, right)));
+                }
+                else
                 assignements.Add(Expression.Assign(left, right)); 
             }
             foreach (var nested in allNestedProps)
@@ -169,8 +185,13 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     var left = Expression.MakeMemberAccess(Expression.MakeMemberAccess(convParY, nested.Key), pair.Key);
                     var right = pair.Value.PropertyType == pair.Key.PropertyType ?
                         (Expression)Expression.MakeMemberAccess(convParX, pair.Value) :
-                        (Expression)Expression.Convert(Expression.MakeMemberAccess(convParX, pair.Value), pair.Key.PropertyType);
-                    innerBlock.Add(Expression.Assign(left, right));
+                        (Expression)Expression.Convert( Expression.MakeMemberAccess(convParX, pair.Value), pair.Key.PropertyType);
+                    if(Nullable.GetUnderlyingType(pair.Value.PropertyType) == pair.Key.PropertyType)
+                    {
+                        innerBlock.Add(Expression.IfThen(Expression.NotEqual(Expression.MakeMemberAccess(convParX, pair.Value), Expression.Constant(null)), Expression.Assign(left, right))); 
+                    }
+                    else
+                        innerBlock.Add(Expression.Assign(left, right));
                 }
                 //verify if inner block must be executed
                 ;

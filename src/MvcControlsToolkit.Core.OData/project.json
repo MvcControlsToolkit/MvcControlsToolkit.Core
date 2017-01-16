@@ -1,13 +1,13 @@
-﻿{
-    "description": "A Framework for handling options/preferences coming from several sources(user, browser capabilities, configuration, etc.) in Asp.net core",
-    "title": "Mvc Controls Toolkit Options framework",
+{
+    "description": "OData parsing to json and to IQueryable transformations, and OData middleware",
+    "title": "Mvc Controls Toolkit OData tools",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.1.5.1",
+    "version": "0.0.0.2",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Moved to Asp.net 1.1",
+        "releaseNotes": "First realease",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -17,22 +17,14 @@
         },
         "tags": [
             "aspnetcore",
-            "aspnetcoremvc"
+            "aspnetcoremvc",
+            "OData"
         ]
     },
-    "dependencies": {
-        "Newtonsoft.Json": "9.0.1",
-        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0",
-        "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.1.0",
-        "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
-        "NETStandard.Library": "1.6.1",
-        "System.ComponentModel.TypeConverter": "4.3.0"
-    },
-
     "frameworks": {
         "net451": {
             "frameworkAssemblies": {
-
+                "System.ComponentModel.DataAnnotations": ""
             }
         },
         "netstandard1.6": {
@@ -42,11 +34,18 @@
                 "portable-net45+win8"
             ],
             "dependencies": {
-                "Microsoft.CSharp": "4.3.0"
+                "System.Reflection.TypeExtensions": "4.3.0"
             }
         }
     },
+    "dependencies": {
+        "MvcControlsToolkit.Core.Business": "1.1.5.9",
+        "MvcControlsToolkit.Core.Options": "1.1.5.1",
+        "NETStandard.Library": "1.6.1",
+        "Microsoft.OData.Core": "7.0.0"
+    },
     "scripts": {
         "postcompile": [ "dotnet pack --no-build --output /Nuget --configuration %compile:Configuration% %project:Directory%" ]
+
     }
 }
