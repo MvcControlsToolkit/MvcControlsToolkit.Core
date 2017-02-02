@@ -108,8 +108,17 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                     }
                 }
             }
-            if (max) Maximum = currDate;
-            else Minimum = currDate;
+            if(TargetType == typeof(DateTimeOffset))
+            {
+                if (max) Maximum = (DateTimeOffset)currDate;
+                else Minimum = (DateTimeOffset)currDate;
+            }
+            else
+            {
+                if (max) Maximum = currDate;
+                else Minimum = currDate;
+            }
+            
             return true;
         }
 
@@ -133,6 +142,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                     if (TargetType == typeof(Week)) Minimum = Week.Parse(value);
                     else if (TargetType == typeof(Month)) Minimum = Month.Parse(value);
                     else if (TargetType == typeof(TimeSpan)) Minimum = TimeSpan.Parse(value, CultureInfo.InvariantCulture);
+                    else if (TargetType == typeof(DateTimeOffset)) Minimum = DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
                     else Minimum = Convert.ChangeType(value, TargetType, CultureInfo.InvariantCulture) as IComparable;
                 }
                 catch
@@ -166,6 +176,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                     if (TargetType == typeof(Week)) Maximum = Week.Parse(value);
                     else if (TargetType == typeof(Month)) Maximum = Month.Parse(value);
                     else if (TargetType == typeof(TimeSpan)) Maximum = TimeSpan.Parse(value, CultureInfo.InvariantCulture);
+                    else if (TargetType == typeof(DateTimeOffset)) Maximum = DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
                     else Maximum = Convert.ChangeType(value, TargetType, CultureInfo.InvariantCulture) as IComparable;
                 }
                 catch
@@ -286,7 +297,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             {
                 value = -Convert.ToDouble(value);
             }
-            else if (TargetType == typeof(DateTime) || TargetType == typeof(TimeSpan) || TargetType == typeof(Week) || TargetType == typeof(Month))
+            else if (TargetType == typeof(DateTime) || TargetType == typeof(DateTimeOffset) || TargetType == typeof(TimeSpan) || TargetType == typeof(Week) || TargetType == typeof(Month))
             {
                 value = -(TimeSpan)value;
 
@@ -297,7 +308,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         {
             if (delayRef != null && delayRef.StartsWith("!"))
             {
-                if (TargetType == typeof(DateTime) || TargetType == typeof(Month) || TargetType == typeof(Week)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
+                if (TargetType == typeof(DateTime) || TargetType == typeof(DateTimeOffset) || TargetType == typeof(Month) || TargetType == typeof(Week)) fixedDelay = TimeSpan.Parse(delayRef.Substring(1), CultureInfo.InvariantCulture);
                 else fixedDelay = Convert.ChangeType(delayRef.Substring(1), TargetType, CultureInfo.InvariantCulture);
             }
             object toAdd = fixedDelay;
@@ -373,6 +384,11 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                     value = Convert.ToDateTime(value).Add(-(TimeSpan)toAdd);
                     toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
                 }
+                else if (TargetType == typeof(DateTimeOffset))
+                {
+                    value = ((DateTimeOffset)value).Add(-(TimeSpan)toAdd);
+                    toAdd = -Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
                 else if (TargetType == typeof(Month))
                 {
                     value = Month.FromDateTime(((Month)value).ToDateTime().Add(-(TimeSpan)toAdd));
@@ -438,6 +454,11 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 else if (TargetType == typeof(DateTime))
                 {
                     value = Convert.ToDateTime(value).Add((TimeSpan)toAdd);
+                    toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
+                }
+                else if (TargetType == typeof(DateTimeOffset))
+                {
+                    value = ((DateTimeOffset)value).Add((TimeSpan)toAdd);
                     toAdd = Convert.ToInt64(((TimeSpan)toAdd).TotalMilliseconds);
                 }
                 else if (TargetType == typeof(Month))

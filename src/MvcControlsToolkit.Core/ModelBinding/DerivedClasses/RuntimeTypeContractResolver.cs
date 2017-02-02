@@ -18,9 +18,8 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 res.Converter = new RuntimeTypesJsonConverter();
             else
             {
-                if (type == typeof(object)) res.Converter = new ObjectJsonConverter();
                 type = Nullable.GetUnderlyingType(type) ?? type;
-                if(type == typeof(Month)) res.Converter = new MonthJsonConverter();
+                if (type == typeof(Month)) res.Converter = new MonthJsonConverter();
                 else if (type == typeof(Week)) res.Converter = new WeekJsonConverter();
             }
             return res;

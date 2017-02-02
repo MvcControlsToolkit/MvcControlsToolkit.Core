@@ -27,16 +27,16 @@ namespace MvcControlsToolkit.Core.ModelBinding
 
             _typeConverter = TypeDescriptor.GetConverter(type);
         }
-        private bool needNeutral(ModelBindingContext bindingContext)
+        private bool needNeutral(ModelBindingContext bindingContext, out Html5InputSupport support)
         {
-            Html5InputSupport support = null;
+            support = null;
             try
             {
                 support= bindingContext.HttpContext.RequestServices.GetService(typeof(Html5InputSupport)) as Html5InputSupport;
             }
-            catch
+            catch(Exception ex)
             {
-
+                var l= ex;
             }
             if (support == null) return false;
             var type = bindingContext.ModelMetadata.UnderlyingOrModelType;
@@ -52,6 +52,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 else if (bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
                 else return support.DateTime > 2;
             }
+            if (type == typeof(DateTimeOffset)) return support.DateTime > 2;
             if (type == typeof(Week)) return support.Week > 2;
             if (type == typeof(Month)) return support.Month > 2;
             if(type == typeof(TimeSpan) && bindingContext.ModelMetadata.DataTypeName == "Time") return support.Time > 2;
@@ -75,7 +76,8 @@ namespace MvcControlsToolkit.Core.ModelBinding
 
             try
             {
-                if (needNeutral(bindingContext))
+                Html5InputSupport support;
+                if (needNeutral(bindingContext, out support))
                 {
                     valueProviderResult = new ValueProviderResult(valueProviderResult.Values, CultureInfo.InvariantCulture);
                 }
@@ -104,6 +106,21 @@ namespace MvcControlsToolkit.Core.ModelBinding
                         model = null;
                     }
                 }
+                else if (model != null && bindingContext.ModelMetadata.UnderlyingOrModelType == typeof(DateTimeOffset))
+                {
+                    
+                    var offsetValueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName+".O");
+                    double offset = 0;
+                    if(offsetValueProviderResult != ValueProviderResult.None)
+                    {
+                        var ovalue = offsetValueProviderResult.FirstValue;
+                        if(ovalue!= null) double.TryParse(ovalue, NumberStyles.Number, CultureInfo.InvariantCulture, out offset);
+                    }
+                    if(offset >1 && offset<-1) bindingContext.ModelState.Remove(bindingContext.ModelName);
+                    var dModel = (DateTimeOffset)model;
+                    model = dModel.AddMinutes(dModel.Offset.TotalMinutes - offset);
+                }
+                    
 
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the

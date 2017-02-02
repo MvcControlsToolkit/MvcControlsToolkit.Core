@@ -5,7 +5,7 @@
         (function (factory) {
             if (typeof define === 'function' && define['amd']) {
                 // [1] AMD anonymous module
-                define(["../mvcct.enhancer"], factory);
+                define(["../mvcct.enhancer.min"], factory);
             } else if (typeof exports === 'object' && typeof module === 'object') {
                 // [2] CommonJS/Node.js
                 module["exports"] = factory(require("mvcct-enhancer"));  // module.exports is for Node.js

@@ -40,7 +40,8 @@ namespace WebTestCore.Controllers
                 AFloat = 12f,
                 ATime = new TimeSpan(12, 10, 0),
                 AWeek = new Week(2016, 25),
-                AMonth = new Month(2016, 4)
+                AMonth = new Month(2016, 4),
+                ADatetimeOffset=new DateTimeOffset(2016, 4, 1, 0, 0, 0, new TimeSpan(4, 0, 0))
             });
         }
 
@@ -87,6 +88,26 @@ namespace WebTestCore.Controllers
 
         [HttpPost]
         public IActionResult StoreTest(Person model)
+        {
+            if (ModelState.IsValid)
+            {
+            }
+            return View(model);
+        }
+        [HttpGet]
+        public IActionResult StoreTypesTest()
+        {
+            return View(new SerializationViewModel()
+            {
+                MonthTest = new Month(2000, 4),
+                WeekTest = new Week(2000, 10),
+                SimpleTypeTest = new DateTimeOffset(2017, 1, 30, 18, 46, 10, new TimeSpan(4, 0, 0))
+            });
+            
+        }
+
+        [HttpPost]
+        public IActionResult StoreTypesTest(SerializationViewModel model)
         {
             if (ModelState.IsValid)
             {

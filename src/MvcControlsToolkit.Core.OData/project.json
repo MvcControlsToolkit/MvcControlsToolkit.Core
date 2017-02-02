@@ -39,8 +39,8 @@
         }
     },
     "dependencies": {
-        "MvcControlsToolkit.Core.Business": "1.1.5.9",
-        "MvcControlsToolkit.Core.Options": "1.1.5.1",
+        "MvcControlsToolkit.Core.Business": "1.1.5.*",
+        "MvcControlsToolkit.Core.Options": "1.1.5.*",
         "NETStandard.Library": "1.6.1",
         "Microsoft.OData.Core": "7.0.0"
     },

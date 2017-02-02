@@ -99,15 +99,24 @@ namespace MvcControlsToolkit.Core.Options
             if (prefix == null) throw new ArgumentNullException("prefix");
             if (type == null) throw new ArgumentNullException("type");
             var converter = TypeConvertersCache.GetInverseConverter(type);
-            if (converter != null) return converter(store[prefix].Value);
+            if (converter != null)
+            {
+                OptionEntry res;
+                if (store.TryGetValue(prefix, out res))
+                    return converter(res.Value);
+                else
+                    return null;
+            }
             if (typeof(IEnumerable).IsAssignableFrom(type))
             {
                 if (type.GetTypeInfo().IsGenericType && (new Type[] { typeof(IEnumerable<>), typeof(ICollection<>) }).Contains(type.GetGenericTypeDefinition()))
                 {
                     var innerType = type.GetGenericArguments()[0];
-                    converter = TypeConvertersCache.GetInverseConverter(type);
+                    converter = TypeConvertersCache.GetInverseConverter(innerType);
                     if (converter == null) return null;
-                    var arrs = store[prefix].Value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    OptionEntry pres;
+                    if (!store.TryGetValue(prefix, out pres) || pres == null || pres.Value == null) return null;
+                    var arrs = pres.Value.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                     var res = Array.CreateInstance(innerType, arrs.Length);
                     int index = 0;
                     foreach(var x in arrs)
@@ -125,7 +134,8 @@ namespace MvcControlsToolkit.Core.Options
                 if(instance == null) obj = Activator.CreateInstance(type);
                 foreach (var prop in type.GetProperties(BindingFlags.Public|BindingFlags.Instance))
                 {
-                    prop.SetValue(obj, GetOptionObject(prefix + "." + propertyName(prop), prop.PropertyType, instance == null ? null : prop.GetValue(instance)));
+                    var val = GetOptionObject(prefix + "." + propertyName(prop), prop.PropertyType, instance == null ? null : prop.GetValue(instance));
+                    if(val != null) prop.SetValue(obj, val);
                 }
             }
             

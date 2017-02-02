@@ -64,6 +64,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public ModelExpression For { get; set; }
         private string coverter(object value, string hint)
         {
+            if(value is DateTimeOffset)
+                value =((DateTimeOffset)value).UtcDateTime;
             if (value is DateTime)
             {
                 DateTime dValue = (DateTime)value;
@@ -80,6 +82,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
             else if (value is IConvertible) return (value as IConvertible).ToString(CultureInfo.InvariantCulture);
             else return value.ToString();
         }
+        private string processDTOffsetValue(object o)
+        {
+            if (o is string) o = DateTimeOffset.Parse(o as string);
+            return coverter(o, null);
+        }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             var modelExplorer = For.ModelExplorer;
@@ -87,7 +94,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
             string min = string.IsNullOrEmpty(Min)? null : Min, max = string.IsNullOrEmpty(Max)? null : Max;
             
             var metaData = modelExplorer.Metadata;
-            var typeName = modelExplorer.Metadata.UnderlyingOrModelType.Name.ToLowerInvariant();
+            var utype = modelExplorer.Metadata.UnderlyingOrModelType;
+            var typeName = utype.Name.ToLowerInvariant();
             var hint = (metaData.DataTypeName ?? metaData.TemplateHint)?.ToLowerInvariant();
             if (string.IsNullOrEmpty(InputTypeName) && !output.Attributes.ContainsName("type"))
             {
@@ -95,7 +103,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 if (hint == "color") type = hint;
                 else if (typeName == "single" || typeName == "double" || typeName == "decimal") type = "number";
                 else if (typeName == "week" || typeName == "month") type = typeName;
-                else if (typeName == "datetime" && string.IsNullOrEmpty(hint)) type = "datetime-local";
+                else if (typeName == "datetimeoffset" || (typeName == "datetime" && string.IsNullOrEmpty(hint))) type = "datetime-local";
 
                 if (type != null)
                 {
@@ -112,7 +120,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             
             
             bool isHtml5DateTime = (string.IsNullOrEmpty(InputTypeName) || InputTypeName == "date" || InputTypeName == "datetime" || InputTypeName == "datetime-local" || InputTypeName == "week" || InputTypeName == "month");
-            bool isDateTimeType = typeName == "datetime" || typeName == "timespan" || typeName == "week" || typeName == "month";
+            bool isDateTimeType = typeName == "datetime" || typeName == "timespan" || typeName == "week" || typeName == "month" || typeName == "datetimeoffset";
             if (isDecimal || isPositive || isIntegerNP) output.Attributes.Add("data-basic-type", "numeric");
             else if (isDateTimeType) output.Attributes.Add("data-basic-type", "time");
             else output.Attributes.Add("data-basic-type", "string");
@@ -139,6 +147,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 string value = modelExplorer.Model == null ? null : coverter(modelExplorer.Model, hint);
                 if (!string.IsNullOrEmpty(value))
                 {
+                    
                     if (!output.Attributes.ContainsName("value"))
                         output.Attributes.Add("value", value);
                 }
@@ -168,7 +177,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     }
                     else if(isHtml5DateTime && isDateTimeType)
                     {
-                        min = (minimum is string) ? minimum as string : (minimum is IConvertible ? coverter(minimum, hint) : minimum.ToString());
+                        if (utype == typeof(DateTimeOffset)) min = processDTOffsetValue(minimum);
+                        else min = (minimum is string) ? minimum as string : (minimum is IConvertible ? coverter(minimum, hint) : minimum.ToString());
                     }
                 }
                 if (max == null && maximum != null)
@@ -177,11 +187,12 @@ namespace MvcControlsToolkit.Core.TagHelpers
                         max = (maximum is string) ? maximum as string : (maximum as IConvertible).ToString(CultureInfo.InvariantCulture);
                     else if(isHtml5DateTime && isDateTimeType)
                     {
-                        max = (maximum is string) ? maximum as string : (maximum is IConvertible ? coverter(maximum, hint) : maximum.ToString());
+                        if (utype == typeof(DateTimeOffset)) max = processDTOffsetValue(maximum);
+                        else max = (maximum is string) ? maximum as string : (maximum is IConvertible ? coverter(maximum, hint) : maximum.ToString());
                     }
                 }
             }
-
+            if(utype == typeof(DateTimeOffset)) output.Attributes.Add("data-is-utc", "true");
             if (isNumber && isPositive && min == null)
             {
                 min = "0";
@@ -203,6 +214,13 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 var fullName = ViewContext.ViewData.GetFullHtmlFieldName(For.Name);
                 fullName = fullName.Length > 0 ? fullName + "._" : "_";
                 output.PostElement.AppendHtml("<input name='"+ fullName + "' type='hidden'/>");
+            }
+            else if(utype == typeof(DateTimeOffset))
+            {
+                var fullName = ViewContext.ViewData.GetFullHtmlFieldName(For.Name);
+                fullName = fullName.Length > 0 ? fullName + ".O" : "O";
+                output.PostElement.AppendHtml("<input name='" + fullName + "' type='hidden' value='0' />");
+
             }
             
         }

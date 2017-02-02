@@ -13,7 +13,12 @@ namespace MvcControlsToolkit.Core.Options
         public static int Simulated { get { return 2; } }
         public static int SimpleWidget { get { return 1; } }
         public static int NotSupported { get { return 0; } }
-
+        
+        public Html5InputSupport()
+        {
+            ClientTimeZoneOffset = System.DateTime.Now.Subtract(System.DateTime.UtcNow).TotalMinutes;
+        }
+        
         [OptionName("number")]
         public int Number { get; set; }
         [OptionName("range")]
@@ -38,6 +43,9 @@ namespace MvcControlsToolkit.Core.Options
         public int Url { get; set; }
         [OptionName("color")]
         public int Color { get; set; }
+        [OptionName("clientTimeZoneOffset")]
+        public double ClientTimeZoneOffset { get; set; }
 
+        
     }
 }

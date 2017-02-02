@@ -33,6 +33,7 @@ namespace MvcControlsToolkit.Core.Validation
                 if (minValue != null)
                 {
                     if (minValue is DateTime) minValue = ((DateTime)minValue).ToString("s", CultureInfo.InvariantCulture);
+                    else if (minValue is DateTimeOffset) minValue = ((DateTimeOffset)minValue).ToUniversalTime().ToString("s", CultureInfo.InvariantCulture);
                     else if (minValue is Week)
                     {
                         var date = ((Week)minValue).StartDate();
@@ -49,6 +50,7 @@ namespace MvcControlsToolkit.Core.Validation
                 if (maxValue != null)
                 {
                     if (maxValue is DateTime) maxValue = ((DateTime)maxValue).ToString("s", CultureInfo.InvariantCulture);
+                    else if (maxValue is DateTimeOffset) maxValue = ((DateTimeOffset)maxValue).ToUniversalTime().ToString("s", CultureInfo.InvariantCulture);
                     else if (maxValue is Week)
                     {
                         var date = ((Week)maxValue).StartDate();

@@ -57,7 +57,7 @@ namespace MvcControlsToolkit.Core.Validation
 
             var type = modelMetadata.UnderlyingOrModelType;
             var dataType = (modelMetadata.DataTypeName ?? modelMetadata.TemplateHint)?.ToLowerInvariant();
-            if(type == typeof(int) || type == typeof(long) || type == typeof(short))
+            if (type == typeof(int) || type == typeof(long) || type == typeof(short))
             {
                 typeCode = 2;
                 return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeInteger)), modelMetadata.GetDisplayName());
@@ -82,7 +82,7 @@ namespace MvcControlsToolkit.Core.Validation
                 else if (dataType == "time")
                 {
                     typeCode = 4;
-                        return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeTime)), modelMetadata.GetDisplayName());
+                    return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeTime)), modelMetadata.GetDisplayName());
                 }
                 else
                 {
@@ -90,6 +90,11 @@ namespace MvcControlsToolkit.Core.Validation
                     return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeDateTime)), modelMetadata.GetDisplayName());
                 }
 
+            }
+            else if (type == typeof(DateTimeOffset))
+            {
+                typeCode = 6;
+                return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeDateTime)), modelMetadata.GetDisplayName());
             }
             else if (type == typeof(TimeSpan))
             {

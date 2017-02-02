@@ -15,6 +15,9 @@ namespace WebTestCore.ViewModels
         [Range(typeof(DateTime), "2016-01-01T00:00:00", "2016-11-01T23:00:00")]
         public DateTime? ADatetime { get; set; }
 
+        [DynamicRange(typeof(DateTimeOffset), SMinimum = "2016-01-01T00:00:00.0000000+04:00", SMaximum = "2016-11-01T23:00:00.0000000+04:00")]
+        public DateTimeOffset? ADatetimeOffset { get; set; }
+
         [Range(typeof(DateTime), "2016-01-01", "2016-11-01")]
         [DataType(DataType.Date)]
         public DateTime? ADate { get; set; }

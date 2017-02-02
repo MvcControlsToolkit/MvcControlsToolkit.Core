@@ -122,7 +122,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             }
             if(filtering )
             {
-                output.Attributes.Add("data-clr-type", For.Metadata.UnderlyingOrModelType.Name);
+                
                 if (prov.RequireUnobtrusiveValidation)
                 {
                     var toAdd = TypeClientModelValidator.GetAttributes(For.Metadata);

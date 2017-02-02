@@ -51,6 +51,7 @@ namespace MvcControlsToolkit.Core.Types
         public Month AddMonths(int months)
         {
             if (months == 0) return this;
+            months = (int)MonthNumber + months;
             var years = months / 12;
             months = months % 12;
             if (months < 0)
@@ -58,7 +59,7 @@ namespace MvcControlsToolkit.Core.Types
                 months += 12;
                 years--;
             }
-            return new Month((uint)(years + _YearNumber), (uint)(months + MonthNumber));
+            return new Month((uint)(years + _YearNumber), (uint)(months));
 
         }
         public Month AddYears(int years)
@@ -125,7 +126,7 @@ namespace MvcControlsToolkit.Core.Types
             DateTime dt;
             var res = DateTime.TryParse(s, out dt);
             if (res) m= FromDateTime(dt);
-            m = min;
+            else m = min;
             return res;
         }
 

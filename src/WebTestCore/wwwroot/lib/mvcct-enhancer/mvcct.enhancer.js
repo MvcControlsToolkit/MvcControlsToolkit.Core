@@ -170,7 +170,9 @@
                 //html5 enhancement
                 (function (enhancer) {
                     var originalSupport = autodetect();
-                    var processedSupport = {};
+                    var processedSupport = {
+                            "clientTimeZoneOffset": new Date().getTimezoneOffset()
+                    };
                     var html5Infos = {
                         "Html5InputOriginalSupport": originalSupport,
                         "Html5InputSupport": processedSupport
@@ -212,7 +214,7 @@
                     function copyAttrs(elm, mains) {
                         for (var iAttr = 0; iAttr < elm.attributes.length; iAttr++) {
                             var attribute = elm.attributes[iAttr].name;
-                            if (attribute === "min" || attribute === "max" || attribute === "type" || attribute === "value") continue;
+                            if (attribute === "min" || attribute === "max" || attribute == "step" || attribute === "type" || attribute === "value") continue;
                             else mains.setAttribute(attribute, elm.attributes[iAttr].value);
                         }
                     }
@@ -302,16 +304,64 @@
                     }
                     function processAllNodes(ancestor) {
                         if(!html5ProcessInfos["fallbackHtml5"]) return;
-                        if (ancestor.tagName == "INPUT") process(ancestor);
+                        var parse = enhancer["parse"];
+                        var format = enhancer["format"];
+                        if(format && parse){
+                            format = function(x){return enhancer["format"]("datetime", x, true);};
+                            parse = function(x){return enhancer["parse"]("datetime", x, true);};
+                        }
+                        if (ancestor.tagName == "INPUT") process(ancestor, parse, format);
                         else {
                             var allInputs = ancestor.querySelectorAll("input");
-                            for (var i = 0; i < allInputs.length; i++) process(allInputs[i]);
+                            for (var i = 0; i < allInputs.length; i++) process(allInputs[i], parse, format);
                         }
                     }
-                    function process(node) {
+                    function addClientOffset(x, parse, format, ret)
+                    {
+                        if(!x) return x;
+                        x=x.trim();
+                        if(!x) return x;
+                        var din = parse(x);
+                        var off = -din.getTimezoneOffset();
+                        if (ret) ret["off"]=off;
+                        return format(new Date(din.getTime()+off*1000*60));
+                    }
+                    function addOffsetDetectStandard(evt){
+                                 var el=evt["target"];
+                                 var date = enhancer["parse"]("datetime", el.value);
+                                 if(date)
+                                    el.nextElementSibling.value=-date.getTimezoneOffset();
+                             }
+                    function addOffsetDetect (node)
+                    {
+                        
+                        node.addEventListener('blur', addOffsetDetectStandard);
+                    }
+                    function process(node, parse, format) {
                         var type = node.getAttribute("type");
                         var stype = type == "datetime-local" ? "datetime" : type;
-                        if (processedSupport[stype] > 3) return;
+                        var addListener =false;
+                        if (stype == "datetime" && parse && format && node.getAttribute("data-is-utc")){
+                             var toOff = {"off": 0};
+                             node.value = addClientOffset(node.value, parse, format, toOff);
+                             node.setAttribute('value', node.value);
+                             node.nextElementSibling.value=toOff["off"];
+                             var min = node.getAttribute("min");
+                             if (min) node.setAttribute("min", addClientOffset(min, parse, format));
+                             min = node.getAttribute("data-val-range-min");
+                             if (min) node.setAttribute("data-val-range-min", addClientOffset(min, parse, format));
+                             var max = node.getAttribute("max");
+                             if (max) node.setAttribute("max", addClientOffset(max, parse, format));
+                             max = node.getAttribute("data-val-range-max");
+                             if (max) node.setAttribute("data-val-range-max", addClientOffset(max, parse, format));
+                             addListener = true;
+                             
+                        }
+                        if (processedSupport[stype] > 3) 
+                        {
+                            if(addListener) addOffsetDetect (node);
+                            return;
+                        }
                         var replace = handlers["replace"](type, processedSupport);
                         if (replace == type) return;
                         if (handlers["fullReplace"]) {
@@ -321,9 +371,11 @@
                         var input = document.createElement("input");
                         input.setAttribute("type", replace);
                         input.setAttribute("value", handlers["translateVal"](node.getAttribute("value"), stype, replace));
+                        input.setAttribute("data-original-type", type);
                         copyAttrs(node, input);
                         if(type == "range") input.setAttribute("data-is-range", "true");
                         node.parentNode.replaceChild(input, node);
+                        if(addListener) addOffsetDetect (input);
                         if (handlers["enhance"] && handlers["enhance"][stype]) handlers["enhance"][stype](input, node);
                     }
                     enhancer["register"](null, false, function (options) { options = options || {}; preProcessOptions(options["browserSupport"]) }, "html5 support");
