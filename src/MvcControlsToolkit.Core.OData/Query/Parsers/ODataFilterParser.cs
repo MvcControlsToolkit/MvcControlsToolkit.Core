@@ -84,14 +84,15 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             }
             else return null;
         } 
-        private object convertValue(object value, out short dateTimeType)
+        private object convertValue(object value, out short dateTimeType, Type propertyType)
         {
             dateTimeType = 0;
+            propertyType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
             if (value == null) return null;
             if (value is Microsoft.OData.Edm.Date) 
             {
                 Microsoft.OData.Edm.Date dt = (Microsoft.OData.Edm.Date)value;
-                value = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Utc);
+                value = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Unspecified);
                 dateTimeType = QueryFilterCondition.IsDate;
 
 
@@ -101,9 +102,16 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 value = (TimeSpan)value;
                 dateTimeType = QueryFilterCondition.IsTime;
             }
-            else if (value is DateTimeOffset || value is DateTime)
+            else if (value is DateTimeOffset)
             {
                 dateTimeType = QueryFilterCondition.IsDateTime;
+                if(propertyType == typeof(DateTime))
+                {
+                    var cvalue = ((DateTimeOffset)value).UtcDateTime;
+                    value = new DateTime(cvalue.Year, cvalue.Month, cvalue.Day,
+                        cvalue.Hour, cvalue.Minute, cvalue.Second, cvalue.Millisecond, DateTimeKind.Unspecified);
+                }
+                    
             }
             else if (value is TimeSpan)
             {
@@ -115,24 +123,34 @@ namespace MvcControlsToolkit.Core.OData.Parsers
         {
             bool inv = false;
             string propertyName = null;
+            Type propertyType;
             object value = null;
             short dateTimeType;
             if (left.Kind == QueryNodeKind.Constant)
             {
-                inv = true;
-                value = convertValue((left as ConstantNode).Value, out dateTimeType);
-                if (value == null) return null;
                 if (right.Kind == QueryNodeKind.SingleValuePropertyAccess)
-                    propertyName = buildPropertyAccess(right as SingleValuePropertyAccessNode);
+                {
+                    var cnode = right as SingleValuePropertyAccessNode;
+                    propertyName = buildPropertyAccess(cnode);
+                    propertyType = (cnode.Property as EdmClrProperty).Property.PropertyType;
+                }
                 else return null;
+                inv = true;
+                value = convertValue((left as ConstantNode).Value, out dateTimeType, propertyType);
+                if (value == null) return null;
+                
             }
             else if (right.Kind == QueryNodeKind.Constant)
             {
-                value = convertValue((right as ConstantNode).Value, out dateTimeType);
-                if (value == null) return null;
                 if (left.Kind == QueryNodeKind.SingleValuePropertyAccess)
-                    propertyName = buildPropertyAccess(left as SingleValuePropertyAccessNode);
+                {
+                    var cnode = left as SingleValuePropertyAccessNode;
+                    propertyType = (cnode.Property as EdmClrProperty).Property.PropertyType;
+                    propertyName = buildPropertyAccess(cnode);
+                }
                 else return null;
+                value = convertValue((right as ConstantNode).Value, out dateTimeType, propertyType);
+                if (value == null) return null;
             }
             else return null;
             if (propertyName == null) return null;

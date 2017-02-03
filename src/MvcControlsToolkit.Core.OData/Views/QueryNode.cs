@@ -68,7 +68,7 @@ namespace MvcControlsToolkit.Core.Views
             } 
             if(type == typeof(DateTimeOffset))
             {
-                var dof = (DateTimeOffset)value;
+                var dof = ((DateTimeOffset)value).ToUniversalTime();
                 return string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}z", 
                     dof.Year, dof.Month, dof.Day,
                     dof.Hour, dof.Minute, dof.Second);

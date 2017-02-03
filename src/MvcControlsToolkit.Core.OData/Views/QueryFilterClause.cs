@@ -325,11 +325,12 @@ namespace MvcControlsToolkit.Core.Views
             if (builder == null) throw new OperationNotAllowedException(Property, Operator);
             var propertyAccess = BuildAccess(Property, par, t, operation, Operator);
             var value = Value;
-            if (Value != null && propertyAccess.Type != Value.GetType())
+            var pType = Nullable.GetUnderlyingType(propertyAccess.Type) ?? propertyAccess.Type;
+            if (Value != null && pType != Value.GetType())
             {
                 var type = Value.GetType();
                 
-                var pType = Nullable.GetUnderlyingType(propertyAccess.Type) ?? propertyAccess.Type;
+                
                 
                 if (pType == typeof(TimeSpan) && type == typeof(DateTime))
                 {
@@ -337,7 +338,11 @@ namespace MvcControlsToolkit.Core.Views
                     value = dt.Subtract(dt.Date);
                 }
                 else if (type == typeof(DateTimeOffset) && pType == typeof(DateTime))
-                    value = ((DateTimeOffset)Value).UtcDateTime;
+                {
+                    var cvalue = ((DateTimeOffset)value).UtcDateTime;
+                    value = new DateTime(cvalue.Year, cvalue.Month, cvalue.Day,
+                        cvalue.Hour, cvalue.Minute, cvalue.Second, cvalue.Millisecond, DateTimeKind.Unspecified); ;
+                }   
                 else  value = Convert.ChangeType(Value, propertyAccess.Type);
             }
                 
