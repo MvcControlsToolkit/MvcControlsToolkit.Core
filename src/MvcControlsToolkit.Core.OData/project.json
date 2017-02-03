@@ -21,6 +21,9 @@
             "OData"
         ]
     },
+    "buildOptions": {
+        "keyFile": "../../tools/Key.snk"
+    },
     "frameworks": {
         "net451": {
             "frameworkAssemblies": {

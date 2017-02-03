@@ -46,6 +46,9 @@
             "aspnetcoremvc"
         ]
     },
+    "buildOptions": {
+        "keyFile": "../../tools/Key.snk"
+    },
     "scripts": {
         "postcompile": [ "dotnet pack --no-build --output /Nuget --configuration %compile:Configuration% %project:Directory%" ]
 
