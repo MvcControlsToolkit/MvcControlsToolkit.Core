@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OData.UriParser;
+using MvcControlsToolkit.Core.Types;
 using MvcControlsToolkit.Core.Views;
 
 namespace MvcControlsToolkit.Core.OData.Parsers
@@ -89,34 +90,37 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             dateTimeType = 0;
             propertyType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
             if (value == null) return null;
-            if (value is Microsoft.OData.Edm.Date) 
+            if (value is Microsoft.OData.Edm.Date)
             {
                 Microsoft.OData.Edm.Date dt = (Microsoft.OData.Edm.Date)value;
                 value = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Unspecified);
                 dateTimeType = QueryFilterCondition.IsDate;
-
+                if (propertyType == typeof(Month)) value = Month.FromDateTime((DateTime)value);
+                else if (propertyType == typeof(Week)) value = Week.FromDateTime((DateTime)value);
 
             }
-            else if (value is  Microsoft.OData.Edm.TimeOfDay)
+            else if (value is Microsoft.OData.Edm.TimeOfDay)
             {
-                value = (TimeSpan)value;
+                var tValue = (Microsoft.OData.Edm.TimeOfDay)value;
+                value = new TimeSpan(0, tValue.Hours, tValue.Minutes, tValue.Seconds, (int)tValue.Milliseconds);
                 dateTimeType = QueryFilterCondition.IsTime;
             }
             else if (value is DateTimeOffset)
             {
                 dateTimeType = QueryFilterCondition.IsDateTime;
-                if(propertyType == typeof(DateTime))
+                if (propertyType == typeof(DateTime))
                 {
                     var cvalue = ((DateTimeOffset)value).UtcDateTime;
                     value = new DateTime(cvalue.Year, cvalue.Month, cvalue.Day,
                         cvalue.Hour, cvalue.Minute, cvalue.Second, cvalue.Millisecond, DateTimeKind.Unspecified);
                 }
-                    
+
             }
             else if (value is TimeSpan)
             {
                 dateTimeType = QueryFilterCondition.IsDuration;
             }
+            else if (value.GetType() != propertyType) value = Convert.ChangeType(value, propertyType);
             return value;
         }
         private QueryFilterCondition BuildComparison(Microsoft.OData.UriParser.QueryNode left, Microsoft.OData.UriParser.QueryNode right, string normalOperator, string inverseOperator)
@@ -126,6 +130,16 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             Type propertyType;
             object value = null;
             short dateTimeType;
+            if (left.Kind== QueryNodeKind.Convert)
+            {
+                var conv = left as ConvertNode;
+                left = conv.Source;
+            }
+            if (right.Kind == QueryNodeKind.Convert)
+            {
+                var conv = right as ConvertNode;
+                right = conv.Source;
+            }
             if (left.Kind == QueryNodeKind.Constant)
             {
                 if (right.Kind == QueryNodeKind.SingleValuePropertyAccess)

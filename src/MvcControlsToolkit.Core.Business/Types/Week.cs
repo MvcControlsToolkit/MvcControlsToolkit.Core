@@ -55,7 +55,13 @@ namespace MvcControlsToolkit.Core.Types
         }
         public bool isValid()
         {
-            return _YearNumber>0 && _WeekNumber >= 1 && _WeekNumber <= _FromDateTime(new DateTime((int)_YearNumber, 12, 31), true)._WeekNumber;
+            if (_YearNumber > 0 && _WeekNumber >= 1)
+            {
+                return _WeekNumber <= _FromDateTime(new DateTime((int)_YearNumber, 12, 31), true)._WeekNumber || 
+                    _WeekNumber <= _FromDateTime(new DateTime((int)_YearNumber, 12, 24), true)._WeekNumber;
+            }
+            else return false;
+            
         }
         private DateTime midDate()
         {

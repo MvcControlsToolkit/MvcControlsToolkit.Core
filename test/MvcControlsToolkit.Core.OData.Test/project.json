@@ -4,6 +4,7 @@
   },
     "dependencies": {
         "dotnet-test-xunit": "2.2.0-*",
+        "Microsoft.DotNet.InternalAbstractions": "1.0.0",
         "Moq": "4.6.36-*",
         "MvcControlsToolkit.Core.OData": "0.0.0.3",
         "xunit": "2.2.0-*"

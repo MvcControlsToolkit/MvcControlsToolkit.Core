@@ -44,7 +44,6 @@ namespace MvcControlsToolkit.Core.OData
                 {typeof(long), EdmPrimitiveTypeKind.Int64},
                 {typeof(uint), EdmPrimitiveTypeKind.Int32},
                 {typeof(ulong), EdmPrimitiveTypeKind.Int64},
-                {typeof(sbyte), EdmPrimitiveTypeKind.SByte},
                 {typeof(float), EdmPrimitiveTypeKind.Single},
                 {typeof(string), EdmPrimitiveTypeKind.String}
             };
@@ -187,7 +186,7 @@ namespace MvcControlsToolkit.Core.OData
                 result.Page = (result.Skip / result.Take.Value)+1;
                 if (result.Skip % result.Take.Value > 0) result.Page++;
             } 
-            return null;
+            return result;
         }
         
 
