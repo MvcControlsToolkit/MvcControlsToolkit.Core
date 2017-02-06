@@ -24,7 +24,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
         [InlineData("Hello AND dummy", QueryFilterBooleanOperator.and)]
         [InlineData("Hello OR dummy", QueryFilterBooleanOperator.or)]
         [InlineData("Hello AND NOT dummy", QueryFilterBooleanOperator.and)]
-        [InlineData("Hello OR (crowd AND NOT dummy)", QueryFilterBooleanOperator.and)]
+        [InlineData("Hello OR (crowd AND NOT dummy)", QueryFilterBooleanOperator.or)]
         public void ParseToString(string search, int op)
         {
             provider.Search = search;

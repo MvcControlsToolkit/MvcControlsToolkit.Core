@@ -18,6 +18,7 @@ namespace MvcControlsToolkit.Core.Views
 
         public override string ToString()
         {
+            
             return string.Format("{0} with {1} as {2}", 
                 EncodeProperty(Property),
                 Operator,
@@ -48,7 +49,7 @@ namespace MvcControlsToolkit.Core.Views
             Type t = property.PropertyType;
             t = Nullable.GetUnderlyingType(t) ?? t;
             string res;
-            if (x == "count")
+            if (x == "countdistinct")
             {
                 if (t == typeof(int)) return "Count";
                 else if (t == typeof(long)) return "LongCount";
@@ -92,7 +93,7 @@ namespace MvcControlsToolkit.Core.Views
                 Expression access = agg.IsCount ? null : BuildAccess(agg.Property, innerPar, t, null, "aggregate");
                 var alias = QueryNodeCache.GetPath(f, agg.Alias);
                 if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(agg.Alias);
-                var call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, agg.IsCount ? null : Expression.Lambda(access, innerPar));
+                var call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, Expression.Lambda(access, innerPar));
                 assignements.Add(Expression.Bind(alias.Item1[0], call));
             }
             return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) as Expression<Func<IGrouping<T, T>, F>>;
@@ -129,8 +130,8 @@ namespace MvcControlsToolkit.Core.Views
             if (groups == null) return null;
 
             var aggs = encodeAggrgates();
-            if (aggs == null) return string.Format("(({0}))", groups);
-            else return string.Format("(({0}),aggregate({1}))", groups, aggs);
+            if (aggs == null) return string.Format("groupby(({0}))", groups);
+            else return string.Format("groupby(({0}),aggregate({1}))", groups, aggs);
         }
     }
 }

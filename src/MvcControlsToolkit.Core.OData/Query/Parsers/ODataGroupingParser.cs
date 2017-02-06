@@ -59,7 +59,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                     Operator= getTransformation(x.Method),
                     Property= property,
                     Alias=x.Alias,
-                    IsCount= x.Expression == null && x.Method == AggregationMethod.CountDistinct
+                    IsCount= x.Method == AggregationMethod.CountDistinct
                 });
             }
             return result;
@@ -69,7 +69,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             switch(m)
             {
                 case AggregationMethod.Average: return "average";
-                case AggregationMethod.CountDistinct: return "$count";
+                case AggregationMethod.CountDistinct: return "countdistinct";
                 case AggregationMethod.Sum: return "sum";
                 case AggregationMethod.Min: return "min";
                 default: return "max";
