@@ -47,13 +47,13 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                     { Operator = QueryFilterBooleanOperator.not };
                 else return null;
             }
-            else if (node.Kind == QueryNodeKind.Constant)
+            else if (node.Kind == QueryNodeKind.SearchTerm)
             {
                 return new QueryFilterCondition()
                 {
                     Operator = null,
                     Property = null,
-                    Value = (node as ConstantNode).Value
+                    Value = (node as SearchTermNode).Text
                 };
                
             }
