@@ -38,9 +38,9 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                         return new QueryFilterBooleanOperator(ParseRec(binaryOperator.Left), ParseRec(binaryOperator.Right))
                         { Operator = QueryFilterBooleanOperator.or };
                     case BinaryOperatorKind.Equal:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "eq", "ne");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "eq", "eq");
                     case BinaryOperatorKind.NotEqual:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "ne", "eq");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "ne", "ne");
                     case BinaryOperatorKind.GreaterThan:
                         return BuildComparison(binaryOperator.Left, binaryOperator.Right, "gt", "le");
                     case BinaryOperatorKind.LessThanOrEqual:

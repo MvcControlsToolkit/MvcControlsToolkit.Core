@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using MvcControlsToolkit.Core.DataAnnotations;
 using MvcControlsToolkit.Core.DataAnnotations.Queries;
+using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.Views
 {
@@ -38,6 +39,16 @@ namespace MvcControlsToolkit.Core.Views
             if (value == null) return null;
             var type = value.GetType();
             type = Nullable.GetUnderlyingType(type) ?? type;
+            if(type == typeof(Month))
+            {
+                type = typeof(DateTime);
+                value = ((Month)value).ToDateTime();
+            }
+            else if(type == typeof(Week))
+            {
+                type = typeof(DateTime);
+                value = ((Week)value).StartDate();
+            }
             if (type == typeof(string)) return value as string;
             if (type == typeof(int)
                 || type == typeof(uint)
@@ -77,7 +88,7 @@ namespace MvcControlsToolkit.Core.Views
             {
                 var ts = (TimeSpan)value;
                 if (dateTimeType == QueryFilterCondition.IsDuration)
-                    return string.Format("'P{0:0}DT{1:00}H{2:00}M{3:00}.{4:000}000000000}S'",
+                    return string.Format("duration'P{0:0}DT{1:00}H{2:00}M{3:00}.{4:000}000000000S'",
                         ts.Days, ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
                 else
                 {
