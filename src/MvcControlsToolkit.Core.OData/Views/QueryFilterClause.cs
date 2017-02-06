@@ -309,7 +309,7 @@ namespace MvcControlsToolkit.Core.Views
                 default:
                     var s = encodeConstant(Value, DateTimeType);
                     if (s == null) return null;
-                    else return string.Format("{0} {1} {2}", EncodeProperty(Property), Operator, s);
+                    else return string.Format("({0} {1} {2})", EncodeProperty(Property), Operator, s);
                     
             }
         }

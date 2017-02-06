@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using MvcControlsToolkit.Core.Types;
 using MvcControlsToolkit.Core.Views;
 using Xunit;
@@ -122,7 +120,6 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             provider.Filter = filter;
             var res = provider.Parse<ReferenceType>();
             filter = res.Filter.ToString();
-            filter = filter.Substring(8);
             ConstantsEncoding(filter, valueType, propertyName, value);
         }
         [Theory]
@@ -188,7 +185,6 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             provider.Filter = filter;
             var res = provider.Parse<ReferenceType>();
             filter = res.Filter.ToString();
-            filter = filter.Substring(8);
             OperatorsEncoding(filter, op, propertyName, inv);
         }
         [Theory]
@@ -206,7 +202,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             filter = res.Filter.ToString();
             Assert.NotNull(filter);
             Assert.NotEqual(filter.Trim(), string.Empty);
-            provider.Filter = filter.Substring(8);
+            provider.Filter = filter; 
             res = provider.Parse<ReferenceType>();
             Assert.Equal(filter, res.Filter.ToString());
         }
