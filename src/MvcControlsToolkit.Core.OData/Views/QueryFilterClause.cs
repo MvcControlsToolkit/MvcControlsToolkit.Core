@@ -31,6 +31,9 @@ namespace MvcControlsToolkit.Core.Views
         public const int and = 0;
         public const int or = 1;
         public const int not = 2;
+        public const int AND = 3;
+        public const int OR = 4;
+        public const int NOT = 5;
         public QueryFilterBooleanOperator()
         {
         }
@@ -92,6 +95,7 @@ namespace MvcControlsToolkit.Core.Views
         public override string ToString()
         {
             if (Operator == not) return string.Format("(not {0})", (arg1 ?? arg2).ToString());
+            else if (Operator == NOT) return string.Format("(NOT {0})", (arg1 ?? arg2).ToString());
             else if (arg1 == null) return arg2.ToString();
             else if (arg2 == null) return arg1.ToString();
             var sarg1 = arg1.ToString();
@@ -99,6 +103,8 @@ namespace MvcControlsToolkit.Core.Views
             if (sarg1 == null) return sarg2;
             if (sarg2 == null) return sarg1;
             else if (Operator == and) return string.Format("({0} and {1})", sarg1, sarg2.ToString());
+            else if (Operator == AND) return string.Format("({0} AND {1})", sarg1, sarg2.ToString());
+            else if (Operator == OR) return string.Format("({0} OR {1})", sarg1, sarg2.ToString());
             else return string.Format("({0} or {1})", sarg1.ToString(), sarg2.ToString());
         }
         
@@ -167,12 +173,12 @@ namespace MvcControlsToolkit.Core.Views
             if(type == typeof(Month))
             {
                 dateTimeType = QueryFilterCondition.IsDate;
-                if (value is Month) value = (DateTime)value;
+                //if (value is Month) value = (DateTime)value;
             }
             else if (type == typeof(Week))
             {
                 dateTimeType = QueryFilterCondition.IsDate;
-                if (value is Week) value = (DateTime)value;
+                //if (value is Week) value = (DateTime)value;
             }
             else if (type == typeof(DateTime))
             {
@@ -337,12 +343,26 @@ namespace MvcControlsToolkit.Core.Views
                     var dt = (DateTime)Value;
                     value = dt.Subtract(dt.Date);
                 }
+                else if(pType == typeof(Month) && type == typeof(DateTime))
+                {
+                    value = Month.FromDateTime((DateTime)value);
+                }
+                else if (pType == typeof(Week) && type == typeof(DateTime))
+                {
+                    value = Week.FromDateTime((DateTime)value);
+                }
                 else if (type == typeof(DateTimeOffset) && pType == typeof(DateTime))
                 {
                     var cvalue = ((DateTimeOffset)value).UtcDateTime;
                     value = new DateTime(cvalue.Year, cvalue.Month, cvalue.Day,
                         cvalue.Hour, cvalue.Minute, cvalue.Second, cvalue.Millisecond, DateTimeKind.Unspecified); ;
-                }   
+                }
+                else if (type == typeof(DateTime) && pType == typeof(DateTimeOffset))
+                {
+                    var cvalue = ((DateTime)value).ToUniversalTime();
+                    value = new DateTimeOffset(cvalue.Year, cvalue.Month, cvalue.Day,
+                        cvalue.Hour, cvalue.Minute, cvalue.Second, new TimeSpan(0)); 
+                }
                 else  value = Convert.ChangeType(Value, propertyAccess.Type);
             }
                 

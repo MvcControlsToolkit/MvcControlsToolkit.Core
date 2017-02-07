@@ -14,13 +14,13 @@ namespace MvcControlsToolkit.Core.Views
 
     public abstract class QueryDescription
     {
-        private const string filterName = "$filer";
+        private const string filterName = "$filter";
         private const string applyName = "$apply";
         private const string sortingName = "$orderby";
         private const string searchName = "$search";
         private const string topName = "$top";
         private const string skipName = "$skip";
-        protected static Func<string, string> UrlEncode =
+        protected  Func<string, string> UrlEncode =
             System.Net.WebUtility.UrlEncode;
         private QueryFilterBooleanOperator _Filter;
         public QueryFilterBooleanOperator Filter { get { return _Filter; } set {_Filter=value; ClearFilterCache(); } }
@@ -247,6 +247,9 @@ namespace MvcControlsToolkit.Core.Views
             if (useOr) Filter.Operator = QueryFilterBooleanOperator.or;    
 
         }
-
+         public void CustomUrlEncode(Func<string, string> fun)
+        {
+            UrlEncode = fun ?? UrlEncode;
+        }
     }
 }

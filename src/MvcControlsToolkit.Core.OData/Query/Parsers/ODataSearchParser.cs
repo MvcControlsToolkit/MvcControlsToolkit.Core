@@ -19,7 +19,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             var res = ParseRec(search.Expression);
             if (res == null) return null;
             if (!(res is QueryFilterBooleanOperator))
-                return new QueryFilterBooleanOperator(res, null);
+                return new QueryFilterBooleanOperator(res, null) {Operator= QueryFilterBooleanOperator.AND };
             return res as QueryFilterBooleanOperator;
         }
         private QueryFilterClause ParseRec(Microsoft.OData.UriParser.QueryNode node)
@@ -31,10 +31,10 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 {
                     case BinaryOperatorKind.And:
                         return new QueryFilterBooleanOperator(ParseRec(binaryOperator.Left), ParseRec(binaryOperator.Right))
-                        { Operator = QueryFilterBooleanOperator.and };
+                        { Operator = QueryFilterBooleanOperator.AND };
                     case BinaryOperatorKind.Or:
                         return new QueryFilterBooleanOperator(ParseRec(binaryOperator.Left), ParseRec(binaryOperator.Right))
-                        { Operator = QueryFilterBooleanOperator.or };
+                        { Operator = QueryFilterBooleanOperator.OR };
                     default:
                         return null;
                 }
@@ -44,7 +44,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 var unaryOperator = node as UnaryOperatorNode;
                 if (unaryOperator.OperatorKind == UnaryOperatorKind.Not)
                     return new QueryFilterBooleanOperator(ParseRec(unaryOperator.Operand), null)
-                    { Operator = QueryFilterBooleanOperator.not };
+                    { Operator = QueryFilterBooleanOperator.NOT };
                 else return null;
             }
             else if (node.Kind == QueryNodeKind.SearchTerm)

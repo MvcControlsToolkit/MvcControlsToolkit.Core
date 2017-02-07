@@ -24,9 +24,9 @@ namespace MvcControlsToolkit.Core.Views
             }
             return curr;
         }
-        internal Expression BuildCall(string name, ParameterExpression par, Type t, Expression arg)
+        internal Expression BuildCall(string name, Expression par, Type t, Expression arg)
         {
-            var method = QueryNodeCache.GetMethod(t, name, arg.Type);
+            var method = QueryNodeCache.GetMethod(t, name, arg==null ? null : arg.Type);
             return Expression.Call(par, method, arg);
         }
         internal string EncodeProperty(string name)
@@ -49,7 +49,7 @@ namespace MvcControlsToolkit.Core.Views
                 type = typeof(DateTime);
                 value = ((Week)value).StartDate();
             }
-            if (type == typeof(string)) return value as string;
+            if (type == typeof(string)) return "'"+(value as string)+"'";
             if (type == typeof(int)
                 || type == typeof(uint)
                 || type == typeof(long)
@@ -73,9 +73,13 @@ namespace MvcControlsToolkit.Core.Views
                 if(dateTimeType == QueryFilterCondition.IsDate)
                     return string.Format("{0:0000}-{1:00}-{2:00}", dt.Year, dt.Month, dt.Day);
                 else
+                {
+                    if (dt.Kind == DateTimeKind.Local) dt = dt.ToUniversalTime();
                     return string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}z",
                     dt.Year, dt.Month, dt.Day,
                     dt.Hour, dt.Minute, dt.Second);
+                }
+                    
             } 
             if(type == typeof(DateTimeOffset))
             {

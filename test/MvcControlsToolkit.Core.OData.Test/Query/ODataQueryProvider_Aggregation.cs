@@ -28,6 +28,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
         [InlineData("groupby((AString), aggregate(AFloat with max as resfloat, AShort with sum as resint))", 1, 2)]
         [InlineData("groupby((AString), aggregate(AShort with sum as resint))", 1, 1)]
         [InlineData("groupby((AString), aggregate(AMonth with countdistinct as resint))", 1, 1)]
+        
         public void ParseToString(string groupby, int keysCount, int aggCounts)
         {
             provider.Apply = groupby;

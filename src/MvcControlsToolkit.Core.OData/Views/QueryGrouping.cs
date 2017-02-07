@@ -56,7 +56,7 @@ namespace MvcControlsToolkit.Core.Views
                 else throw new OperationNotAllowedException(property.Name, "count");
             }
 
-            if (t == typeof(int) || t == typeof(long) || t == typeof(float) || t == typeof(double) || t == typeof(decimal))
+            if (t == typeof(short) || t == typeof(int) || t == typeof(long) || t == typeof(float) || t == typeof(double) || t == typeof(decimal))
             {
                 if (x == "sum") res = "Sum";
                 else if (x == "average") res = "Average";
@@ -90,10 +90,23 @@ namespace MvcControlsToolkit.Core.Views
             foreach (var agg in Aggregations)
             {
                 var innerPar = Expression.Parameter(t, "n");
-                Expression access = agg.IsCount ? null : BuildAccess(agg.Property, innerPar, t, null, "aggregate");
+                Expression access = BuildAccess(agg.Property, innerPar, t, null, "aggregate");
                 var alias = QueryNodeCache.GetPath(f, agg.Alias);
                 if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(agg.Alias);
-                var call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, Expression.Lambda(access, innerPar));
+                Expression call;
+                LambdaExpression argExpression = Expression.Lambda(access, innerPar);
+                if (agg.IsCount)
+                {
+                    var pType = argExpression.Type;
+                    call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]),
+                            BuildCall("Distinct",
+                                BuildCall("Select", par, g, argExpression),
+                            pType, null), 
+                        pType, null);
+                    
+                }
+                else
+                    call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, argExpression);
                 assignements.Add(Expression.Bind(alias.Item1[0], call));
             }
             return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) as Expression<Func<IGrouping<T, T>, F>>;

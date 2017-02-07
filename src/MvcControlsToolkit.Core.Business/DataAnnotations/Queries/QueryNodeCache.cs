@@ -10,8 +10,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations.Queries
         private static ConcurrentDictionary<Tuple<Type, string>, Tuple<IList<PropertyInfo>, QueryAttribute>>
             paths = new ConcurrentDictionary<Tuple<Type, string>, Tuple<IList<PropertyInfo>, QueryAttribute>>();
 
-        private static ConcurrentDictionary<Tuple<Type, string>, MethodInfo>
-            methods = new ConcurrentDictionary<Tuple<Type, string>, MethodInfo>();
+        private static ConcurrentDictionary<Tuple<Type, string, Type>, MethodInfo>
+            methods = new ConcurrentDictionary<Tuple<Type, string, Type>, MethodInfo>();
 
         private static ConcurrentDictionary<Type, bool>
             searchEnabled = new ConcurrentDictionary<Type, bool>();
@@ -49,7 +49,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations.Queries
 
         public static MethodInfo GetMethod(Type t, string name, Type argType)
         {
-            var search = new Tuple<Type, string>(t, name);
+            var search = new Tuple<Type, string, Type>(t, name, argType);
             MethodInfo result;
             if (methods.TryGetValue(search, out result))
             {

@@ -19,12 +19,12 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             this.output = output;
         }
         [Theory]
-        [InlineData("Hello", QueryFilterBooleanOperator.and)]
-        [InlineData("Hello dummy", QueryFilterBooleanOperator.and)]
-        [InlineData("Hello AND dummy", QueryFilterBooleanOperator.and)]
-        [InlineData("Hello OR dummy", QueryFilterBooleanOperator.or)]
-        [InlineData("Hello AND NOT dummy", QueryFilterBooleanOperator.and)]
-        [InlineData("Hello OR (crowd AND NOT dummy)", QueryFilterBooleanOperator.or)]
+        [InlineData("Hello", QueryFilterBooleanOperator.AND)]
+        [InlineData("Hello dummy", QueryFilterBooleanOperator.AND)]
+        [InlineData("Hello AND dummy", QueryFilterBooleanOperator.AND)]
+        [InlineData("Hello OR dummy", QueryFilterBooleanOperator.OR)]
+        [InlineData("Hello AND NOT dummy", QueryFilterBooleanOperator.AND)]
+        [InlineData("Hello OR (crowd AND NOT dummy)", QueryFilterBooleanOperator.OR)]
         public void ParseToString(string search, int op)
         {
             provider.Search = search;

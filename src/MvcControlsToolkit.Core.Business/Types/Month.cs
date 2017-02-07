@@ -145,7 +145,7 @@ namespace MvcControlsToolkit.Core.Types
 
         public int CompareTo(Month other)
         {
-            return this.CompareTo(other);
+            return this.CompareTo((object)other);
         }
 
         public bool Equals(Month other)
