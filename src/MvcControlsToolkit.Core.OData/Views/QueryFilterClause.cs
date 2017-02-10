@@ -78,15 +78,15 @@ namespace MvcControlsToolkit.Core.Views
             {
                 var arg = arg1 ?? arg2;
                 if (arg == null) return null;
-                else return Expression.Not(BuildExpression(par, t));
+                else return Expression.Not(arg.BuildExpression(par, t));
             }
             else if (arg1 == null)
             {
                 if (arg2 == null) return null;
-                else return arg1.BuildExpression(par, t);
+                else return arg2.BuildExpression(par, t);
             }
             else if (arg2 == null) 
-                return arg2.BuildExpression(par, t);
+                return arg1.BuildExpression(par, t);
             else if (Operator==or)
                 return Expression.Or(arg1.BuildExpression(par, t), arg2.BuildExpression(par, t));
             else
@@ -278,18 +278,15 @@ namespace MvcControlsToolkit.Core.Views
                     break;
                 case "startswith":
                     operation = QueryOptions.StartsWith;
-                    if(Inv) result = (x, y) => Expression.Call(y, startsWithMethod, x);
-                    else result = (x, y) => Expression.Call(x, startsWithMethod, y);
+                    result = (x, y) => Expression.Call(x, startsWithMethod, y);
                     break;
                 case "endswith":
                     operation = QueryOptions.EndsWith;
-                    if (Inv) result = (x, y) => Expression.Call(y, endsWithMethod, x);
-                    else result = (x, y) => Expression.Call(x, endsWithMethod, y);
+                    result = (x, y) => Expression.Call(x, endsWithMethod, y);
                     break;
                 case "contains":
                     operation = Inv ? QueryOptions.IsContainedIn : QueryOptions.Contains;
-                    if (Inv) result = (x, y) => Expression.Call(y, containsWithMethod, x);
-                    else result = (x, y) => Expression.Call(x, containsWithMethod, y);
+                    result = (x, y) => Expression.Call(x, containsWithMethod, y);
 
                     break;
                 default: result = null; break;
@@ -332,6 +329,7 @@ namespace MvcControlsToolkit.Core.Views
             var propertyAccess = BuildAccess(Property, par, t, operation, Operator);
             var value = Value;
             var pType = Nullable.GetUnderlyingType(propertyAccess.Type) ?? propertyAccess.Type;
+            var oType = propertyAccess.Type;
             if (Value != null && pType != Value.GetType())
             {
                 var type = Value.GetType();
@@ -368,8 +366,8 @@ namespace MvcControlsToolkit.Core.Views
                 
                 
 
-            if (Inv) return builder(Expression.Constant(value), propertyAccess);
-            else return builder(propertyAccess, Expression.Constant(value));
+            if (Inv) return builder(Expression.Constant(value, oType), propertyAccess);
+            else return builder(propertyAccess, Expression.Constant(value, oType));
         }
     }
 }

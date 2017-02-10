@@ -16,7 +16,7 @@ namespace MvcControlsToolkit.Core.Views
             Expression curr = par;
             var gres = QueryNodeCache.GetPath(t, name);
             if (notNested && gres.Item1.Count > 1) throw new NestedPropertyNotAllowedException(name);
-            if (operation.HasValue && (gres.Item2 == null || gres.Item2.Allowed(operation.Value)))
+            if (operation.HasValue && (gres.Item2 == null || !gres.Item2.Allowed(operation.Value)))
                 throw new OperationNotAllowedException(name, operationName);
             foreach (var property in gres.Item1)
             {

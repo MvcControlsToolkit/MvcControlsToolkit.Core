@@ -33,7 +33,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 {
                     case BinaryOperatorKind.And:
                         return new QueryFilterBooleanOperator(ParseRec(binaryOperator.Left), ParseRec(binaryOperator.Right))
-                        { Operator = QueryFilterBooleanOperator.and }; 
+                        { Operator = QueryFilterBooleanOperator.and };
                     case BinaryOperatorKind.Or:
                         return new QueryFilterBooleanOperator(ParseRec(binaryOperator.Left), ParseRec(binaryOperator.Right))
                         { Operator = QueryFilterBooleanOperator.or };
@@ -42,13 +42,13 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                     case BinaryOperatorKind.NotEqual:
                         return BuildComparison(binaryOperator.Left, binaryOperator.Right, "ne", "ne");
                     case BinaryOperatorKind.GreaterThan:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "gt", "le");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "gt", "lt");
                     case BinaryOperatorKind.LessThanOrEqual:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "le", "gt");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "le", "ge");
                     case BinaryOperatorKind.LessThan:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "lt", "ge");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "lt", "gt");
                     case BinaryOperatorKind.GreaterThanOrEqual:
-                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "ge", "lt");
+                        return BuildComparison(binaryOperator.Left, binaryOperator.Right, "ge", "le");
                     default:
                         return null;
 
@@ -57,7 +57,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
 
 
             }
-            else if(node.Kind == QueryNodeKind.UnaryOperator)
+            else if (node.Kind == QueryNodeKind.UnaryOperator)
             {
                 var unaryOperator = node as UnaryOperatorNode;
                 if (unaryOperator.OperatorKind == UnaryOperatorKind.Not)
@@ -83,6 +83,8 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                         return null;
                 }
             }
+            else if (node.Kind == QueryNodeKind.Convert)
+                return ParseRec(((ConvertNode)node).Source);
             else return null;
         } 
         private object convertValue(object value, out short dateTimeType, Type propertyType)
