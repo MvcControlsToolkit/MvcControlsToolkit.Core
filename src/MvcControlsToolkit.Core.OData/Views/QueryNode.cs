@@ -27,7 +27,7 @@ namespace MvcControlsToolkit.Core.Views
         internal Expression BuildCall(string name, Expression par, Type t, Expression arg)
         {
             var method = QueryNodeCache.GetMethod(t, name, arg==null ? null : arg.Type);
-            return Expression.Call(par, method, arg);
+            return arg == null ? Expression.Call(method, par) : Expression.Call(method, par, arg);
         }
         internal string EncodeProperty(string name)
         {

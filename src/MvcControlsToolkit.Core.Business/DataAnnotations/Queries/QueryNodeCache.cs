@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace MvcControlsToolkit.Core.DataAnnotations.Queries
@@ -10,8 +12,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations.Queries
         private static ConcurrentDictionary<Tuple<Type, string>, Tuple<IList<PropertyInfo>, QueryAttribute>>
             paths = new ConcurrentDictionary<Tuple<Type, string>, Tuple<IList<PropertyInfo>, QueryAttribute>>();
 
-        private static ConcurrentDictionary<Tuple<Type, string, Type>, MethodInfo>
-            methods = new ConcurrentDictionary<Tuple<Type, string, Type>, MethodInfo>();
+        private static ConcurrentDictionary<Tuple<string, Type>, MethodInfo>
+            methods = new ConcurrentDictionary<Tuple<string, Type>, MethodInfo>();
 
         private static ConcurrentDictionary<Type, bool>
             searchEnabled = new ConcurrentDictionary<Type, bool>();
@@ -31,9 +33,9 @@ namespace MvcControlsToolkit.Core.DataAnnotations.Queries
             int i = 0;
             foreach (var property in names)
             {
-                lastProp = t.GetTypeInfo().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+                lastProp = currType.GetTypeInfo().GetProperty(property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
                 i++;
-                if (lastProp == null) throw new WrongPropertyNameException(string.Join(".", 0, i));
+                if (lastProp == null) throw new WrongPropertyNameException(string.Join(".", names, 0, i));
                 properties.Add(lastProp);
                 currType = lastProp.PropertyType;
             }
@@ -49,16 +51,32 @@ namespace MvcControlsToolkit.Core.DataAnnotations.Queries
 
         public static MethodInfo GetMethod(Type t, string name, Type argType)
         {
-            var search = new Tuple<Type, string, Type>(t, name, argType);
+            
             MethodInfo result;
-            if (methods.TryGetValue(search, out result))
+            Type[] atypes = argType==null?null: argType.GetGenericArguments();
+            Type aggType = argType == null ? null : atypes[1];
+            var search = new Tuple<string, Type>(name, aggType);
+            if (!methods.TryGetValue(search, out result))
             {
-                return result;
+                result= argType == null ? typeof(Enumerable).GetTypeInfo().GetMethods().Where(m => m.Name == name && m.GetParameters().Count() == 1).FirstOrDefault()
+                : (name == "Select" ?
+                    typeof(Enumerable).GetTypeInfo().GetMethods().Where(m => m.Name == name && m.GetParameters().Count() == 2).FirstOrDefault()
+                    : 
+                    typeof(Enumerable).GetTypeInfo().GetMethods().Where(m => m.Name == name && m.GetParameters().Count() == 2 && (m.GetParameters()[1].ParameterType.GetGenericArguments()[1] == aggType)).FirstOrDefault());
+                if (result == null) new OperationNotAllowedException(null, name);
+                methods.TryAdd(search, result);
             }
-            var method = argType == null ? t.GetTypeInfo().GetMethod(name, new Type[0]) : t.GetTypeInfo().GetMethod(name, new Type[] { argType });
-            if (method == null) new OperationNotAllowedException(null, name);
-            methods.TryAdd(search, method);
-            return method;
+
+            
+            if (argType != null)
+            {
+                if(name == "Select")
+                    result = result.MakeGenericMethod(atypes);
+                else
+                    result = result.MakeGenericMethod(atypes[0]);
+            }
+            else result = result.MakeGenericMethod(t);
+            return result;
         }
         public static bool GetSearchEnabled(Type t)
         {

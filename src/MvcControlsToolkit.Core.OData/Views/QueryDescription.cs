@@ -136,7 +136,21 @@ namespace MvcControlsToolkit.Core.Views
         protected abstract void ClearSearchCache();
         protected abstract void ClearGroupingCache();
         protected abstract void ClearSortingCache();
+        private static MethodInfo grouper;
+        static QueryDescription()
+        {
+            grouper = typeof(QueryDescription).GetMethod("StandardTGrouping", BindingFlags.Static|BindingFlags.NonPublic);
+        }
+        protected static IQueryable<F> StandardTGrouping<T, F, G>(IQueryable<T> cQuery, Expression<Func<T, G>> keys, Expression<Func<IGrouping<G, T>, F>> aggregations)
+        {
+            return cQuery.GroupBy(keys).Select(aggregations);
+        }
+        protected static IQueryable<F> StandardGrouping<T, F>(IQueryable<T> cQuery, LambdaExpression keys, LambdaExpression aggregations)
+        {
+            var mt=grouper.MakeGenericMethod(typeof(T), typeof(F), keys.Type.GetGenericArguments()[1]);
+            return mt.Invoke(null, new object[] { cQuery, keys, aggregations }) as IQueryable<F>;
 
+        }
     }
 
 
@@ -146,6 +160,7 @@ namespace MvcControlsToolkit.Core.Views
         private Expression<Func<T, bool>> filterCache;
         private Func<IQueryable<T>, IOrderedQueryable<T>> sortingCache;
         private Func<IQueryable<T>, IQueryable<T>> groupingCache;
+        private MethodInfo grouper;
         
         public bool SearchAllowed()
         {
@@ -166,15 +181,17 @@ namespace MvcControlsToolkit.Core.Views
             if (groupingCache != null) return groupingCache;
             return groupingCache=GetGrouping<T>();
         }
+        
         public Func<IQueryable<T>, IQueryable<F>> GetGrouping<F>()
         {
             if (Grouping == null) return null;
-            var keys = Grouping.BuildGroupingExpression<T>();
+            PropertyInfo[] properties; 
+            var keys = Grouping.BuildGroupingExpression<T>(out properties);
             if (keys == null) return null;
-            var aggregations = Grouping.GetProjectionExpression<T, F>();
+            var aggregations = Grouping.GetProjectionExpression<T, F>(properties);
             return q =>
             {
-                return q.GroupBy(keys).Select(aggregations);
+                return StandardGrouping<T, F>(q, keys, aggregations);
             };
         }
         public Func<IQueryable<T>, IOrderedQueryable<T>> GetSorting()

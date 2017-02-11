@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using MvcControlsToolkit.Core.DataAnnotations;
 using MvcControlsToolkit.Core.DataAnnotations.Queries;
+using MvcControlsToolkit.Core.OData.Utilities;
 
 namespace MvcControlsToolkit.Core.Views
 {
@@ -30,18 +31,32 @@ namespace MvcControlsToolkit.Core.Views
         public ICollection<string> Keys { get; set; }
         public ICollection<QueryAggregation> Aggregations { get; set; }
 
-        internal Expression<Func<T, T>> BuildGroupingExpression<T>()
+        internal LambdaExpression BuildGroupingExpression<T>(out PropertyInfo[]  properties)
         {
+            properties = null;
             if (Keys == null || Keys.Count == 0) return null;
+            if (Keys.Count > 32) throw new NotSupportedException("grouping is supported up to 32 properties");
             var t = typeof(T);
             var par = Expression.Parameter(t, "m");
             var assignements = new List<MemberAssignment>();
+            
+            MemberExpression[] members = new MemberExpression[Keys.Count];
+            Type[] types = new Type[Keys.Count];
+            int i = 0;
             foreach (var key in Keys)
             {
-                var access = BuildAccess(key, par, t, QueryOptions.GroupBy, "groupby");
-                assignements.Add(Expression.Bind((access as MemberExpression).Member, access));
+                var access = members[i] = BuildAccess(key, par, t, QueryOptions.GroupBy, "groupby") as MemberExpression;
+                types[i] = (access.Member as PropertyInfo).PropertyType;
+                i++;
             }
-            return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) as Expression<Func<T, T>>;
+            i = 0;
+            int n;
+            properties = AnonymousTypesFarm.GetProperties(types, out n);
+            Expression[] fmembers = members as Expression[];
+            if (n > members.Length)
+                fmembers = fmembers.Concat(Enumerable.Repeat(Expression.Constant(0), n - members.Length)).ToArray();
+            
+            return Expression.Lambda(Expression.New(properties[0].DeclaringType.GetConstructors().Single(), fmembers), par);
         }
         internal string getAggregationName(string x, PropertyInfo property)
         {
@@ -67,49 +82,59 @@ namespace MvcControlsToolkit.Core.Views
             else throw new OperationNotAllowedException(property.Name, x);
             return res;
         }
-        internal Expression<Func<IGrouping<T, T>, F>> GetProjectionExpression<T, F>()
+        internal LambdaExpression GetProjectionExpression<T, F>(PropertyInfo[] properties)
         {
-            if (Aggregations == null || Aggregations.Count == 0) return null;
+            
             var assignements = new List<MemberAssignment>();
+            Type iType = properties[0].DeclaringType;
             var t = typeof(T);
             var f = typeof(F);
-            var g = typeof(IGrouping<T, T>);
+            var g = typeof(IGrouping<,>).MakeGenericType(iType, typeof(T));
             var par = Expression.Parameter(g, "m");
+            int i = 0;
+            var keyProp = g.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
             foreach (var key in Keys)
             {
-                var access = BuildAccess("Key." + key, par, g, QueryOptions.GroupBy, "groupby");
-                if (t == f)
-                    assignements.Add(Expression.Bind((access as MemberExpression).Member, access));
-                else
-                {
-                    var alias = QueryNodeCache.GetPath(f, key);
-                    if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(key);
-                    assignements.Add(Expression.Bind(alias.Item1[0], access));
-                }
+                var prop = properties[i];
+                var access =
+                    Expression.Property(Expression.Property(par, keyProp), prop);
+                
+                var alias = QueryNodeCache.GetPath(f, key);
+                if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(key);
+                assignements.Add(Expression.Bind(alias.Item1[0], access));
+                
+                i++;
             }
-            foreach (var agg in Aggregations)
+            if (Aggregations != null && Aggregations.Count > 0)
             {
-                var innerPar = Expression.Parameter(t, "n");
-                Expression access = BuildAccess(agg.Property, innerPar, t, null, "aggregate");
-                var alias = QueryNodeCache.GetPath(f, agg.Alias);
-                if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(agg.Alias);
-                Expression call;
-                LambdaExpression argExpression = Expression.Lambda(access, innerPar);
-                if (agg.IsCount)
+                foreach (var agg in Aggregations)
                 {
-                    var pType = argExpression.Type;
-                    call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]),
-                            BuildCall("Distinct",
-                                BuildCall("Select", par, g, argExpression),
-                            pType, null), 
-                        pType, null);
-                    
+                    var innerPar = Expression.Parameter(t, "n");
+                    Expression access = BuildAccess(agg.Property, innerPar, t, null, "aggregate");
+                    var alias = QueryNodeCache.GetPath(f, agg.Alias);
+                    if (alias.Item1.Count > 1) throw new NestedPropertyNotAllowedException(agg.Alias);
+                    Expression call;
+                    LambdaExpression argExpression = Expression.Lambda(access, innerPar);
+                    if (agg.IsCount)
+                    {
+                        var pType = access.Type;
+                        call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]),
+                                BuildCall("Distinct",
+                                    BuildCall("Select", par, g, argExpression),
+                                pType, null),
+                            pType, null);
+
+                    }
+                    else
+                        call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, argExpression);
+                    var dType = alias.Item1[0].PropertyType;
+                    if (dType == call.Type)
+                        assignements.Add(Expression.Bind(alias.Item1[0], call));
+                    else
+                        assignements.Add(Expression.Bind(alias.Item1[0], Expression.Convert(call, dType)));
                 }
-                else
-                    call = BuildCall(getAggregationName(agg.Operator, alias.Item1[0]), par, g, argExpression);
-                assignements.Add(Expression.Bind(alias.Item1[0], call));
             }
-            return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) as Expression<Func<IGrouping<T, T>, F>>;
+            return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) ;
         }
         private string encodeGroups()
         {
