@@ -170,6 +170,7 @@ namespace MvcControlsToolkit.Core.Views
             if (value == null ) return null;
             short dateTimeType = QueryFilterCondition.IsNotDateTime;
             var type = prop.PropertyType;
+            type = Nullable.GetUnderlyingType(type) ?? type;
             if(type == typeof(Month))
             {
                 dateTimeType = QueryFilterCondition.IsDate;
