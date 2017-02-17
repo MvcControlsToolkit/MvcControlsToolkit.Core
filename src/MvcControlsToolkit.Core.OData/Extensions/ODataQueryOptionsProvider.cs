@@ -11,7 +11,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
     {
         private static string[] clauses = new string[]
         {
-            "$filer",
+            "$filter",
             "$apply",
             "$orderby",
             "$search",
@@ -56,7 +56,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
 
                     if (form.TryGetValue(x, out value))
                     {
-                        var pres = dict.AddOption(this, x, value.ToString(), Priority+1);
+                        var pres = dict.AddOption(this, Prefix + "." + x, value.ToString(), Priority+1);
                         if (pres != null) res.Add(pres);
                     }
 
@@ -72,7 +72,7 @@ namespace MvcControlsToolkit.Core.Options.Providers
                     
                     if(pars.TryGetValue(x, out value))
                     {
-                        var pres = dict.AddOption(this, x, value.ToString(), Priority);
+                        var pres = dict.AddOption(this, Prefix+"."+x, value.ToString(), Priority);
                         if (pres != null) res.Add(pres);
                     }
                     

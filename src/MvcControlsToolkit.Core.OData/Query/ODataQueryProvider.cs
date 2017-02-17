@@ -20,7 +20,7 @@ using MvcControlsToolkit.Core.OData.Parsers;
 
 namespace MvcControlsToolkit.Core.OData
 {
-    public class ODataQueryProvider : IQueryProvider
+    public class ODataQueryProvider : IWebQueryProvider
     {
         #region types mapping
         private static IDictionary<Type, EdmPrimitiveTypeKind> typeMapping =

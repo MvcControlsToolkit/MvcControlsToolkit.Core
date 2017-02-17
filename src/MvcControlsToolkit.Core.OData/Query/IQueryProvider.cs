@@ -2,7 +2,7 @@
 
 namespace MvcControlsToolkit.Core.OData
 {
-    interface IQueryProvider
+    public interface IWebQueryProvider
     {
         QueryDescription<T> Parse<T>();
     }

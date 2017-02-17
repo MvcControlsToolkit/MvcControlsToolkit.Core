@@ -12,7 +12,7 @@ namespace MvcControlsToolkit.Core.Extensions
         public static IServiceCollection AddODataQueries(this IServiceCollection services)
         {
             services.AddPreferences()
-                .AddPreferencesClass<IQueryProvider, ODataQueryProvider>("Request.Query.OData")
+                .AddPreferencesClass<IWebQueryProvider, ODataQueryProvider>("Request.Query.OData")
                 .AddPreferencesProvider(new ODataQueryOptionsProvider("Request.Query.OData"));
             return services;
                 
