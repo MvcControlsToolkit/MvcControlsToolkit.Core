@@ -64,7 +64,7 @@ namespace MvcControlsToolkit.Core.Views
             if (Grouping == null) return null;
             return Grouping.ToString();
         }
-        public override string ToString()
+        public string QueryString()
         {
             StringBuilder sb = new StringBuilder();
             string search = EncodeSearch();
@@ -118,10 +118,14 @@ namespace MvcControlsToolkit.Core.Views
             if (sb.Length > 0) return sb.ToString();
             else return null;
         }
+        public override string ToString()
+        {
+            return AddToUrl(AttachedTo?.BaseUrl);
+        }
         public string AddToUrl(string url)
         {
             if (url == null) url = string.Empty;
-            var query = ToString();
+            var query = QueryString();
             if (string.IsNullOrWhiteSpace(query)) return url;
             if (url.Contains("?")) return url + "&" + query;
             else return url + "?" + query;
@@ -150,6 +154,17 @@ namespace MvcControlsToolkit.Core.Views
             var mt=grouper.MakeGenericMethod(typeof(T), typeof(F), keys.Type.GetGenericArguments()[1]);
             return mt.Invoke(null, new object[] { cQuery, keys, aggregations }) as IQueryable<F>;
 
+        }
+        public Endpoint AttachedTo { get; set; }
+        public void AttachEndpoint(string baseUrl, bool returnsjSon, string bearerToken=null)
+        {
+            AttachedTo = new Endpoint
+            {
+                BaseUrl = baseUrl,
+                ReturnsJson = returnsjSon,
+                BearerToken = bearerToken,
+                Verb = Endpoint.Get
+            };
         }
     }
 

@@ -32,7 +32,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             Assert.Equal(res.Take, howMany);
             Assert.Equal(res.Page, page);
 
-            Assert.Equal(res.ToString().Replace(" ", ""), "$skip=" + res.Skip.ToString() + "&$top=" + res.Take.ToString());
+            Assert.Equal(res.ToString().Replace(" ", ""), "?$skip=" + res.Skip.ToString() + "&$top=" + res.Take.ToString());
         }
         [Theory]
         [InlineData("http://www.dummy.com?id=1",
