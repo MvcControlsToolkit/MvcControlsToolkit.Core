@@ -75,7 +75,11 @@ namespace MvcControlsToolkit.Core.Views
                 else
                 {
                     if (dt.Kind == DateTimeKind.Local) dt = dt.ToUniversalTime();
-                    return string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}z",
+                    return dt.Millisecond>0 ?
+                        string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}.{6:000}Z",
+                    dt.Year, dt.Month, dt.Day,
+                    dt.Hour, dt.Minute, dt.Second, dt.Millisecond) :
+                        string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}Z",
                     dt.Year, dt.Month, dt.Day,
                     dt.Hour, dt.Minute, dt.Second);
                 }
@@ -84,7 +88,12 @@ namespace MvcControlsToolkit.Core.Views
             if(type == typeof(DateTimeOffset))
             {
                 var dof = ((DateTimeOffset)value).ToUniversalTime();
-                return string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}z", 
+                return 
+                    dof.Millisecond>0 ?
+                    string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}.{6:000}Z",
+                    dof.Year, dof.Month, dof.Day,
+                    dof.Hour, dof.Minute, dof.Second):
+                    string.Format("{0:0000}-{1:00}-{2:00}T{3:00}:{4:00}:{5:00}Z", 
                     dof.Year, dof.Month, dof.Day,
                     dof.Hour, dof.Minute, dof.Second);
             }
