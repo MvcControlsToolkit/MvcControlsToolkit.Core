@@ -19,7 +19,8 @@ namespace MvcControlsToolkit.Core.Views
 
         public override string ToString()
         {
-            
+
+            if (Property == null || Operator == null || Alias == null) return null;
             return string.Format("{0} with {1} as {2}", 
                 EncodeProperty(Property),
                 Operator,
@@ -144,6 +145,7 @@ namespace MvcControlsToolkit.Core.Views
 
             foreach (var key in Keys)
             {
+                if (string.IsNullOrEmpty(key)) continue;
                 if (sb.Length > 0) sb.Append(",");
                 sb.Append(EncodeProperty(key));
             }
@@ -157,18 +159,20 @@ namespace MvcControlsToolkit.Core.Views
 
             foreach (var agg in Aggregations)
             {
+                var sagg = agg.ToString();
+                if (sagg == null) continue;
                 if (sb.Length > 0) sb.Append(",");
-                sb.Append(agg.ToString());
+                sb.Append(sagg);
             }
             return sb.ToString();
         }
         public override string ToString()
         {
             var groups = encodeGroups();
-            if (groups == null) return null;
+            if (string.IsNullOrEmpty(groups)) return null;
 
             var aggs = encodeAggrgates();
-            if (aggs == null) return string.Format("groupby(({0}))", groups);
+            if (string.IsNullOrEmpty(aggs)) return string.Format("groupby(({0}))", groups);
             else return string.Format("groupby(({0}),aggregate({1}))", groups, aggs);
         }
     }

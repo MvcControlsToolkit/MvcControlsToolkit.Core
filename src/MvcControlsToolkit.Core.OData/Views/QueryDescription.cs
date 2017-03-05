@@ -44,10 +44,12 @@ namespace MvcControlsToolkit.Core.Views
             StringBuilder sb = new StringBuilder();
             foreach (var c in Sorting)
             {
+                if (c == null) continue;
                 if (sb.Length > 0) sb.Append(",");
                 sb.Append(c.ToString());
             }
-            return sb.ToString();
+            return sb.Length>0 ? sb.ToString() : null;
+             
         }
         public string EncodeFilter()
         {
