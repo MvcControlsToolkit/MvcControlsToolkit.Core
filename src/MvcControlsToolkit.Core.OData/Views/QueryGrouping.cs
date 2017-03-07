@@ -135,7 +135,7 @@ namespace MvcControlsToolkit.Core.Views
                         assignements.Add(Expression.Bind(alias.Item1[0], Expression.Convert(call, dType)));
                 }
             }
-            return Expression.Lambda(Expression.MemberInit(Expression.New(t), assignements), par) ;
+            return Expression.Lambda(Expression.MemberInit(Expression.New(f), assignements), par) ;
         }
         private string encodeGroups()
         {

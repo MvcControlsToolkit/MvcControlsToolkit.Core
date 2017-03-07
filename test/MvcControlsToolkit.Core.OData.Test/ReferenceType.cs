@@ -79,4 +79,8 @@ namespace MvcControlsToolkit.Core.OData.Test
         [Query]
         public Guid? ANGuid { get; set; }
     }
+    public class ReferenceTypeExtended: ReferenceType
+    {
+        public int ANewInt { get; set; }
+    }
 }

@@ -191,5 +191,46 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             if (firstVAlue != null)
                 Assert.Equal(res.Data.First().ANDecimal, Convert.ToDecimal(firstVAlue, CultureInfo.InvariantCulture));
         }
+
+        [Theory]
+
+        [InlineData("groupby((AString, ABool))", "AString asc", 2, 0)]
+        [InlineData("groupby((AString))", "AString asc", 2, 0)]
+        [InlineData("groupby((AString, ABool), aggregate(ADecimal with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(AFloat with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(AShort with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(ADateTime with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(ADateTimeOffset with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(AMonth with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(AWeek with countdistinct as ANewInt))", "AString asc", 2, 1)]
+        [InlineData("groupby((AString, ABool), aggregate(AInt with average as ANewInt))", "AString asc", 2, 10)]
+        [InlineData("groupby((AString, ABool), aggregate(AInt with max as ANewInt))", "AString asc", 2, 10)]
+        [InlineData("groupby((AString, ABool), aggregate(AInt with min as ANewInt))", "AString asc", 2, 10)]
+        [InlineData("groupby((AString, ABool), aggregate(AInt with sum as ANewInt))", "AString asc", 2, 20)]
+        [InlineData("", "AString asc", 4, null)]
+        public async Task ExtendedGrouping(string command, string sorting, int totalResults, int? firstVAlue)
+        {
+            provider.Apply = command;
+            provider.OrderBy = sorting;
+            var q = provider.Parse<ReferenceType>();
+            var atype = new { AString = 7, ABool = 12, a = 1, b = 2 };
+            Assert.NotNull(q);
+
+            var groupingClause = q.GetGrouping<ReferenceTypeExtended>();
+            var sortingClause = q.GetSorting<ReferenceTypeExtended>();
+      
+            var res = await repository.GetPageExtended<ReferenceType, ReferenceTypeExtended>(
+                    null,
+                    sortingClause,
+                    1, 10,
+                    groupingClause
+
+                );
+            Assert.Equal(res.TotalCount, totalResults);
+            Assert.NotNull(res.Data);
+            Assert.Equal(res.Data.Count, totalResults);
+            if (firstVAlue != null)
+                Assert.Equal(res.Data.First().ANewInt, firstVAlue.Value);
+        }
     }
 }

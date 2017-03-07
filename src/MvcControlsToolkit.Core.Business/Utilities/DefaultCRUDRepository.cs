@@ -219,12 +219,12 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 .Project().To<T1>().SingleOrDefaultAsync();
         }
 
-        public virtual async Task<DataPage<T1>> GetPage<T1>(
+        public virtual async Task<DataPage<T2>> GetPageExtended<T1, T2>(
             Expression<Func<T1, bool>> filter, 
-            Func<IQueryable<T1>, IOrderedQueryable<T1>> sorting, 
+            Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting, 
             int page, 
             int itemsPerPage,
-            Func<IQueryable<T1>, IQueryable<T1>> grouping=null
+            Func<IQueryable<T1>, IQueryable<T2>> grouping=null
             )
         {
 
@@ -242,20 +242,34 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             else
                 proj = start.Project().To<T1>();
             if (filter != null) proj = proj.Where(filter);
-            if (grouping != null) proj = grouping(proj);
-            var res = new DataPage<T1>
+            IQueryable<T2> toGroup;
+            if (grouping != null) toGroup = grouping(proj);
+            else toGroup = proj as IQueryable<T2>;
+            if (toGroup == null) toGroup = proj.Project().To<T2>();
+            var res = new DataPage<T2>
             {
-                TotalCount=await proj.CountAsync(),
+                TotalCount=await toGroup.CountAsync(),
                 ItemsPerPage=itemsPerPage,
                 Page = page+1
             };
             res.TotalPages = res.TotalCount / itemsPerPage;
             if (res.TotalCount % itemsPerPage > 0) res.TotalPages++;
-            var sorted = sorting(proj);
-            if (page > 0) proj = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
-            else proj = sorted.Take(itemsPerPage);
-            res.Data = await proj.ToArrayAsync();
+            var sorted = sorting(toGroup);
+            if (page > 0) toGroup = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
+            else toGroup = sorted.Take(itemsPerPage);
+            res.Data = await toGroup.ToArrayAsync();
             return res;
+        }
+        public virtual async Task<DataPage<T1>> GetPage<T1>(
+            Expression<Func<T1, bool>> filter,
+            Func<IQueryable<T1>, IOrderedQueryable<T1>> sorting,
+            int page,
+            int itemsPerPage,
+            Func<IQueryable<T1>, IQueryable<T1>> grouping = null
+            )
+        {
+
+            return await GetPageExtended<T1, T1>(filter, sorting, page, itemsPerPage, grouping);
         }
     }
 }

@@ -171,14 +171,14 @@ namespace MvcControlsToolkit.Core.Views
     }
 
 
-    public class QueryDescription<T>: QueryDescription
+    public class QueryDescription<T> : QueryDescription
     {
 
         private Expression<Func<T, bool>> filterCache;
         private Func<IQueryable<T>, IOrderedQueryable<T>> sortingCache;
         private Func<IQueryable<T>, IQueryable<T>> groupingCache;
         private MethodInfo grouper;
-        
+
         public bool SearchAllowed()
         {
             if (Search == null) return false;
@@ -190,19 +190,23 @@ namespace MvcControlsToolkit.Core.Views
             if (Filter == null) return null;
             if (filterCache != null) return filterCache;
             var par = Expression.Parameter(typeof(T), "m");
-            return filterCache=Expression.Lambda(Filter.BuildExpression(par, typeof(T)), par) as Expression<Func<T, bool>>;
+            return filterCache = Expression.Lambda(Filter.BuildExpression(par, typeof(T)), par) as Expression<Func<T, bool>>;
 
         }
         public Func<IQueryable<T>, IQueryable<T>> GetGrouping()
         {
             if (groupingCache != null) return groupingCache;
-            return groupingCache=GetGrouping<T>();
+            return groupingCache = GetGrouping<T>();
         }
-        
+
         public Func<IQueryable<T>, IQueryable<F>> GetGrouping<F>()
         {
-            if (Grouping == null) return null;
-            PropertyInfo[] properties; 
+            if (Grouping == null)
+            {
+                groupingCache = null;
+                return null;
+            }
+            PropertyInfo[] properties;
             var keys = Grouping.BuildGroupingExpression<T>(out properties);
             if (keys == null) return null;
             var aggregations = Grouping.GetProjectionExpression<T, F>(properties);
@@ -211,31 +215,39 @@ namespace MvcControlsToolkit.Core.Views
                 return StandardGrouping<T, F>(q, keys, aggregations);
             };
         }
+        public Func<IQueryable<F>, IOrderedQueryable<F>> GetSorting<F>()
+        {
+            if (Sorting == null || Sorting.Count == 0)
+            {
+                sortingCache = null;
+                return null;
+            }
+            return (q) =>
+           {
+               bool start = true;
+               IOrderedQueryable<F> result = null;
+               foreach (var s in Sorting)
+               {
+                   if (start)
+                   {
+                       start = false;
+                       if (s.Down) result = q.OrderByDescending(s.GetSortingLambda(typeof(F)));
+                       else result = q.OrderBy(s.GetSortingLambda(typeof(F)));
+                   }
+                   else
+                   {
+                       if (s.Down) result = result.ThenByDescending(s.GetSortingLambda(typeof(T)));
+                       else result = result.ThenBy(s.GetSortingLambda(typeof(T)));
+                   }
+               }
+               return result;
+           };
+        }
         public Func<IQueryable<T>, IOrderedQueryable<T>> GetSorting()
         {
-            if (Sorting == null || Sorting.Count == 0) return sortingCache=null;
-            return sortingCache = (q) =>
-            {
-                bool start = true;
-                IOrderedQueryable<T> result = null;
-                foreach (var s in Sorting)
-                {
-                    if (start)
-                    {
-                        start = false;
-                        if (s.Down) result = q.OrderByDescending(s.GetSortingLambda(typeof(T)));
-                        else result = q.OrderBy(s.GetSortingLambda(typeof(T)));
-                    }
-                    else
-                    {
-                        if (s.Down) result = result.ThenByDescending(s.GetSortingLambda(typeof(T)));
-                        else result = result.ThenBy(s.GetSortingLambda(typeof(T)));
-                    }
-                }
-                return result;
-            };
+            if (sortingCache != null) return sortingCache;
+            return sortingCache = GetSorting<T>();
         }
-        
         protected override QueryDescription CloneInternal()
         {
             return MemberwiseClone() as QueryDescription;
