@@ -89,35 +89,35 @@ namespace MvcControlsToolkit.Core.Linq
             return _source.Select(queryExpression);
         }
 
-        private static Expression<Func<TSource, TDest>> GetCachedExpression<TDest>()
+        private static Expression<Func<TSource, TDest>> GetCachedExpression<TDest>(Type source = null)
         {
-            var key = GetCacheKey<TDest>();
+            var key = GetCacheKey<TDest>(source);
 
             return ExpressionCache.ContainsKey(key) ? ExpressionCache[key] as Expression<Func<TSource, TDest>> : null;
         }
 
-        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo<TDest>()
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo<TDest>(Type source=null)
         {
-            var key = GetCacheKey<TDest>();
+            var key = GetCacheKey<TDest>(source);
 
             return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
         }
-        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo(Type t)
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo(Type t, Type source = null)
         {
-            var key = GetCacheKey(t);
+            var key = GetCacheKey(t, source);
 
             return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
         }
 
-        private static IEnumerable<PropertyBinding> BuildBindings<TDest>()
+        private static IEnumerable<PropertyBinding> BuildBindings<TDest>(Type source = null)
         {
-            return BuildBindings(typeof(TDest));
+            return BuildBindings(typeof(TDest), source);
         }
-        private static IEnumerable<PropertyBinding> BuildBindings(Type t)
+        private static IEnumerable<PropertyBinding> BuildBindings(Type t, Type source=null)
         {
-            var res = GetCachedPropertyInfo(t);
+            var res = GetCachedPropertyInfo(t, source);
             if (res != null) return res;
-            var sourceProperties = typeof(TSource).GetProperties();
+            var sourceProperties = (source??typeof(TSource)).GetProperties();
             var destinationProperties = t.GetProperties().Where(dest => dest.CanWrite);
             var parameterExpression = Expression.Parameter(typeof(TSource), "src");
 
@@ -127,7 +127,7 @@ namespace MvcControlsToolkit.Core.Linq
 
 
 
-            var key = GetCacheKey(t);
+            var key = GetCacheKey(t, source);
             try
             {
                 PropertyBindingCache.TryAdd(key, bindings);
@@ -135,15 +135,46 @@ namespace MvcControlsToolkit.Core.Linq
             catch { }
             return bindings;
         }
-        private static MemberInitExpression completeMemberInit<TDest>(
+        private static MemberInitExpression completeMemberInit(
             MemberInitExpression node, 
             ParameterExpression parameterExpression)
         {
             var customAssignements = node.Bindings.Where(m => m.BindingType == MemberBindingType.Assignment).Select(m => m as MemberAssignment).ToList();
             var assignedProperties = customAssignements.Select(m => m.Member).ToList();
+            var internalProjections = customAssignements.Where(m => m.Expression.NodeType == ExpressionType.Call &&
+                (m.Expression as MethodCallExpression).Method?.Name == "Select");
+            List<MemberAssignment> modifiedAssignements = null;
+            List<MemberAssignment> modifiedAssignementsOld = null;
+            if (internalProjections != null)
+            {
+                foreach(var projection in internalProjections)
+                {
+                    var select = projection.Expression as MethodCallExpression;
+                    var exp= select.Arguments[0] as LambdaExpression;
+                    if(exp != null)
+                    {
+                        var newAssignement = Expression.Bind(projection.Member,
+                            Expression.Call(select.Method, BuildInternalExpression(exp)
+                            ));
+                        if(modifiedAssignements == null)
+                        {
+                            modifiedAssignements = new List<MemberAssignment>();
+                            modifiedAssignementsOld = new List<MemberAssignment>();
+                        }
+                        modifiedAssignements.Add(newAssignement);
+                        modifiedAssignementsOld.Add(projection);
+                    }
+                }
+            }
+
+
             var bindings = BuildBindings(node.NewExpression.Type)
                     .Where(m => !assignedProperties.Contains(m.Destination))
-                   .Select(m => BuildBinding(parameterExpression, m)).Union(customAssignements);
+                   .Select(m => BuildBinding(parameterExpression, m))
+                    .Union(customAssignements);
+            if(modifiedAssignements.Count>0)
+                bindings= bindings.Except(modifiedAssignementsOld)
+                    .Union(modifiedAssignements);
             return Expression.MemberInit(node.NewExpression, bindings);
         }
         private static MemberInitExpression createMemberInit<TDest>(ParameterExpression parameterExpression)
@@ -152,29 +183,35 @@ namespace MvcControlsToolkit.Core.Linq
                     .Select(m => BuildBinding(parameterExpression, m));
             return Expression.MemberInit(Expression.New(typeof(TDest)), bindings);
         }
-        private static Expression processTreeRec<TDest>(
+        private static MemberInitExpression createMemberInit(ParameterExpression parameterExpression, Type destination, Type source=null)
+        {
+            var bindings = BuildBindings(destination, source)
+                    .Select(m => BuildBinding(parameterExpression, m));
+            return Expression.MemberInit(Expression.New(destination), bindings);
+        }
+        private static Expression processTreeRec(
             Expression node,
             ParameterExpression parameterExpression)
         {
             if (node.NodeType == ExpressionType.MemberInit)
-                return completeMemberInit<TDest>(node as MemberInitExpression, parameterExpression);
+                return completeMemberInit(node as MemberInitExpression, parameterExpression);
             else if (node.NodeType == ExpressionType.Conditional)
             {
                 var cond = node as ConditionalExpression;
                 return Expression.Condition(cond.Test,
-                    processTreeRec<TDest>(cond.IfTrue, parameterExpression),
-                    processTreeRec<TDest>(cond.IfFalse, parameterExpression));
+                    processTreeRec(cond.IfTrue, parameterExpression),
+                    processTreeRec(cond.IfFalse, parameterExpression));
             }
             else if (node.NodeType == ExpressionType.Convert)
             {
                 var conv = node as UnaryExpression;
-                return Expression.Convert(processTreeRec<TDest>(conv.Operand, parameterExpression),
+                return Expression.Convert(processTreeRec(conv.Operand, parameterExpression),
                     conv.Type, conv.Method);
             }
             else if (node.NodeType == ExpressionType.ConvertChecked)
             {
                 var conv = node as UnaryExpression;
-                return Expression.ConvertChecked(processTreeRec<TDest>(conv.Operand, parameterExpression),
+                return Expression.ConvertChecked(processTreeRec(conv.Operand, parameterExpression),
                     conv.Type, conv.Method);
             }
             else return node;
@@ -189,7 +226,7 @@ namespace MvcControlsToolkit.Core.Linq
             }
             else
             {
-                pres = processTreeRec<TDest>(custom.Body, parameterExpression);
+                pres = processTreeRec(custom.Body, parameterExpression);
             }
 
             var expression = Expression.Lambda<Func<TSource, TDest>>(pres, parameterExpression);
@@ -204,7 +241,29 @@ namespace MvcControlsToolkit.Core.Linq
 
             return expression;
         }
-       
+        private static LambdaExpression BuildInternalExpression(LambdaExpression exp)
+        {
+            ParameterExpression parameterExpression = exp.Parameters.First();
+            if (exp.Body.NodeType == ExpressionType.MemberInit)
+            {
+                var bindings = (exp.Body as MemberInitExpression).Bindings;
+                if (bindings == null || bindings.Count == 0)
+                {
+                    var res = Expression.Lambda(
+                    createMemberInit(parameterExpression, exp.ReturnType, parameterExpression.Type),
+                    parameterExpression);
+                    var key = GetCacheKey(exp.ReturnType, parameterExpression.Type);
+                    try
+                    {
+                        ExpressionCache.TryAdd(key, res);
+                    }
+                    catch { }
+                    return res;
+                }
+            }
+            var pres = processTreeRec(exp.Body, parameterExpression);
+            return Expression.Lambda(pres, parameterExpression);
+        }
         private static PropertyBinding BuildBindingAssociation(MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties)
         {
             var sourceProperty = sourceProperties.FirstOrDefault(src => src.Name == destinationProperty.Name);
@@ -255,13 +314,13 @@ namespace MvcControlsToolkit.Core.Linq
         }
    
 
-        private static string GetCacheKey<TDest>()
+        private static string GetCacheKey<TDest>(Type source=null)
         {
-            return string.Concat(typeof(TSource).FullName, typeof(TDest).FullName);
+            return string.Concat((source??typeof(TSource)).FullName, typeof(TDest).FullName);
         }
-        private static string GetCacheKey(Type t)
+        private static string GetCacheKey(Type t, Type source=null)
         {
-            return string.Concat(typeof(TSource).FullName, t.FullName);
+            return string.Concat((source??typeof(TSource)).FullName, t.FullName);
         }
 
 
