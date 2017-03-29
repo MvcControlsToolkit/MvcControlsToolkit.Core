@@ -172,7 +172,7 @@ namespace MvcControlsToolkit.Core.Linq
                     .Where(m => !assignedProperties.Contains(m.Destination))
                    .Select(m => BuildBinding(parameterExpression, m))
                     .Union(customAssignements);
-            if(modifiedAssignements.Count>0)
+            if(modifiedAssignements != null && modifiedAssignements.Count>0)
                 bindings= bindings.Except(modifiedAssignementsOld)
                     .Union(modifiedAssignements);
             return Expression.MemberInit(node.NewExpression, bindings);
