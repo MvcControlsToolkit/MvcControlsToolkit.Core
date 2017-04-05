@@ -30,7 +30,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         object lastCopier = null;
         protected ObjectCopier<T, M> GetCopierOptimized<T, M>(Type sourceType = null, Type destinationType = null)
         {
-            sourceType = sourceType ?? typeof(T);
+            sourceType = typeof(T).GetTypeInfo().IsInterface ? typeof(T) : (sourceType ?? typeof(T));
             destinationType = destinationType ?? typeof(M);
             if (sourceType == lastCopierSource && destinationType == lastCopierDestination)
                 return lastCopier as ObjectCopier<T, M>;
@@ -122,7 +122,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if(newValues != null)
                 {
                     IEnumerable<PropertyInfo> props = null;
-                    
+                    bool isInterface = typeof(T).GetTypeInfo().IsInterface;
                     foreach (var item in newValues)
                     {
                         var key = keyFunc(item);
@@ -131,7 +131,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
 
                             T other = default(T);
                             dict.TryGetValue(key, out other);
-                            if (other == null || !verifyPropertyChanges || changed(props = res.GetPropertiesOptimized(item == null ? typeof(T) : item.GetType()), other, item))
+                            if (other == null || !verifyPropertyChanges || changed(props = res.GetPropertiesOptimized(item == null || isInterface ? typeof(T) : item.GetType()), other, item))
                                 res.Changed.Add(item);
                             if (other != null)
                             {
@@ -207,22 +207,29 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var res = new List<M>();
             if (Deleted != null && Deleted.Count > 0)
             {
+                IEnumerable<object> toDelete;
                 if (retrieveChanged)
                 {
+                    var DBParam = Expression.Parameter(typeof(M), "m");
+                    var DBKeyExpression = Expression.Lambda(
+                        Expression.TypeAs(
+                            Expression.MakeMemberAccess(DBParam, keyProperty),
+                            typeof(object)),
+                        DBParam);
                     var deletedIds = Deleted;
                     if (deletedFilter == null)
                         deletedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, deletedIds)
                             .Get();
                     if (accessFilter == null)
-                        Deleted = await table.Where(deletedFilter).Project().To<T>().Select(KeyExpression)
-                            .ToListAsync();
+                        toDelete = await table.Where(deletedFilter).Select((Expression<Func<M, object>>)DBKeyExpression)
+                        .ToListAsync();
                     else
-                        Deleted = await table.Where(deletedFilter).Where(accessFilter).Project().To<T>().Select(KeyExpression)
+                        toDelete = await table.Where(deletedFilter).Where(accessFilter).Select((Expression<Func<M, object>>)DBKeyExpression)
                             .ToListAsync();
 
                 }
-                
+                else toDelete = Deleted.Select(m => m as object);
                 foreach (var key in Deleted)
                 {
                     aChange = true;

@@ -147,7 +147,15 @@ namespace WebTestCore.Controllers
             }
             return View(model);
         }
-        
+        public IActionResult InterfaceTest()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult InterfaceTest(ITestInterface model)
+        {
+            return View(model);
+        }
         public IActionResult RowCollection()
         {
             ViewData["Message"] = "Your application description page.";

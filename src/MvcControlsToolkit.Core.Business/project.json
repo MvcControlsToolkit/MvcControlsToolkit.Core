@@ -2,7 +2,7 @@
     "description": "Data annotations, database utilities, and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.",
     "title": "Mvc Controls Toolkit business Layer tools",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.1.5.16",
+    "version": "1.1.5.19",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
@@ -46,7 +46,8 @@
     "dependencies": {
         "Microsoft.EntityFrameworkCore": "1.1.0",
         "NETStandard.Library": "1.6.1",
-        "System.ComponentModel.TypeConverter": "4.3.0"
+        "System.ComponentModel.TypeConverter": "4.3.0",
+        "Newtonsoft.Json": "9.0.1"
     },
     "scripts": {
         "postcompile": [ "dotnet pack --no-build --output /Nuget --configuration %compile:Configuration% %project:Directory%" ]

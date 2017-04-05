@@ -59,5 +59,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Models
         public Guid AGuid { get; set; }
 
         public Guid? ANGuid { get; set; }
+
+        public virtual ICollection<NestedReferenceModel> Children { get; set; }
     }
 }

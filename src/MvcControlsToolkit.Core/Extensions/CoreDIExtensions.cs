@@ -18,6 +18,9 @@ using MvcControlsToolkit.Core.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using MvcControlsToolkit.Core.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MvcControlsToolkit.Core.Extensions
 {
@@ -42,6 +45,12 @@ namespace MvcControlsToolkit.Core.Extensions
                 .AddPreferencesProvider(new RequestJsonProvider("Browser", "_browser_basic_capabilities"){Priority=1});
             services.AddTransient<IConfigureOptions<MvcControlsToolkitOptions>, MvcControlsToolkitSetup>();
             services.AddScoped<IViewBufferScope, SafeMemoryPoolViewBufferScope>();
+            services.TryAddSingleton<IObjectModelValidator>(s =>
+            {
+                var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
+                var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
+                return new EnhancedObjectValidator(metadataProvider, options.ModelValidatorProviders);
+            });
             if (setupAction != null)
                 services.Configure(setupAction);
             return services;

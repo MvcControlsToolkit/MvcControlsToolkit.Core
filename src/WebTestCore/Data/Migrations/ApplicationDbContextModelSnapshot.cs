@@ -31,8 +31,8 @@ namespace WebTestCore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedName")
-                        .HasName("RoleNameIndex");
+                    /*b.HasIndex("NormalizedName")
+                        .HasName("RoleNameIndex");*/
 
                     b.ToTable("AspNetRoles");
                 });

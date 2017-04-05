@@ -23,9 +23,28 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                     AWeek=Week.FromDateTime(m.AWeek),
                     ANWeek=Week.FromDateTime(m.ANWeek.Value)
                 });
+            
+            DefaultCRUDRepository<TestContext, ReferenceModel>.
+                DeclareProjection<IFilterReferenceTypeWithChildren>(m => new ReferenceTypeWithChildren
+                {
+                    AMonth = Month.FromDateTime(m.AMonth),
+                    ANMonth = Month.FromDateTime(m.ANMonth.Value),
+                    AWeek = Week.FromDateTime(m.AWeek),
+                    ANWeek = Week.FromDateTime(m.ANWeek.Value),
+                    Children = m.Children.Select(l => new NestedReferenceType {})
+                });
+            DefaultCRUDRepository<TestContext, ReferenceModel>.
+                DeclareProjection<ReferenceTypeWithChildren>(  m => new ReferenceTypeWithChildren
+                {
+                    AMonth = Month.FromDateTime(m.AMonth),
+                    ANMonth = Month.FromDateTime(m.ANMonth.Value),
+                    AWeek = Week.FromDateTime(m.AWeek),
+                    ANWeek = Week.FromDateTime(m.ANWeek.Value),
+                    Children =  m.Children.Select(l => new NestedReferenceType { }).ToList()
+                });
         }
         private TestContext context;
-        ICRUDRepository repository;
+        ICRUDRepository repository, repositoryForNested;
         public DBInitializer()
         {
             context = new TestContext();
@@ -185,7 +204,27 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
 
                 context.SaveChanges();
             }
-
+            if(!context.NestedReferenceModels.Any())
+            {
+                var fatherIds=context.ReferenceModels.Select(m => m.Id)
+                    .ToArray();
+                foreach(var father in fatherIds)
+                {
+                    for(int i=0; i<2; i++)
+                    {
+                        var iModel = new NestedReferenceModel
+                        {
+                            FatherId = father,
+                            AString = string.Format("Child {0} of {1}",
+                                    i, father
+                                ),
+                            AInt = i
+                        };
+                        context.Add(iModel);
+                    }
+                }
+                context.SaveChanges();
+            }
             
         }
         public ICRUDRepository Repository { get { return repository; } }

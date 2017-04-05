@@ -69,7 +69,7 @@ namespace WebTestCore.Controllers
             var repo =
                 DefaultCRUDRepository.Create(ctx, ctx.TestModels, null, m => m.FieldA != "FieldA_0");
             DefaultCRUDRepository<ApplicationDbContext, Models.TestModel>
-                .DeclareProjection(m => new Models.TestViewModel
+                .DeclareProjection<Models.ITestViewModel>(m => new Models.TestViewModel
                 {
                     FieldBC = m.FieldB + " " + m.FieldC
                 });
@@ -78,7 +78,7 @@ namespace WebTestCore.Controllers
             {
                 
                 
-                repo.Add(true, new Models.TestViewModel
+                repo.Add<Models.ITestViewModel>(true, new Models.TestViewModel
                 {
                     FieldA = "FieldA_ANew2",
                     FieldB = "FieldB_Bew2",
@@ -87,9 +87,10 @@ namespace WebTestCore.Controllers
                     FieldF = "FieldF_New"
 
                 });
-                repo.UpdateList(false, original, changed);
+                repo.UpdateList<Models.ITestViewModel>(false, original, changed);
                 changed[6].FieldA = "a change";
-                repo.Update(false, changed[6]);
+                changed[6].FieldF = "a F change";
+                repo.Update<Models.ITestViewModel>(false, changed[6]);
                 repo.Delete(changed[8].Id);
                 await repo.SaveChanges();
             }
@@ -105,7 +106,7 @@ namespace WebTestCore.Controllers
             var finalData1 = await repo.GetPage<Models.TestViewModel>(null,
                 x => x.OrderBy(m => m.FieldA),
                 2, 5);
-            var detail = await repo.GetById<Models.TestViewModel, int>(original[0].Id.Value);
+            var detail = await repo.GetById<Models.ITestViewModel, int>(original[1].Id.Value);
             return View();
         }
     }

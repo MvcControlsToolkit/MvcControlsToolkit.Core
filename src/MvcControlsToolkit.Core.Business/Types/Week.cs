@@ -27,6 +27,7 @@ namespace MvcControlsToolkit.Core.Types
         }
     }
     [System.ComponentModel.TypeConverter("MvcControlsToolkit.Core.Types.WeekTypeConverter")]
+    [Newtonsoft.Json.JsonConverterAttribute(typeof(WeekJsonConverter))]
     public struct  Week: IComparable, IComparable<Month>, IEquatable<Week>
     {
 

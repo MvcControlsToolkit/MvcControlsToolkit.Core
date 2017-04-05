@@ -2,7 +2,7 @@
     "description": "A Framework for handling options/preferences coming from several sources(user, browser capabilities, configuration, etc.) in Asp.net core",
     "title": "Mvc Controls Toolkit Options framework",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.1.5.2",
+    "version": "1.1.5.3",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",

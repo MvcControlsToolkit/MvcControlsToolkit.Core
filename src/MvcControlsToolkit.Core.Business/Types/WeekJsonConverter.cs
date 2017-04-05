@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using MvcControlsToolkit.Core.ModelBinding.DerivedClasses;
-using MvcControlsToolkit.Core.Types;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace MvcControlsToolkit.Core.ModelBinding
+
+namespace MvcControlsToolkit.Core.Types
 {
     public class WeekJsonConverter : JsonConverter
     {

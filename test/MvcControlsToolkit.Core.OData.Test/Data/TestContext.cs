@@ -14,5 +14,18 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
             optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=OData-Test-32abf61e-f504-462a-8c8a-b04e55d505bt;Trusted_Connection=True;MultipleActiveResultSets=true");
         }
         public DbSet<ReferenceModel> ReferenceModels { get; set; }
+        public DbSet<NestedReferenceModel> NestedReferenceModels { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<ReferenceModel>()
+                .HasMany(m => m.Children)
+                .WithOne(m => m.Father)
+                .HasForeignKey(m => m.FatherId)
+                .OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Cascade);
+                
+        }
     }
 }

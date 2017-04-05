@@ -5,7 +5,23 @@ using System.Threading.Tasks;
 
 namespace WebTestCore.Models
 {
-    public class TestViewModel
+    public interface ITestViewModel
+    {
+        int? Id { get; set; }
+
+        string FieldA { get; set; }
+
+        string FieldB { get; set; }
+
+        string FieldBC { get; set; }
+
+        string FieldD { get; set; }
+
+        string FieldE { get; set; }
+
+        
+    }
+    public class TestViewModel: ITestViewModel
     {
         public int? Id { get; set; }
         

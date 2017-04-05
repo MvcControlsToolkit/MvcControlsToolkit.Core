@@ -150,10 +150,10 @@ namespace WebTestCore.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName");
+            //migrationBuilder.CreateIndex(
+            //    name: "RoleNameIndex",
+            //    table: "AspNetRoles",
+            //    column: "NormalizedName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -179,7 +179,7 @@ namespace WebTestCore.Data.Migrations
                 name: "IX_AspNetUserRoles_UserId",
                 table: "AspNetUserRoles",
                 column: "UserId");
-
+            /*
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "AspNetUsers",
@@ -188,7 +188,7 @@ namespace WebTestCore.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
-                column: "NormalizedUserName");
+                column: "NormalizedUserName");*/
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

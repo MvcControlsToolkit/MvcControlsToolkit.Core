@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,9 +83,9 @@ namespace MvcControlsToolkit.Core.Linq
 
             return _source.Select(queryExpression);
         }
-        public IQueryable<TDest> To<TDest>(Expression<Func<TSource, TDest>> custom)
+        public IQueryable<TDest> To<TDest>(Expression<Func<TSource, TDest>> custom, Type filter=null)
         {
-            var queryExpression = BuildExpression<TDest>(custom);
+            var queryExpression = BuildExpression<TDest>(custom, filter);
 
             return _source.Select(queryExpression);
         }
@@ -96,29 +97,36 @@ namespace MvcControlsToolkit.Core.Linq
             return ExpressionCache.ContainsKey(key) ? ExpressionCache[key] as Expression<Func<TSource, TDest>> : null;
         }
 
-        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo<TDest>(Type source=null)
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo<TDest>(Type source=null, Type filter = null)
         {
-            var key = GetCacheKey<TDest>(source);
+            var key = GetCacheKey<TDest>(source, filter);
 
             return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
         }
-        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo(Type t, Type source = null)
+        private static IEnumerable<PropertyBinding> GetCachedPropertyInfo(Type t, Type source = null, Type filter = null)
         {
-            var key = GetCacheKey(t, source);
+            var key = GetCacheKey(t, source, filter);
 
             return PropertyBindingCache.ContainsKey(key) ? PropertyBindingCache[key] as IEnumerable<PropertyBinding> : null;
         }
 
-        private static IEnumerable<PropertyBinding> BuildBindings<TDest>(Type source = null)
+        private static IEnumerable<PropertyBinding> BuildBindings<TDest>(Type source = null, Type filter=null)
         {
-            return BuildBindings(typeof(TDest), source);
+            return BuildBindings(typeof(TDest), source, filter);
         }
-        private static IEnumerable<PropertyBinding> BuildBindings(Type t, Type source=null)
+        private static IEnumerable<PropertyBinding> BuildBindings(Type t, Type source=null, Type filter = null)
         {
-            var res = GetCachedPropertyInfo(t, source);
+            var res = GetCachedPropertyInfo(t, source, filter);
             if (res != null) return res;
             var sourceProperties = (source??typeof(TSource)).GetProperties();
-            var destinationProperties = t.GetProperties().Where(dest => dest.CanWrite);
+            var destinationProperties = t.GetProperties()
+                .Where(dest => dest.CanWrite && (dest.PropertyType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(dest.PropertyType)));
+            if (filter != null)
+            {
+                var filterProperties = new HashSet<string>(filter.GetProperties()
+                    .Select(m => m.Name));
+                destinationProperties = destinationProperties.Where(m => filterProperties.Contains(m.Name));
+            }
             var parameterExpression = Expression.Parameter(typeof(TSource), "src");
 
             var bindings = destinationProperties
@@ -127,7 +135,7 @@ namespace MvcControlsToolkit.Core.Linq
 
 
 
-            var key = GetCacheKey(t, source);
+            var key = GetCacheKey(t, source, filter);
             try
             {
                 PropertyBindingCache.TryAdd(key, bindings);
@@ -135,98 +143,131 @@ namespace MvcControlsToolkit.Core.Linq
             catch { }
             return bindings;
         }
+        private static MethodCallExpression getNestedSelect(Expression node)
+        {
+            if (node == null) return null;
+            if (node.NodeType == ExpressionType.Call)
+            {
+                var call = node as MethodCallExpression;
+                if (call == null) return null;
+                if (call.Method?.Name == "Select") return call;
+                if (call.Arguments.Count == 1) return getNestedSelect(call.Arguments[0]);
+                return null;
+            }
+            return null;
+
+        }
+        private static Expression copyCallChain(MethodCallExpression start, MethodCallExpression stop, Expression replace)
+        {
+            if (start == stop) return replace;
+            return Expression.Call(start.Method, copyCallChain(start.Arguments[0] as MethodCallExpression, stop, replace));
+        }
         private static MemberInitExpression completeMemberInit(
             MemberInitExpression node, 
-            ParameterExpression parameterExpression)
+            ParameterExpression parameterExpression,
+            Type filter = null)
         {
             var customAssignements = node.Bindings.Where(m => m.BindingType == MemberBindingType.Assignment).Select(m => m as MemberAssignment).ToList();
-            var assignedProperties = customAssignements.Select(m => m.Member).ToList();
-            var internalProjections = customAssignements.Where(m => m.Expression.NodeType == ExpressionType.Call &&
-                (m.Expression as MethodCallExpression).Method?.Name == "Select");
+            var assignedProperties = customAssignements.Select(m => m.Member.Name).ToList();
+            var internalProjections = customAssignements.Where(m => getNestedSelect(m.Expression) != null);
             List<MemberAssignment> modifiedAssignements = null;
             List<MemberAssignment> modifiedAssignementsOld = null;
             if (internalProjections != null)
             {
                 foreach(var projection in internalProjections)
                 {
-                    var select = projection.Expression as MethodCallExpression;
-                    var exp= select.Arguments[0] as LambdaExpression;
+                    var select = getNestedSelect(projection.Expression);
+                    var exp= select.Arguments[1] as LambdaExpression;
                     if(exp != null)
                     {
+
+
+                        Type childFilter = null;
+                        TypeInfo childType = (projection.Member as PropertyInfo).PropertyType.GetTypeInfo();
+                        if (childType.IsGenericType && childType.GenericTypeArguments.Length == 1 && childType.GenericTypeArguments[0].GetTypeInfo().IsInterface)
+                        {
+                            childFilter = childType.GenericTypeArguments[0];
+                        }
                         var newAssignement = Expression.Bind(projection.Member,
-                            Expression.Call(select.Method, BuildInternalExpression(exp)
+                            copyCallChain(projection.Expression as MethodCallExpression, select,
+                            Expression.TypeAs(
+                                Expression.Call(select.Method, select.Arguments[0], BuildInternalExpression(exp, childFilter)),
+                            select.Method.ReturnType)
                             ));
-                        if(modifiedAssignements == null)
+                        if (modifiedAssignements == null)
                         {
                             modifiedAssignements = new List<MemberAssignment>();
                             modifiedAssignementsOld = new List<MemberAssignment>();
                         }
                         modifiedAssignements.Add(newAssignement);
                         modifiedAssignementsOld.Add(projection);
+                        
+                        
                     }
                 }
             }
 
 
-            var bindings = BuildBindings(node.NewExpression.Type)
-                    .Where(m => !assignedProperties.Contains(m.Destination))
-                   .Select(m => BuildBinding(parameterExpression, m))
+            var bindings = BuildBindings(node.NewExpression.Type, parameterExpression.Type, filter)
+                    .Where(m => !assignedProperties.Contains(m.Destination.Name))
+                    .Select(m => BuildBinding(parameterExpression, m))
                     .Union(customAssignements);
             if(modifiedAssignements != null && modifiedAssignements.Count>0)
                 bindings= bindings.Except(modifiedAssignementsOld)
                     .Union(modifiedAssignements);
             return Expression.MemberInit(node.NewExpression, bindings);
         }
-        private static MemberInitExpression createMemberInit<TDest>(ParameterExpression parameterExpression)
+        private static MemberInitExpression createMemberInit<TDest>(ParameterExpression parameterExpression, Type filter=null)
         {
-            var bindings = BuildBindings<TDest>()
+            var bindings = BuildBindings<TDest>(filter)
                     .Select(m => BuildBinding(parameterExpression, m));
             return Expression.MemberInit(Expression.New(typeof(TDest)), bindings);
         }
-        private static MemberInitExpression createMemberInit(ParameterExpression parameterExpression, Type destination, Type source=null)
+        private static MemberInitExpression createMemberInit(ParameterExpression parameterExpression, Type destination, Type source=null, Type filter = null)
         {
-            var bindings = BuildBindings(destination, source)
+            var bindings = BuildBindings(destination, source, filter)
                     .Select(m => BuildBinding(parameterExpression, m));
             return Expression.MemberInit(Expression.New(destination), bindings);
         }
         private static Expression processTreeRec(
             Expression node,
-            ParameterExpression parameterExpression)
+            ParameterExpression parameterExpression,
+            Type filter = null)
         {
             if (node.NodeType == ExpressionType.MemberInit)
-                return completeMemberInit(node as MemberInitExpression, parameterExpression);
+                return completeMemberInit(node as MemberInitExpression, parameterExpression, filter);
             else if (node.NodeType == ExpressionType.Conditional)
             {
                 var cond = node as ConditionalExpression;
                 return Expression.Condition(cond.Test,
-                    processTreeRec(cond.IfTrue, parameterExpression),
-                    processTreeRec(cond.IfFalse, parameterExpression));
+                    processTreeRec(cond.IfTrue, parameterExpression, filter),
+                    processTreeRec(cond.IfFalse, parameterExpression, filter));
             }
             else if (node.NodeType == ExpressionType.Convert)
             {
                 var conv = node as UnaryExpression;
-                return Expression.Convert(processTreeRec(conv.Operand, parameterExpression),
+                return Expression.Convert(processTreeRec(conv.Operand, parameterExpression, filter),
                     conv.Type, conv.Method);
             }
             else if (node.NodeType == ExpressionType.ConvertChecked)
             {
                 var conv = node as UnaryExpression;
-                return Expression.ConvertChecked(processTreeRec(conv.Operand, parameterExpression),
+                return Expression.ConvertChecked(processTreeRec(conv.Operand, parameterExpression, filter),
                     conv.Type, conv.Method);
             }
             else return node;
         }
-        public static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom)
+        public static Expression<Func<TSource, TDest>> BuildExpression<TDest>(Expression<Func<TSource, TDest>> custom, Type filter=null)
         {
             ParameterExpression parameterExpression = custom == null ? Expression.Parameter(typeof(TSource), "src") : custom.Parameters.First();
             Expression pres;
             if (custom == null)
             {
-                pres = createMemberInit<TDest>(parameterExpression);
+                pres = createMemberInit<TDest>(parameterExpression, filter);
             }
             else
             {
-                pres = processTreeRec(custom.Body, parameterExpression);
+                pres = processTreeRec(custom.Body, parameterExpression, filter);
             }
 
             var expression = Expression.Lambda<Func<TSource, TDest>>(pres, parameterExpression);
@@ -241,7 +282,7 @@ namespace MvcControlsToolkit.Core.Linq
 
             return expression;
         }
-        private static LambdaExpression BuildInternalExpression(LambdaExpression exp)
+        private static LambdaExpression BuildInternalExpression(LambdaExpression exp, Type filter = null)
         {
             ParameterExpression parameterExpression = exp.Parameters.First();
             if (exp.Body.NodeType == ExpressionType.MemberInit)
@@ -250,9 +291,9 @@ namespace MvcControlsToolkit.Core.Linq
                 if (bindings == null || bindings.Count == 0)
                 {
                     var res = Expression.Lambda(
-                    createMemberInit(parameterExpression, exp.ReturnType, parameterExpression.Type),
+                    createMemberInit(parameterExpression, exp.ReturnType, parameterExpression.Type, filter),
                     parameterExpression);
-                    var key = GetCacheKey(exp.ReturnType, parameterExpression.Type);
+                    var key = GetCacheKey(exp.ReturnType, parameterExpression.Type, filter);
                     try
                     {
                         ExpressionCache.TryAdd(key, res);
@@ -261,7 +302,7 @@ namespace MvcControlsToolkit.Core.Linq
                     return res;
                 }
             }
-            var pres = processTreeRec(exp.Body, parameterExpression);
+            var pres = processTreeRec(exp.Body, parameterExpression, filter);
             return Expression.Lambda(pres, parameterExpression);
         }
         private static PropertyBinding BuildBindingAssociation(MemberInfo destinationProperty, IEnumerable<PropertyInfo> sourceProperties)
@@ -314,13 +355,13 @@ namespace MvcControlsToolkit.Core.Linq
         }
    
 
-        private static string GetCacheKey<TDest>(Type source=null)
+        private static string GetCacheKey<TDest>(Type source=null, Type filter = null)
         {
-            return string.Concat((source??typeof(TSource)).FullName, typeof(TDest).FullName);
+            return string.Concat((source??typeof(TSource)).FullName, typeof(TDest).FullName, filter == null ? string.Empty : filter.FullName);
         }
-        private static string GetCacheKey(Type t, Type source=null)
+        private static string GetCacheKey(Type t, Type source=null, Type filter = null)
         {
-            return string.Concat((source??typeof(TSource)).FullName, t.FullName);
+            return string.Concat((source??typeof(TSource)).FullName, t.FullName, filter == null ? string.Empty : filter.FullName);
         }
 
 

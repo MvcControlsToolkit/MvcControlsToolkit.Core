@@ -88,7 +88,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public static void DeclareProjection<K>(Expression<Func<T, K>> proj)
         {
             if (proj == null) return;
-            Projections[typeof(K)] = proj;
+            Projections[typeof(K)] = ProjectionExpression<T>.BuildExpression(proj, typeof(K).GetTypeInfo().IsInterface ? typeof(K) : null);
             
         }
         public static Func<T, K> GetCompiledExpression<K>()
@@ -100,7 +100,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             }
             object pres=null;
             Projections.TryGetValue(typeof(K), out pres);
-            var fres=ProjectionExpression<T>.BuildExpression<K>(pres as Expression<Func<T, K>>).Compile();
+            Func<T, K> fres;
+            if (pres != null) fres = (pres as Expression<Func<T, K>>).Compile();
+            else fres=ProjectionExpression<T>.BuildExpression<K>(pres as Expression<Func<T, K>>).Compile();
             CompiledProjections[typeof(K)] = fres;
             return fres;
         }
@@ -212,11 +214,39 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             if (Projections.TryGetValue(typeof(T1), out proj))
             {
                 return await pres
-                .Project().To<T1>(proj as Expression<Func<T, T1>>).SingleOrDefaultAsync();
+                .Select(proj as Expression<Func<T, T1>>).SingleOrDefaultAsync();
             }
             else
                 return await pres
                 .Project().To<T1>().SingleOrDefaultAsync();
+        }
+
+        private IQueryable<T2> InternalGetPageExtended<T1, T2>(
+            Expression<Func<T1, bool>> filter,
+            Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting,
+            int page,
+            int itemsPerPage,
+            Func<IQueryable<T1>, IQueryable<T2>> grouping = null
+            )
+        {
+            if (sorting == null) throw new ArgumentNullException(nameof(sorting));
+            
+            IQueryable<T> start;
+            if (SelectFilter != null) start = Table.Where(SelectFilter);
+            else start = Table.Select(m => m);
+
+            IQueryable<T1> proj;
+            object projExp;
+            if (Projections.TryGetValue(typeof(T1), out projExp))
+                proj = start.Select(projExp as Expression<Func<T, T1>>);
+            else
+                proj = start.Project().To<T1>();
+            if (filter != null) proj = proj.Where(filter);
+            IQueryable<T2> toGroup;
+            if (grouping != null) toGroup = grouping(proj);
+            else toGroup = proj as IQueryable<T2>;
+            if (toGroup == null) toGroup = proj.Project().To<T2>();
+            return toGroup;
         }
 
         public virtual async Task<DataPage<T2>> GetPageExtended<T1, T2>(
@@ -227,25 +257,11 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Func<IQueryable<T1>, IQueryable<T2>> grouping=null
             )
         {
-
-            if (sorting == null) throw new ArgumentNullException(nameof(sorting));
             page = page - 1;
             if (page < 0) page = 0;
-            IQueryable<T> start;
-            if (SelectFilter != null) start = Table.Where(SelectFilter);
-            else start = Table.Select(m => m);
-
-            IQueryable<T1> proj;
-            object projExp;
-            if (Projections.TryGetValue(typeof(T1), out projExp))
-                proj = start.Project().To<T1>(projExp as Expression<Func<T, T1>>);
-            else
-                proj = start.Project().To<T1>();
-            if (filter != null) proj = proj.Where(filter);
-            IQueryable<T2> toGroup;
-            if (grouping != null) toGroup = grouping(proj);
-            else toGroup = proj as IQueryable<T2>;
-            if (toGroup == null) toGroup = proj.Project().To<T2>();
+            var toGroup = InternalGetPageExtended<T1, T2>(
+                filter, sorting, page, itemsPerPage, grouping
+                );
             var res = new DataPage<T2>
             {
                 TotalCount=await toGroup.CountAsync(),
@@ -257,7 +273,35 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var sorted = sorting(toGroup);
             if (page > 0) toGroup = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
             else toGroup = sorted.Take(itemsPerPage);
-            res.Data = await toGroup.ToArrayAsync();
+            res.Data =  await toGroup.ToArrayAsync();
+            return res;
+        }
+        
+        public virtual DataPage<T2> GetPageExtendedSync<T1, T2>(
+            Expression<Func<T1, bool>> filter,
+            Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting,
+            int page,
+            int itemsPerPage,
+            Func<IQueryable<T1>, IQueryable<T2>> grouping = null
+            )
+        {
+            page = page - 1;
+            if (page < 0) page = 0;
+            var toGroup = InternalGetPageExtended<T1, T2>(
+                filter, sorting, page, itemsPerPage, grouping
+                );
+            var res = new DataPage<T2>
+            {
+                TotalCount = toGroup.Count(),
+                ItemsPerPage = itemsPerPage,
+                Page = page + 1
+            };
+            res.TotalPages = res.TotalCount / itemsPerPage;
+            if (res.TotalCount % itemsPerPage > 0) res.TotalPages++;
+            var sorted = sorting(toGroup);
+            if (page > 0) toGroup = sorted.Skip(page * itemsPerPage).Take(itemsPerPage);
+            else toGroup = sorted.Take(itemsPerPage);
+            res.Data = toGroup.ToArray();
             return res;
         }
         public virtual async Task<DataPage<T1>> GetPage<T1>(
@@ -270,6 +314,17 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         {
 
             return await GetPageExtended<T1, T1>(filter, sorting, page, itemsPerPage, grouping);
+        }
+        public DataPage<T1> GetPageSync<T1>(
+            Expression<Func<T1, bool>> filter,
+            Func<IQueryable<T1>, IOrderedQueryable<T1>> sorting,
+            int page,
+            int itemsPerPage,
+            Func<IQueryable<T1>, IQueryable<T1>> grouping = null
+            )
+        {
+
+            return GetPageExtendedSync<T1, T1>(filter, sorting, page, itemsPerPage, grouping);
         }
     }
 }

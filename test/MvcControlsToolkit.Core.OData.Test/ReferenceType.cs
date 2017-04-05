@@ -8,8 +8,10 @@ using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.OData.Test
 {
+    
     public class ReferenceType
     {
+        [Query]
         public int? Id { get; set; }
         [Query]
         public DateTime ADateTime { get; set; }
@@ -78,9 +80,34 @@ namespace MvcControlsToolkit.Core.OData.Test
         public Guid AGuid { get; set; }
         [Query]
         public Guid? ANGuid { get; set; }
+
+        
     }
     public class ReferenceTypeExtended: ReferenceType
     {
         public int ANewInt { get; set; }
+    }
+
+    public class ReferenceTypeWithChildren: ReferenceType, IFilterReferenceTypeWithChildren
+    {
+        public IEnumerable<IFilterNestedReferenceType> Children { get; set; }
+    }
+    public interface IFilterReferenceTypeWithChildren
+    {
+        [Query]
+        int? Id { get; set; }
+        [Query]
+         bool ABool { get; set; }
+        [Query]
+        Month AMonth { get; set; }
+        [Query]
+        Month? ANMonth { get; set; }
+        [Query]
+        Week AWeek { get; set; }
+        [Query]
+        Week? ANWeek { get; set; }
+        [Query(Deny = QueryOptions.None)]
+        string AString { get; set; }
+        IEnumerable<IFilterNestedReferenceType> Children { get; set; }
     }
 }

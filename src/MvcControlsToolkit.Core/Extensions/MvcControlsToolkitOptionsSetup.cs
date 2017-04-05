@@ -54,6 +54,7 @@ namespace MvcControlsToolkit.Core.Extensions
             {
                 options.ModelBinderProviders.Remove(res);
                 options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res));
+                options.ModelBinderProviders.Insert(bcount, new InterfacesModelBinderProvider());
             }
             options.Filters.Add(typeof(CacheViewPartsFilter));
 

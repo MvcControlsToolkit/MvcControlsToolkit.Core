@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Globalization;
-using System.ComponentModel;
+
 
 namespace MvcControlsToolkit.Core.Types
 {
@@ -28,6 +25,7 @@ namespace MvcControlsToolkit.Core.Types
         }
     }
     [System.ComponentModel.TypeConverter("MvcControlsToolkit.Core.Types.MonthTypeConverter")]
+    [Newtonsoft.Json.JsonConverterAttribute(typeof(MonthJsonConverter))]
     public struct Month: IComparable, IComparable<Month>, IEquatable<Month>
     {
         uint _YearNumber;
