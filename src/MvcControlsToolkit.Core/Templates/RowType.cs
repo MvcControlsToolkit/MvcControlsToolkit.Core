@@ -17,6 +17,7 @@ using Microsoft.Extensions.Localization;
 using System.Collections;
 using Microsoft.AspNetCore.Http;
 using MvcControlsToolkit.Core.Filters;
+using MvcControlsToolkit.Core.DataAnnotations;
 
 namespace MvcControlsToolkit.Core.Templates
 {
@@ -399,14 +400,17 @@ namespace MvcControlsToolkit.Core.Templates
                 return first[level] - second[level];
             }
         }
-        private bool editComputed, displayComputed;
-        public void ComputeWidths(bool edit, int gridMax)
+        private bool editComputed, displayComputed, filterComputed;
+        public void ComputeWidths(bool edit, int gridMax, bool filter=false)
         {
             lock (this)
             {
-                if ((editComputed && edit) || (displayComputed && !edit)) return;
-                var cols = Columns
-                    .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
+                if ((editComputed && edit && !filter) || (filter && filterComputed) ||(displayComputed && !edit && !filter)) return;
+                var cols = (filter ?
+                    Columns.Where(m => m.Queries.HasValue && ((m.Queries.Value & (QueryOptions.Search - 1)) > 0))
+                    :
+                    Columns
+                    .Where(m => (!m.EditOnly && !edit) || edit)).ToArray();
                 var levels = cols.Max(m => m.DetailWidths != null ? m.DetailWidths.Length : 1);
                 if (levels == 0) levels = 1;
                 var allWidths = new int[cols.Length][];
@@ -414,7 +418,12 @@ namespace MvcControlsToolkit.Core.Templates
                 var i = 0;
                 foreach (var col in cols)
                 {
-                    if (edit)
+                    if (filter)
+                    {
+                        allWidths[i] = col.FilterDetailWidths = new int[levels];
+                        col.FilterDetailEndRow = new bool[levels];
+                    }
+                    else if (edit)
                     {
                         allWidths[i] = col.EditDetailWidths = new int[levels];
                         col.EditDetailEndRow = new bool[levels];
@@ -482,7 +491,8 @@ namespace MvcControlsToolkit.Core.Templates
                         lineStart = lineEnd+1;
                     }
                 }
-                if (edit) editComputed = true;
+                if (filter) filterComputed = true;
+                else if (edit) editComputed = true;
                 else displayComputed = true;
             }
 

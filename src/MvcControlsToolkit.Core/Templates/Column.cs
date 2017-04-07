@@ -38,9 +38,11 @@ namespace MvcControlsToolkit.Core.Templates
         public decimal[] Widths { get; set; }
         public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
+        public int[] FilterDetailWidths { get; set; }
         public int[] EditDetailWidths { get; set; }
         public bool[] DisplayDetailEndRow { get; set; }
         public bool[] EditDetailEndRow { get; set; }
+        public bool[] FilterDetailEndRow { get; set; }
         public string ColumnCssClass { get; set; }
         public int? Order { get; set; }
         public int NaturalOrder { get; set; }

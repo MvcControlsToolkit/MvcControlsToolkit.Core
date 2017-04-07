@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using MvcControlsToolkit.Core.OptionsParsing;
 using MvcControlsToolkit.Core.Templates;
 using MvcControlsToolkit.Core.Views;
+using MvcControlsToolkit.Core.TagHelpersUtilities;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
@@ -45,6 +46,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 null :
                 RowType.GetRowsCollection(RowsCacheKey);
             var nc = new ReductionContext(TagTokens.RowContainer, 0, defaultTemplates, rows != null);
+            TagContextHelper.OpenRowContainerContext(contextAccessor.HttpContext);
             context.SetChildrenReductionContext(nc);
             await output.GetChildContentAsync();
             var collector = new RowContainerCollector(nc);
@@ -56,6 +58,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
                     RowType.CacheRowGroup(RowsCacheKey, rows, contextAccessor.HttpContext);
             }
             var toolbars = res.Item2;
+            TagContextHelper.CloseRowContainerContext(contextAccessor.HttpContext, rows);
         }
     }
 }
