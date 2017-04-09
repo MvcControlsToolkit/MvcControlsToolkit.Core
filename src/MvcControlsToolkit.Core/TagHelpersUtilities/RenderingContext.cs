@@ -97,7 +97,14 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
             if (httpContext.Items.TryGetValue(key, out res)) return res as RenderingContext;
             else return null;
         }
-
+        public static T CurrentData<T>(HttpContext httpContext, string key)
+        {
+            var ctx = Current(httpContext, key);
+            if (ctx == null || ctx.Contexts == null || ctx.Contexts.Count == 0) return default(T);
+            var res = (ctx.Contexts.Peek() as ContextRecord<T>);
+            if (res == null) return default(T);
+            return res.Data;
+        }
 
     }
 }

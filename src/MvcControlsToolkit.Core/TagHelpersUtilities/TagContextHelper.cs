@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using MvcControlsToolkit.Core.Templates;
 
@@ -12,7 +13,7 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
     {
         private const string bodyKey = "__body__";
         private const string rowContainerKey = "__row_container__";
-
+        private const string bindingKeyPrefix = "__binding__";
         public static void OpenRowContainerContext(HttpContext httpContext)
         {
             RenderingContext.OpenContext<IList<RowType>>(httpContext, rowContainerKey, null);
@@ -53,6 +54,18 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
                     EndOfBodyHtml(httpContext, getHtml(rows));
                 }
                 );
+        }
+        public static void OpenBindingContext(HttpContext httpContext, string name, ModelExpression data)
+        {
+            RenderingContext.OpenContext<ModelExpression>(httpContext, bindingKeyPrefix+name, data);
+        }
+        public static void CloseBindingContext(HttpContext httpContext, string name)
+        {
+            RenderingContext.CloseContext(httpContext, bindingKeyPrefix + name);
+        }
+        public static ModelExpression GetBindingContext(HttpContext httpContext, string name)
+        {
+            return RenderingContext.CurrentData<ModelExpression>(httpContext, bindingKeyPrefix + name);
         }
     }
 }
