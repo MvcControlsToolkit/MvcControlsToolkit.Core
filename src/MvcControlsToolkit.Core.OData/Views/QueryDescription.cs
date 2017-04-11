@@ -169,6 +169,7 @@ namespace MvcControlsToolkit.Core.Views
                 AjaxId=ajaxId
             };
         }
+        
     }
 
 
@@ -297,6 +298,14 @@ namespace MvcControlsToolkit.Core.Views
          public void CustomUrlEncode(Func<string, string> fun)
         {
             UrlEncode = fun ?? UrlEncode;
+        }
+        public IDictionary<string, QueryFilterCondition> PopulateFilterModel(T model)
+        {
+            if (model == null || Filter == null) return null;
+            var res = new Dictionary<string, QueryFilterCondition>();
+            Filter.PopulateFilterModel<T>(model, res);
+            return res;
+
         }
     }
 }

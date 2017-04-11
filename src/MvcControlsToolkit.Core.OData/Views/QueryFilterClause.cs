@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using MvcControlsToolkit.Core.DataAnnotations;
+using MvcControlsToolkit.Core.DataAnnotations.Queries;
 using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.Views
@@ -25,6 +27,7 @@ namespace MvcControlsToolkit.Core.Views
             if (filter == null) return null;
             return FromLinQExpressionBody(filter.Body);
         }
+        
     }
     public class QueryFilterBooleanOperator : QueryFilterClause
     {
@@ -107,7 +110,18 @@ namespace MvcControlsToolkit.Core.Views
             else if (Operator == OR) return string.Format("({0} OR {1})", sarg1, sarg2.ToString());
             else return string.Format("({0} or {1})", sarg1.ToString(), sarg2.ToString());
         }
-        
+        public void PopulateFilterModel<T>(T model, IDictionary<string, QueryFilterCondition> index)
+        {
+            if (model == null || Operator != and) return;
+
+            if (Argument1 != null) Argument1.PopulateFilterModel<T>(model, index);
+            else if (Child1 != null) Child1.PopulateFilterModel<T>(model, index);
+
+            if (Argument2 != null) Argument2.PopulateFilterModel<T>(model, index);
+            else if (Child2 != null) Child2.PopulateFilterModel<T>(model, index);
+
+        }
+
     }
     public class QueryFilterCondition : QueryFilterClause
     {
@@ -369,6 +383,32 @@ namespace MvcControlsToolkit.Core.Views
 
             if (Inv) return builder(Expression.Constant(value, oType), propertyAccess);
             else return builder(propertyAccess, Expression.Constant(value, oType));
+        }
+        public void PopulateFilterModel<T>(T model, IDictionary<string, QueryFilterCondition> index)
+        {
+            var infos = QueryNodeCache.GetPath(typeof(T), Property);
+            if (infos == null) return;
+            var props = infos.Item1;
+            if (props == null || props.Count == 0) return;
+            index[Property] = this;
+            object curr = model;
+            int i = 1;
+            foreach (var prop in props)
+            {
+                if (i == props.Count)
+                {
+                    prop.SetValue(curr, Value);
+                }
+                else
+                {
+                    object next = Activator.CreateInstance(prop.PropertyType);
+                    prop.SetValue(curr, next);
+                    curr = next;
+                    i++;
+                }
+            }
+            
+
         }
     }
 }

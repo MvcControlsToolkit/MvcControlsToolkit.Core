@@ -28,7 +28,6 @@ namespace MvcControlsToolkit.Core.Templates
         public Template<Column> EditTemplate { get; set; }
         public Template<Column> DisplayTemplate { get; set; }
         public Template<Column> FilterTemplate { get; set; }
-        public Template<Column> DisplayFilterTemplate { get; set; }
         public string ColumnTitle { get; set; }
         public bool? Hidden { get; set; }
         public bool ReadOnly { get; set; }
@@ -269,13 +268,7 @@ namespace MvcControlsToolkit.Core.Templates
                 new ModelExpression(combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)), 
                 this, helpers, overridePrefix);
         }
-        public async Task<IHtmlContent> InvokeDisplayFilter(object o, ContextualizedHelpers helpers, string overridePrefix = null)
-        {
-            if (DisplayFilterTemplate == null) return new HtmlString(string.Empty);
-            return await DisplayFilterTemplate.Invoke(
-                new ModelExpression(combinePrefixes(AdditionalPrefix, For.Name), For.ModelExplorer.GetExplorerForModel(o)),
-                this, helpers, overridePrefix);
-        }
+        
         public async Task<IHtmlContent> InvokeEdit(ContextualizedHelpers helpers, ModelExpression expression)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);
@@ -286,11 +279,7 @@ namespace MvcControlsToolkit.Core.Templates
             if (FilterTemplate == null) return new HtmlString(string.Empty);
             return await FilterTemplate.Invoke(expression, this, helpers);
         }
-        public async Task<IHtmlContent> InvokeDisplayFilter(ContextualizedHelpers helpers, ModelExpression expression)
-        {
-            if (DisplayFilterTemplate == null) return new HtmlString(string.Empty);
-            return await DisplayFilterTemplate.Invoke(expression, this, helpers);
-        }
+        
         public async Task<IHtmlContent> InvokeDisplay(ContextualizedHelpers helpers, ModelExpression expression)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);

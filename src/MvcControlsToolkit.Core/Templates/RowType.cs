@@ -348,7 +348,7 @@ namespace MvcControlsToolkit.Core.Templates
                 var displayFor = col.ColumnConnection.DisplayProperty;
                 var model = displayFor.Metadata.PropertyGetter(rowModel);
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, displayFor.Name), displayFor.ModelExplorer.GetExplorerForModel(model));
-                return await col.InvokeDisplayFilter(ctx, expression);
+                return await col.InvokeFilter(ctx, expression);
             }
             else if (col.ColumnConnection is ColumnConnectionInfosStatic && (editMode || filterMode))
             {
