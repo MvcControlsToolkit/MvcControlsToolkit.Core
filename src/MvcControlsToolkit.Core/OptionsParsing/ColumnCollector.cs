@@ -12,6 +12,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
     {
         public Template<Column> DisplayTemplate { get; private set; }
         public Template<Column> EditTemplate { get; private set; }
+        public Template<Column> FilterTemplate { get; private set; }
         public ColumnConnectionInfos ColumnConnection { get; private set; }
         public ColumnCollector(ReductionContext ctx)
         {
@@ -19,6 +20,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             {
                 if (item.Token == TagTokens.DTemplate) DisplayTemplate = item.Result as Template<Column>;
                 else if (item.Token == TagTokens.ETemplate) EditTemplate = item.Result as Template<Column>;
+                else if (item.Token == TagTokens.FTemplate) FilterTemplate = item.Result as Template<Column>;
                 else if(item.Token == TagTokens.ExternalKeyConnection) ColumnConnection = item.Result as ColumnConnectionInfos;
             }
             if (DisplayTemplate == null) DisplayTemplate = ctx.Defaults.DColumnTemplate;
@@ -31,6 +33,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             Column res = tag is ColumnTagHelper ? 
                 new Column((colTag as ColumnTagHelper).For, DisplayTemplate, EditTemplate):
                 new Column ((colTag as CustomColumnTagHelper).Name, DisplayTemplate, EditTemplate);
+            res.FilterTemplate = FilterTemplate;
             res.Description = colTag.Description;
             res.ColumnTitle = colTag.ColumnTitle;
             res.DisplayFormat = colTag.DisplayFormat;

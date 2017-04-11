@@ -18,6 +18,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public ModelExpression For { get; set; }
         [HtmlAttributeName("row-id")]
         public string RowId { get; set; }
+        [HtmlAttributeName("row-group")]
+        public int? RowGroup { get; set; }
         [HtmlAttributeName("key")]
         public ModelExpression KeyName { get;  set; }
         [HtmlAttributeName("mvc-controller")]
@@ -32,6 +34,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public bool CustomButtons { get; set; }
         [HtmlAttributeName("operations")]
         public Func<IPrincipal, Functionalities> RequiredFunctionalities { get; set; }
+        [HtmlAttributeName("client-operations")]
+        public string ClientRequiredFunctionalities { get; set; }
         [HtmlAttributeName("row-class")]
         public string RowCssClass { get; set; }
         [HtmlAttributeName("input-class")]

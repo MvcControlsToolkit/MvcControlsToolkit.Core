@@ -14,7 +14,7 @@ using MvcControlsToolkit.Core.Templates;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    public enum TemplateShowType {Display=0, Edit=1 }
+    public enum TemplateShowType {Display=0, Edit=1, Filter = 2 }
     [HtmlTargetElement("asp-template", Attributes = TypeName, TagStructure = TagStructure.NormalOrSelfClosing)]
     public class TemplateTagHelper: TagHelper
     {
@@ -77,7 +77,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
                 
                 rc.Results.Add(new ReductionResult(
-                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : TagTokens.ETemplate,
+                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : (TemplateType == TemplateShowType.Edit ? TagTokens.ETemplate : TagTokens.ETemplate),
                     0,
                     Partial != null || ViewComponent != null ?
                     new Template<Column>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,  
@@ -99,7 +99,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             else
             {
                 rc.Results.Add(new ReductionResult(
-                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : TagTokens.ETemplate,
+                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : (TemplateType == TemplateShowType.Edit ? TagTokens.ETemplate : TagTokens.ETemplate),
                     0,
                     Partial != null || ViewComponent != null ?
                     new Template<RowType>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,

@@ -27,8 +27,10 @@ namespace MvcControlsToolkit.Core.Templates
         protected static IDictionary<Type, string> conventionKeys = new ConcurrentDictionary<Type, string>();
         protected static IDictionary<Type, IEnumerable<Column>> allColumns = new ConcurrentDictionary<Type, IEnumerable<Column>>();
         protected static ConcurrentDictionary<string , IList<RowType>> rowsCollections = new ConcurrentDictionary<string, IList<RowType>>();
+        public int? RowGroup { get; set; } 
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
+        public Template<RowType> FilterTemplate { get; set; }
         public IEnumerable<Column> Columns { get; private set; }
         public string RowId { get; internal set; }
         public string KeyName { get; private set; }
@@ -62,6 +64,7 @@ namespace MvcControlsToolkit.Core.Templates
             }
         }
         public Func<IPrincipal,Functionalities> RequiredFunctionalities { get; set;}
+        public string ClientRequiredFunctionalities { get; set; }
         protected bool columnsPrepared;
         protected Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens;
         protected IList<Column> hiddens;
@@ -274,6 +277,15 @@ namespace MvcControlsToolkit.Core.Templates
                     this, helpers);
             
         }
+        public async Task<IHtmlContent> InvokeFilter(object o, string prefix, ContextualizedHelpers helpers)
+        {
+            if (FilterTemplate == null) return new HtmlString(string.Empty);
+            //await PrerenderInLineColumnTemplates(o, prefix, helpers);
+            return await FilterTemplate.Invoke(
+                new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
+                this, helpers);
+
+        }
         public async Task<IHtmlContent> InvokeDisplay(object o, string prefix, ContextualizedHelpers helpers)
         {
             if (DisplayTemplate == null) return new HtmlString(string.Empty);
@@ -322,12 +334,13 @@ namespace MvcControlsToolkit.Core.Templates
             if(col.For == null)
             {
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, string.Empty), For.ModelExplorer.GetExplorerForModel(rowModel));
-                return editMode ? await col.InvokeEdit(ctx, expression) : await col.InvokeDisplay(ctx, expression);
+                return filterMode ? await col.InvokeFilter(ctx, expression) : (editMode ? await col.InvokeEdit(ctx, expression) : await col.InvokeDisplay(ctx, expression));
             }
             else if (col.ColumnConnection == null )
             {
                 var model = col.For.Metadata.PropertyGetter(rowModel);
-                if (editMode) return await col.InvokeEdit(model, ctx);
+                if (filterMode) return await col.InvokeFilter(model, ctx);
+                else if (editMode) return await col.InvokeEdit(model, ctx);
                 else return await col.InvokeDisplay(model, ctx);
             }
             else if (filterMode && col.ColumnConnection.QueryDisplay)
@@ -335,14 +348,14 @@ namespace MvcControlsToolkit.Core.Templates
                 var displayFor = col.ColumnConnection.DisplayProperty;
                 var model = displayFor.Metadata.PropertyGetter(rowModel);
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, displayFor.Name), displayFor.ModelExplorer.GetExplorerForModel(model));
-                return await col.InvokeDisplay(ctx, expression);
+                return await col.InvokeDisplayFilter(ctx, expression);
             }
-            else if (col.ColumnConnection is ColumnConnectionInfosStatic && editMode)
+            else if (col.ColumnConnection is ColumnConnectionInfosStatic && (editMode || filterMode))
             {
                 var model = col.For.Metadata.PropertyGetter(rowModel);
-                return await col.InvokeEdit(model, ctx);
+                return filterMode ? await col.InvokeFilter(model, ctx) : await col.InvokeEdit(model, ctx);
             }
-            else if (!editMode)
+            else if (!(editMode || filterMode) )
             {
                 var displayFor = col.ColumnConnection.DisplayProperty;
                 var model = displayFor.Metadata.PropertyGetter(rowModel);
@@ -352,7 +365,7 @@ namespace MvcControlsToolkit.Core.Templates
             else
             {
                 var expression = new ModelExpression(combinePrefixes(col.AdditionalPrefix, string.Empty), For.ModelExplorer.GetExplorerForModel(rowModel));
-                return await col.InvokeEdit(ctx, expression);
+                return filterMode ? await col.InvokeFilter(ctx, expression) : await col.InvokeEdit(ctx, expression);
             }
         }
 

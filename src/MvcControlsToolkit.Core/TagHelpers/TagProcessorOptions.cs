@@ -8,7 +8,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 {
     public class TagProcessorOptions
     {
-        public IList<RowType> Rows { get; private set; }
+        public IList<RowType> Rows { get; protected set; }
         public TagProcessorOptions(IList<RowType> rows)
         {
             Rows = rows;

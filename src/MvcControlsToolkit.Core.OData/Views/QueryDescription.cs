@@ -158,14 +158,15 @@ namespace MvcControlsToolkit.Core.Views
 
         }
         public Endpoint AttachedTo { get; set; }
-        public void AttachEndpoint(string baseUrl, bool returnsjSon, string bearerToken=null)
+        public void AttachEndpoint(string baseUrl, bool returnsjSon=false, string bearerToken=null, string ajaxId=null)
         {
             AttachedTo = new Endpoint
             {
                 BaseUrl = baseUrl,
                 ReturnsJson = returnsjSon,
                 BearerToken = bearerToken,
-                Verb = Endpoint.Get
+                Verb = Endpoint.Get,
+                AjaxId=ajaxId
             };
         }
     }

@@ -13,6 +13,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
     {
         public Template<RowType> DisplayTemplate { get; private set; }
         public Template<RowType> EditTemplate { get; private set; }
+        public Template<RowType> FilterTemplate { get; private set; }
         public IList<Column> Columns { get; private set; }
         public IList<string> RemoveColumns { get; private set; }
         uint? inherit;
@@ -58,6 +59,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             }
             else return null;
             result.RequiredFunctionalities = rowTag.RequiredFunctionalities;
+            result.ClientRequiredFunctionalities = rowTag.ClientRequiredFunctionalities;
             result.CustomButtons = rowTag.CustomButtons;
             result.RowCssClass = rowTag.RowCssClass;
             result.LocalizationType = rowTag.LocalizationType;
@@ -65,9 +67,11 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.CheckboxCssClass = rowTag.CheckboxCssClass;
             result.DisplayTemplate = DisplayTemplate;
             result.EditTemplate = EditTemplate;
+            result.FilterTemplate = FilterTemplate;
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
             result.QueryEnabled = rowTag.QueryEnabled;
+            result.RowGroup = rowTag.RowGroup;
             return result;
         }
 
@@ -78,6 +82,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             {
                 if (item.Token == TagTokens.DTemplate) DisplayTemplate = item.Result as Template<RowType>;
                 else if (item.Token == TagTokens.ETemplate) EditTemplate = item.Result as Template<RowType>;
+                else if (item.Token == TagTokens.ETemplate) FilterTemplate = item.Result as Template<RowType>;
                 else if (item.Token == TagTokens.Column)
                 {
                     if (item.SubToken > 0)

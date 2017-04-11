@@ -17,5 +17,6 @@ namespace MvcControlsToolkit.Core.Views
         public bool AccpetsJson {get; set;}
         public bool ReturnsJson { get; set; }
         public string BearerToken { get; set; }
+        public string AjaxId { get; set; }
     }
 }
