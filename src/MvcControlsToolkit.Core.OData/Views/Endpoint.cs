@@ -18,5 +18,9 @@ namespace MvcControlsToolkit.Core.Views
         public bool ReturnsJson { get; set; }
         public string BearerToken { get; set; }
         public string AjaxId { get; set; }
+        public Endpoint()
+        {
+            Verb = Get;
+        }
     }
 }
