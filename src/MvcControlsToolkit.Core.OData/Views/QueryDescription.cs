@@ -66,7 +66,7 @@ namespace MvcControlsToolkit.Core.Views
             if (Grouping == null) return null;
             return Grouping.ToString();
         }
-        public string QueryString()
+        public string QueryString(bool disablePaging=false)
         {
             StringBuilder sb = new StringBuilder();
             string search = EncodeSearch();
@@ -103,14 +103,14 @@ namespace MvcControlsToolkit.Core.Views
                 sb.Append("=");
                 sb.Append(UrlEncode(sorting));
             }
-            if (Skip > 0)
+            if (Skip > 0 && !disablePaging)
             {
                 if (sb.Length > 0) sb.Append("&");
                 sb.Append(skipName);
                 sb.Append("=");
                 sb.Append(Skip.ToString(CultureInfo.InvariantCulture));
             }
-            if (Take.HasValue)
+            if (Take.HasValue && !disablePaging)
             {
                 if (sb.Length > 0) sb.Append("&");
                 sb.Append(topName);
@@ -124,10 +124,10 @@ namespace MvcControlsToolkit.Core.Views
         {
             return AddToUrl(AttachedTo?.BaseUrl);
         }
-        public string AddToUrl(string url)
+        public string AddToUrl(string url, bool disablePaging=false)
         {
             if (url == null) url = string.Empty;
-            var query = QueryString();
+            var query = QueryString(disablePaging);
             if (string.IsNullOrWhiteSpace(query)) return url;
             if (url.Contains("?")) return url + "&" + query;
             else return url + "?" + query;
