@@ -105,6 +105,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
         [InlineData("AString ne 'Hello' and ADouble eq 1.5", "ADecimal eq 1.5", true)]
         [InlineData("AString ne 'Hello'", "ADecimal eq 1.5", true)]
         [InlineData("AString ne 'Hello'", "ADecimal eq 1.5", false)]
+        [InlineData("", "ADecimal eq 1.5", false)]
         [InlineData("not (ADouble eq 1.5)", "ADecimal eq 1.5", true)]
         [InlineData("not (ADouble eq 1.5)", "ADecimal eq 1.5", true)]
         public void AddingQueryableToInternalFilter(string filter, string toAdd, bool isOr)
@@ -113,8 +114,8 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             var res = provider.Parse<ReferenceType>();
 
             Assert.NotNull(res);
-
-            Assert.NotNull(res.Filter);
+            if(!string.IsNullOrEmpty(filter))
+                Assert.NotNull(res.Filter);
             var ifilter1 = res.Filter;
             var iRes1 = res;
             provider = new ODataQueryProvider();
@@ -132,7 +133,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
                 : string.Format("({0}) and ({1})", filter, toAdd);
 
             provider = new ODataQueryProvider();
-            provider.Filter = totalFilter;
+            provider.Filter = string.IsNullOrEmpty(filter) ? toAdd : totalFilter;
             res = provider.Parse<ReferenceType>();
 
             Assert.NotNull(res);
