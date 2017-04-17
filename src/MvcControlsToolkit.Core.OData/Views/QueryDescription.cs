@@ -280,8 +280,12 @@ namespace MvcControlsToolkit.Core.Views
             if (filter == null) return;
             var res = QueryFilterClause.FromLinQExpression(filter);
             if (res == null) return;
-            if (Filter == null) Filter = res is QueryFilterBooleanOperator ? res as QueryFilterBooleanOperator
-                    : new QueryFilterBooleanOperator(res, null);
+            if (Filter == null)
+            {
+                Filter = res is QueryFilterBooleanOperator ? res as QueryFilterBooleanOperator
+                      : new QueryFilterBooleanOperator(res, null);
+                return;
+            }
 
             QueryFilterClause cleanFilter;
             if (Filter.Operator != QueryFilterBooleanOperator.not)
