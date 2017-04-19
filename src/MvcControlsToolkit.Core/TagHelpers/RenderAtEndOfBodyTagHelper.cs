@@ -9,11 +9,11 @@ using MvcControlsToolkit.Core.TagHelpersUtilities;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [HtmlTargetElement("body")]
+    
+    [HtmlTargetElement("body", TagStructure = TagStructure.NormalOrSelfClosing)]
     public class RenderAtEndOfBodyTagHelper: TagHelper
     {
-        public override int Order => -10000;
+        public override int Order => int.MinValue;
         private IHttpContextAccessor contextAccessor;
         public RenderAtEndOfBodyTagHelper(IHttpContextAccessor contextAccessor)
         {
@@ -30,9 +30,9 @@ namespace MvcControlsToolkit.Core.TagHelpers
             {
                 throw new ArgumentNullException(nameof(output));
             }
-            TagContextHelper.OpenBodyContext(contextAccessor.HttpContext, output);
+            
             await output.GetChildContentAsync();
-            TagContextHelper.CloseBodyContext(contextAccessor.HttpContext);
+            TagContextHelper.CloseBodyContext(contextAccessor.HttpContext, output);
         }
     }
 }

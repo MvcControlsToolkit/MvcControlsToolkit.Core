@@ -22,6 +22,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [HtmlAttributeName("rows-cache-key")]
         public string RowsCacheKey { get; set; }
 
+
         [HtmlAttributeName("tag-for-defaults")]
         public string TagHlperForDefaults { get; set; }
 
@@ -39,12 +40,17 @@ namespace MvcControlsToolkit.Core.TagHelpers
             var rc = context.GetFatherReductionContext();
             output.TagName = string.Empty;
             output.Content.SetHtmlContent(string.Empty);
-            var currProvider = ViewContext.TagHelperProvider();
-            var defaultTemplates = currProvider.GetDefaultTemplates(TagHlperForDefaults);
+            
             //get row definitions
             IList<RowType> rows = string.IsNullOrEmpty(RowsCacheKey) ?
                 null :
                 RowType.GetRowsCollection(RowsCacheKey);
+            IList<KeyValuePair<string, string>> toolbars = string.IsNullOrEmpty(RowsCacheKey) ?
+                null :
+                RowType.GetToolbarsCollection(RowsCacheKey);
+            if (rows != null || toolbars != null) return;
+            var currProvider = ViewContext.TagHelperProvider();
+            var defaultTemplates = currProvider.GetDefaultTemplates(TagHlperForDefaults);
             var nc = new ReductionContext(TagTokens.RowContainer, 0, defaultTemplates, rows != null);
             TagContextHelper.OpenRowContainerContext(contextAccessor.HttpContext);
             context.SetChildrenReductionContext(nc);
@@ -55,10 +61,15 @@ namespace MvcControlsToolkit.Core.TagHelpers
             {
                 rows = res.Item1;
                 if (!string.IsNullOrEmpty(RowsCacheKey))
-                    RowType.CacheRowGroup(RowsCacheKey, rows, contextAccessor.HttpContext);
+                    RowType.CacheRowGroup(RowsCacheKey, rows, contextAccessor.HttpContext, true);
             }
-            var toolbars = res.Item2;
-            TagContextHelper.CloseRowContainerContext(contextAccessor.HttpContext, rows);
+            if (toolbars == null)
+            {
+                toolbars = res.Item2;
+                if (!string.IsNullOrEmpty(RowsCacheKey))
+                    RowType.CacheToolbarGroup(RowsCacheKey, toolbars, contextAccessor.HttpContext, true);
+            }
+            TagContextHelper.CloseRowContainerContext(contextAccessor.HttpContext, new Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>(rows, toolbars));
         }
     }
 }

@@ -10,15 +10,15 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
     {
         protected abstract class ContextRecord
         {
-            public abstract void Execute();  
+            public abstract void Execute(object o);  
         }
         protected class ContextRecord<T>: ContextRecord
         {
-            public event Action<T> ContextClosing;
+            public event Action<T,object> ContextClosing;
             public T Data { get; set; }
-            public override void Execute()
+            public override void Execute(object o)
             {
-                if (ContextClosing != null) ContextClosing(Data);
+                if (ContextClosing != null) ContextClosing(Data, o);
             }
             public ContextRecord(T data)
             {
@@ -34,13 +34,14 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
             if (Contexts == null) Contexts = new Stack<ContextRecord>();
             Contexts.Push(new ContextRecord<T>(data));
         }
-        public void CloseContext()
+        public void CloseContext(object o)
         {
             if (Contexts == null || Contexts.Count == 0) return;
             var res = Contexts.Pop();
-            res.Execute();
+            res.Execute(o);
         }
-        public void AttachEvent<T>(Action<T> action)
+        public bool Empty {get { return Contexts == null || Contexts.Count == 0; } }
+        public void AttachEvent<T>(Action<T, object> action)
         {
             if (action == null) return;
             if (Contexts == null || Contexts.Count == 0) return;
@@ -74,20 +75,26 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
         {
             var res = Current(httpContext, key);
             if (res == null) return;
-            res.CloseContext();
+            res.CloseContext(null);
         }
-        public static void AttachEvent<T>(HttpContext httpContext, string key, Action<T> action)
+        public static void CloseContext(object o, HttpContext httpContext, string key)
+        {
+            var res = Current(httpContext, key);
+            if (res == null) return;
+            res.CloseContext(o);
+        }
+        public static void AttachEvent<T>(HttpContext httpContext, string key, Action<T, object> action)
         {
             var res = Current(httpContext, key);
             if (res == null) return;
             res.AttachEvent(action);
         }
-        public static void CloseContext<T>(HttpContext httpContext, string key, T data)
+        public static void CloseContext<T>(HttpContext httpContext, string key, T data, object o=null)
         {
             var res = Current(httpContext, key);
             if (res == null) return;
             res.ProvideEventData(data);
-            res.CloseContext();
+            res.CloseContext(o);
         }
         public static RenderingContext Current(HttpContext httpContext, string key)
         {

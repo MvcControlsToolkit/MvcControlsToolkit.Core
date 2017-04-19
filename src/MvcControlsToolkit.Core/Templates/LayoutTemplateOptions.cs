@@ -8,11 +8,11 @@ namespace MvcControlsToolkit.Core.Templates
 {
     public class LayoutTemplateOptions
     {
-        public IList<RowType> Rows { get; private set;}
-        public IList<KeyValuePair<string, string>> Toolbars  { get; private set; }
-        public IEnumerable<Template<LayoutTemplateOptions>> SubTemplates { get; private set; }
-        public Template<LayoutTemplateOptions> LayoutTemplate { get; private set; }
-        public IHtmlContent MainContent { get; private set; }
+        public IList<RowType> Rows { get; protected set;}
+        public IList<KeyValuePair<string, string>> Toolbars  { get; protected set; }
+        public IEnumerable<Template<LayoutTemplateOptions>> SubTemplates { get; protected set; }
+        public Template<LayoutTemplateOptions> LayoutTemplate { get; protected set; }
+        public IHtmlContent MainContent { get; protected set; }
 
         public LayoutTemplateOptions (
             IList<RowType> rows,

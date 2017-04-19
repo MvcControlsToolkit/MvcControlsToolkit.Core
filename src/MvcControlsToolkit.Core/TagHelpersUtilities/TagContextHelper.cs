@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -16,42 +17,44 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
         private const string bindingKeyPrefix = "__binding__";
         public static void OpenRowContainerContext(HttpContext httpContext)
         {
-            RenderingContext.OpenContext<IList<RowType>>(httpContext, rowContainerKey, null);
+            RenderingContext.OpenContext<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey, null);
         }
-        public static void CloseRowContainerContext(HttpContext httpContext, IList<RowType> rows)
+        public static void CloseRowContainerContext(HttpContext httpContext, Tuple<IList<RowType>, IList<KeyValuePair<string, string>>> group)
         {
-            RenderingContext.CloseContext<IList<RowType>>(httpContext, rowContainerKey, rows);
+            RenderingContext.CloseContext<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey, group);
         }
         public static void RegisterRowsDependency(HttpContext httpContext, Action<IList<RowType>> action)
         {
-            RenderingContext.AttachEvent(httpContext, rowContainerKey, action);
+            RenderingContext.AttachEvent<IList<RowType>>(httpContext, rowContainerKey, (r,o) => { action(r); });
         }
-        public static void OpenBodyContext(HttpContext httpContext, TagHelperOutput output)
+        public static void OpenBodyContext(HttpContext httpContext)
         {
-            RenderingContext.OpenContext<Action<string>>(httpContext, bodyKey, s =>
+            RenderingContext.OpenContext<Action<IHtmlContent, object>>(httpContext, bodyKey, (s, o) =>
             {
-                output.PostContent.AppendHtml(s);
+                (o as TagHelperOutput).PostContent.AppendHtml(s);
             });
         }
-        public static void EndOfBodyHtml(HttpContext httpContext, string html)
+        public static void EndOfBodyHtml(HttpContext httpContext, IHtmlContent html)
         {
-            RenderingContext.AttachEvent<Action<string>>(httpContext, bodyKey, 
-                f =>
+            var res = RenderingContext.Current(httpContext, bodyKey);
+            if (res == null || res.Empty) OpenBodyContext(httpContext);
+            RenderingContext.AttachEvent<Action<IHtmlContent, object>>(httpContext, bodyKey, 
+                (f, o) =>
                 {
-                    f(html);
+                    f(html, o);
                 }
                 );
         }
-        public static void CloseBodyContext(HttpContext httpContext)
+        public static void CloseBodyContext(HttpContext httpContext, TagHelperOutput o)
         {
-            RenderingContext.CloseContext(httpContext, bodyKey);
+            RenderingContext.CloseContext(o, httpContext, bodyKey);
         }
-        public static void RegisterDefaultToolWindow(HttpContext httpContext, Func<IList<RowType>, string> getHtml)
+        public static void RegisterDefaultToolWindow(HttpContext httpContext, Func<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>, IHtmlContent> getHtml)
         {
-            RenderingContext.AttachEvent<IList<RowType>>(httpContext, rowContainerKey,
-                rows =>
+            RenderingContext.AttachEvent<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey,
+                (groups, o) =>
                 {
-                    EndOfBodyHtml(httpContext, getHtml(rows));
+                    EndOfBodyHtml(httpContext, getHtml(groups));
                 }
                 );
         }

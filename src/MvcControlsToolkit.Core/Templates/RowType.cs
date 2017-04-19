@@ -27,6 +27,7 @@ namespace MvcControlsToolkit.Core.Templates
         protected static IDictionary<Type, string> conventionKeys = new ConcurrentDictionary<Type, string>();
         protected static IDictionary<Type, IEnumerable<Column>> allColumns = new ConcurrentDictionary<Type, IEnumerable<Column>>();
         protected static ConcurrentDictionary<string , IList<RowType>> rowsCollections = new ConcurrentDictionary<string, IList<RowType>>();
+        protected static ConcurrentDictionary<string, IList<KeyValuePair<string, string>>> toolbarsCollections = new ConcurrentDictionary<string, IList<KeyValuePair<string, string>>>();
         public int? RowGroup { get; set; } 
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
@@ -75,15 +76,44 @@ namespace MvcControlsToolkit.Core.Templates
             if (rowsCollections.TryGetValue(key, out rowList)) return rowList;
             else return null;
         }
-        public static void CacheRowGroup(string key, IList<RowType> rowsCollection, HttpContext ctx)
+        public static IList<KeyValuePair<string, string>> GetToolbarsCollection(string key)
         {
-            Action action = () =>
+            IList<KeyValuePair<string, string>> toolbarList;
+            if (toolbarsCollections.TryGetValue(key, out toolbarList)) return toolbarList;
+            else return null;
+        }
+        public static void CacheRowGroup(string key, IList<RowType> rowsCollection, HttpContext ctx, bool immediate=false)
+        {
+            if (immediate)
             {
                 rowsCollections.TryAdd(key, rowsCollection);
-            };
-            CacheViewPartsFilter.AddAction(ctx, action);
+            }
+            else
+            {
+                Action action = () =>
+                {
+                    rowsCollections.TryAdd(key, rowsCollection);
+                };
+                CacheViewPartsFilter.AddAction(ctx, action);
+            }
+            
         }
-        
+        public static void CacheToolbarGroup(string key, IList<KeyValuePair<string, string>> toolbarsCollection, HttpContext ctx, bool immediate=false)
+        {
+            if (immediate)
+            {
+                toolbarsCollections.TryAdd(key, toolbarsCollection);
+            }
+            else
+            {
+                Action action = () =>
+                {
+                    toolbarsCollections.TryAdd(key, toolbarsCollection);
+                };
+                CacheViewPartsFilter.AddAction(ctx, action);
+            }
+        }
+
         protected static string GetConventionKey(Type t)
         {
             string res;
