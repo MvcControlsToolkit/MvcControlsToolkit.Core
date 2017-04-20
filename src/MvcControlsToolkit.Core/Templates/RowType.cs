@@ -28,7 +28,7 @@ namespace MvcControlsToolkit.Core.Templates
         protected static IDictionary<Type, IEnumerable<Column>> allColumns = new ConcurrentDictionary<Type, IEnumerable<Column>>();
         protected static ConcurrentDictionary<string , IList<RowType>> rowsCollections = new ConcurrentDictionary<string, IList<RowType>>();
         protected static ConcurrentDictionary<string, IList<KeyValuePair<string, string>>> toolbarsCollections = new ConcurrentDictionary<string, IList<KeyValuePair<string, string>>>();
-        public int? RowGroup { get; set; } 
+        public bool GroupingRow { get; set; } 
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
         public Template<RowType> FilterTemplate { get; set; }

@@ -18,8 +18,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public ModelExpression For { get; set; }
         [HtmlAttributeName("row-id")]
         public string RowId { get; set; }
-        [HtmlAttributeName("row-group")]
-        public int? RowGroup { get; set; }
+        [HtmlAttributeName("grouping-row")]
+        public bool GroupingRow { get; set; }
         [HtmlAttributeName("key")]
         public ModelExpression KeyName { get;  set; }
         [HtmlAttributeName("mvc-controller")]
