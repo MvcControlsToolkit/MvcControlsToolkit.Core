@@ -72,7 +72,10 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             var q = provider.Parse<ReferenceType>();
             var atype = new { AString = 7, ABool = 12, a = 1, b = 2 };
             Assert.NotNull(q);
-
+            Assert.True(q.CompatibleProperty("AString"));
+            Assert.True(q.CompatibleProperty("ABool"));
+            Assert.True(q.CompatibleProperty("AFloat"));
+            Assert.False(q.CompatibleProperty("AFake"));
             var groupingClause = q.GetGrouping();
             var res = await repository.GetPage<ReferenceType>(
                     null,

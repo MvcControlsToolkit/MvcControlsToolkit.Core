@@ -169,6 +169,12 @@ namespace MvcControlsToolkit.Core.Views
                 AjaxId=ajaxId
             };
         }
+
+        public bool CompatibleProperty(string propertyName)
+        {
+            if (Grouping == null) return true;
+            else return Grouping.CompatibleProperty(propertyName);
+        }
         
     }
 

@@ -31,7 +31,23 @@ namespace MvcControlsToolkit.Core.Views
     {
         public ICollection<string> Keys { get; set; }
         public ICollection<QueryAggregation> Aggregations { get; set; }
-
+        private HashSet<string> propertySet;
+        private bool setComputed;
+        private void buildHash()
+        {
+            setComputed = true; ;
+            if (Keys == null || Keys.Count == 0) return;
+            propertySet = new HashSet<string>(Keys);
+            if (Aggregations != null)
+                propertySet.UnionWith(Aggregations.Select(m => m.Alias));
+        }
+        public bool CompatibleProperty(string propertyName)
+        {
+            if (propertyName == null) return false;
+            if (!setComputed) buildHash();
+            if (propertySet == null) return true;
+            else return propertySet.Contains(propertyName);
+        }
         internal LambdaExpression BuildGroupingExpression<T>(out PropertyInfo[]  properties)
         {
             properties = null;
