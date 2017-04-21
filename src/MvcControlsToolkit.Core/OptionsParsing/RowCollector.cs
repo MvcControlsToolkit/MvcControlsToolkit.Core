@@ -71,7 +71,6 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
             result.QueryEnabled = rowTag.QueryEnabled;
-            result.GroupingRow = rowTag.GroupingRow;
             return result;
         }
 

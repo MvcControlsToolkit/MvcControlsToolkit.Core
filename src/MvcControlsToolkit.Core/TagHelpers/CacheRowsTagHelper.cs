@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using MvcControlsToolkit.Core.OptionsParsing;
 using MvcControlsToolkit.Core.Templates;
 using MvcControlsToolkit.Core.Views;
-using MvcControlsToolkit.Core.TagHelpersUtilities;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {

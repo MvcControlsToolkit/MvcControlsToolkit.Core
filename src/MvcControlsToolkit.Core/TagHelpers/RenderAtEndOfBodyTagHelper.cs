@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using MvcControlsToolkit.Core.TagHelpersUtilities;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {

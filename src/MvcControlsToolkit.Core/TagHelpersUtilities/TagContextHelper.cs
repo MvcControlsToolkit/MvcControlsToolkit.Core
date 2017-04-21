@@ -6,15 +6,17 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using MvcControlsToolkit.Core.TagHelpersUtilities;
 using MvcControlsToolkit.Core.Templates;
 
-namespace MvcControlsToolkit.Core.TagHelpersUtilities
+namespace MvcControlsToolkit.Core.TagHelpers
 {
     public static class TagContextHelper
     {
         private const string bodyKey = "__body__";
         private const string rowContainerKey = "__row_container__";
         private const string bindingKeyPrefix = "__binding__";
+        private const string typeBindingKeyPrefix = "__type_binding__";
         public static void OpenRowContainerContext(HttpContext httpContext)
         {
             RenderingContext.OpenContext<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey, null);
@@ -69,6 +71,18 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
         public static ModelExpression GetBindingContext(HttpContext httpContext, string name)
         {
             return RenderingContext.CurrentData<ModelExpression>(httpContext, bindingKeyPrefix + name);
+        }
+        public static void OpenTypeBindingContext(HttpContext httpContext, string name, Type data)
+        {
+            RenderingContext.OpenContext<Type>(httpContext, typeBindingKeyPrefix + name, data);
+        }
+        public static void CloseTypeBindingContext(HttpContext httpContext, string name)
+        {
+            RenderingContext.CloseContext(httpContext, typeBindingKeyPrefix + name);
+        }
+        public static Type GetTypeBindingContext(HttpContext httpContext, string name)
+        {
+            return RenderingContext.CurrentData<Type>(httpContext, typeBindingKeyPrefix + name);
         }
     }
 }
