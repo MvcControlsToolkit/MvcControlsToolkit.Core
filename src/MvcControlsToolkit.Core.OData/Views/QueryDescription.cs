@@ -20,7 +20,7 @@ namespace MvcControlsToolkit.Core.Views
         private const string searchName = "$search";
         private const string topName = "$top";
         private const string skipName = "$skip";
-        protected  Func<string, string> UrlEncode =
+        protected Func<string, string> UrlEncode =
             System.Net.WebUtility.UrlEncode;
         private QueryFilterBooleanOperator _Filter;
         public QueryFilterBooleanOperator Filter { get { return _Filter; } set {_Filter=value; ClearFilterCache(); } }
@@ -175,7 +175,33 @@ namespace MvcControlsToolkit.Core.Views
             if (Grouping == null) return true;
             else return Grouping.CompatibleProperty(propertyName);
         }
-        
+        public void CustomUrlEncode(Func<string, string> func)
+        {
+            UrlEncode = func ?? UrlEncode;
+        }
+        private IDictionary<string, IList<QueryFilterCondition>> filterDictionary = null;
+        internal void PopulateFilterIndex(Type type)
+        {
+            if (Filter == null) return;
+            filterDictionary = new Dictionary<string, IList<QueryFilterCondition>>();
+            Filter.PopulateFilterIndex(type, filterDictionary);
+
+
+        }
+        public string GetFilterCondition(Type type, string path, int place, ref object model)
+        {
+            if (filterDictionary == null) PopulateFilterIndex(type);
+            IList<QueryFilterCondition> res;
+            if (filterDictionary.TryGetValue(path, out res))
+            {
+                if (place >= res.Count) return null;
+                var cond = res[place];
+                model = cond.PopulateFilterModel(type, model);
+                return cond.Inv ? "inv-" + cond.Operator : cond.Operator;
+            }
+            else return null;
+        }
+
     }
 
 
@@ -305,17 +331,7 @@ namespace MvcControlsToolkit.Core.Views
             if (useOr) Filter.Operator = QueryFilterBooleanOperator.or;    
 
         }
-         public void CustomUrlEncode(Func<string, string> fun)
-        {
-            UrlEncode = fun ?? UrlEncode;
-        }
-        public IDictionary<string, QueryFilterCondition> PopulateFilterModel(T model)
-        {
-            if (model == null || Filter == null) return null;
-            var res = new Dictionary<string, QueryFilterCondition>();
-            Filter.PopulateFilterModel<T>(model, res);
-            return res;
-
-        }
+        
+        
     }
 }

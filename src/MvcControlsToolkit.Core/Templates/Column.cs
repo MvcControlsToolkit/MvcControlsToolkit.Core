@@ -18,7 +18,7 @@ namespace MvcControlsToolkit.Core.Templates
     public class Column
     {
         protected static IDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute> Layouts = new ConcurrentDictionary<KeyValuePair<Type, string>, ColumnLayoutAttribute>();
-        protected static IDictionary<KeyValuePair<Type, string>, QueryAttribute> QueryOptionsDictionary = new ConcurrentDictionary<KeyValuePair<Type, string>, QueryAttribute>();
+        protected static IDictionary<KeyValuePair<Type, string>, Tuple<QueryAttribute, FilterLayoutAttribute>> QueryOptionsDictionary = new ConcurrentDictionary<KeyValuePair<Type, string>, Tuple<QueryAttribute, FilterLayoutAttribute>>();
         protected string[] bootstrap3Grid = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-" };
         protected string[] bootstrap4Grid = new string[] { "col-xs-", "col-sm-", "col-md-", "col-lg-", "col-xl-" };
         protected string[] bootstrap3Visibility = new string[] { "clearfix visible-xs-block", "clearfix visible-sm-block", "clearfix visible-md-block", "clearfix visible-lg-block" };
@@ -52,6 +52,7 @@ namespace MvcControlsToolkit.Core.Templates
         public string InputCssClass { get; set; }
         public string CheckboxCssClass { get; set; }
         public QueryOptions? Queries { get; set;}
+        public QueryOptions[] FilterClauses { get; set; }
         private string name;
         public string Name {get
             {
@@ -229,24 +230,45 @@ namespace MvcControlsToolkit.Core.Templates
                     For.Metadata.ModelType;
 
                 var pair = new KeyValuePair<Type, string>(Row.For.Metadata.ModelType, propertyName);
-                QueryAttribute res;
+                Tuple<QueryAttribute, FilterLayoutAttribute> res;
                 if (!QueryOptionsDictionary.TryGetValue(pair, out res))
                 {
-                    res = Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
-                        .GetCustomAttribute(typeof(QueryAttribute), false) as QueryAttribute;
+                    res = Tuple.Create(Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
+                                        .GetCustomAttribute(typeof(QueryAttribute), false) as QueryAttribute,
+                                    Row.For.Metadata.ModelType.GetTypeInfo().GetProperty(For.Metadata.PropertyName)
+                        .GetCustomAttribute(typeof(FilterLayoutAttribute), false) as FilterLayoutAttribute);
                     QueryOptionsDictionary[pair] = res;
 
 
                 }
                 if (res != null)
                 {
-                    if (Queries.HasValue) Queries = res.AllowedForProperty(Queries.Value, propertyType);
-                    else Queries = res.AllowedForProperty(propertyType);
+                    if (res.Item1 != null)
+                    {
+                        if (Queries.HasValue) Queries = res.Item1.AllowedForProperty(Queries.Value, propertyType);
+                        else Queries = res.Item1.AllowedForProperty(propertyType);
+                    }
+                    if (res.Item2 != null)
+                    {
+                        if (FilterClauses == null) FilterClauses = res.Item2.FilterClauses;
+                    }
                 }
                 else Queries = QueryOptions.None;
             }
             else Queries = QueryOptions.None;
+            if (FilterClauses == null) FilterClauses = new QueryOptions[] { Queries.Value & QueryOptions.AllFilters };
+            else
+            {
+                for(int i=0; i<FilterClauses.Length; i++)
+                {
+                    FilterClauses[i] = FilterClauses[i] & Queries.Value & QueryOptions.AllFilters;
+                }
+            }
         }
+        public bool CanFilter {get{ return For != null && (Queries & QueryOptions.AllFilters) != QueryOptions.None; }}
+        public bool CanSort { get { return For != null && (Queries & QueryOptions.OrderBy) == QueryOptions.OrderBy; } }
+        public bool CanGroup { get { return For != null && (Queries & QueryOptions.GroupBy) == QueryOptions.GroupBy; } }
+        public bool CanAggregate { get { return For != null ; } }
         public async Task<IHtmlContent> InvokeEdit(object o, ContextualizedHelpers helpers, string overridePrefix=null)
         {
             if (EditTemplate == null) return new HtmlString(string.Empty);

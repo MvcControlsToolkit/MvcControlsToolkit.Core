@@ -8,7 +8,7 @@ namespace MvcControlsToolkit.Core.DataAnnotations
 {
 
     [Flags]
-    public enum QueryOptions: uint { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, Search=1024, OrderBy=2048, GroupBy=4096}
+    public enum QueryOptions: uint { None = 0, Equal = 1, NotEqual = 2, LessThan = 4, LessThanOrEqual = 8, GreaterThan = 16, GreaterThanOrEqual = 32, StartsWith = 64, EndsWith = 128, Contains = 256, IsContainedIn = 512, Search=1024, OrderBy=2048, GroupBy=4096, AllFilters = 1023, All = 8191}
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class QuerySearchAttribute : Attribute

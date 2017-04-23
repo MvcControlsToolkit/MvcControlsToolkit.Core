@@ -74,7 +74,10 @@ namespace MvcControlsToolkit.Core.TagHelpers
         private const string ForAttributeName = "asp-for";
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
+        [HtmlAttributeName("query-constraints")]
         public QueryOptions? Queries { get; set; }
+        [HtmlAttributeName("filter-clauses")]
+        public QueryOptions[] FilterClauses { get; set; }
     }
 
     [HtmlTargetElement("column", Attributes = NameAttributeName)]

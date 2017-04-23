@@ -110,15 +110,15 @@ namespace MvcControlsToolkit.Core.Views
             else if (Operator == OR) return string.Format("({0} OR {1})", sarg1, sarg2.ToString());
             else return string.Format("({0} or {1})", sarg1.ToString(), sarg2.ToString());
         }
-        public void PopulateFilterModel<T>(T model, IDictionary<string, QueryFilterCondition> index)
+        public void PopulateFilterIndex(Type type, IDictionary<string, IList<QueryFilterCondition>> index)
         {
-            if (model == null || Operator != and) return;
+            if (Operator != and) return;
 
-            if (Argument1 != null) Argument1.PopulateFilterModel<T>(model, index);
-            else if (Child1 != null) Child1.PopulateFilterModel<T>(model, index);
+            if (Argument1 != null) Argument1.PopulateFilterIndex(type, index);
+            else if (Child1 != null) Child1.PopulateFilterIndex(type, index);
 
-            if (Argument2 != null) Argument2.PopulateFilterModel<T>(model, index);
-            else if (Child2 != null) Child2.PopulateFilterModel<T>(model, index);
+            if (Argument2 != null) Argument2.PopulateFilterIndex(type, index);
+            else if (Child2 != null) Child2.PopulateFilterIndex(type, index);
 
         }
 
@@ -384,13 +384,13 @@ namespace MvcControlsToolkit.Core.Views
             if (Inv) return builder(Expression.Constant(value, oType), propertyAccess);
             else return builder(propertyAccess, Expression.Constant(value, oType));
         }
-        public void PopulateFilterModel<T>(T model, IDictionary<string, QueryFilterCondition> index)
+        internal object PopulateFilterModel(Type type, object model=null)
         {
-            var infos = QueryNodeCache.GetPath(typeof(T), Property);
-            if (infos == null) return;
+            var infos = QueryNodeCache.GetPath(type, Property);
+            if (infos == null) return null;
             var props = infos.Item1;
-            if (props == null || props.Count == 0) return;
-            index[Property] = this;
+            if (props == null || props.Count == 0) return null;
+            if (model == null) model = Activator.CreateInstance(type);
             object curr = model;
             int i = 1;
             foreach (var prop in props)
@@ -407,6 +407,16 @@ namespace MvcControlsToolkit.Core.Views
                     i++;
                 }
             }
+            return model;
+        }
+        internal void PopulateFilterIndex(Type type,IDictionary<string, IList<QueryFilterCondition>> index)
+        {
+            
+            IList<QueryFilterCondition> res;
+            if (!index.TryGetValue(Property, out res))
+                index[Property] = res = new List<QueryFilterCondition>();
+            res.Add(this);
+            
             
 
         }
