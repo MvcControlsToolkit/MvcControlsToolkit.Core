@@ -71,6 +71,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
             result.QueryEnabled = rowTag.QueryEnabled;
+            result.MaxSortingClauses = rowTag.MaxSortingClauses;
             return result;
         }
 

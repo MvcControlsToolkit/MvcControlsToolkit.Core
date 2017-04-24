@@ -180,6 +180,7 @@ namespace MvcControlsToolkit.Core.Views
             UrlEncode = func ?? UrlEncode;
         }
         private IDictionary<string, IList<QueryFilterCondition>> filterDictionary = null;
+        private IDictionary<string, Tuple<string, string>> aggregationDictionary;
         internal void PopulateFilterIndex(Type type)
         {
             if (Filter == null) return;
@@ -188,6 +189,28 @@ namespace MvcControlsToolkit.Core.Views
 
 
         }
+        internal void PopulateAggregationDictionary()
+        {
+            if (Grouping == null || Grouping.Keys == null || Grouping.Keys.Count == 0) return;
+            aggregationDictionary = new Dictionary<string, Tuple<string, string>>();
+            foreach (var key in Grouping.Keys)
+                aggregationDictionary[key] = Tuple.Create<string, string>("groupby", null);
+
+            if(Grouping.Aggregations != null && Grouping.Aggregations.Count != 0)
+            {
+                foreach(var agg in Grouping.Aggregations)
+                    aggregationDictionary[agg.Property] =  Tuple.Create(agg.Operator, agg.Alias);
+            }
+        }
+
+        public Tuple<string, string> GetAggregationOperation(string path)
+        {
+            if (aggregationDictionary == null) PopulateAggregationDictionary();
+            Tuple<string, string> res;
+            if (aggregationDictionary.TryGetValue(path, out res)) return res;
+            return null;
+        }
+
         public string GetFilterCondition(Type type, string path, int place, ref object model)
         {
             if (filterDictionary == null) PopulateFilterIndex(type);

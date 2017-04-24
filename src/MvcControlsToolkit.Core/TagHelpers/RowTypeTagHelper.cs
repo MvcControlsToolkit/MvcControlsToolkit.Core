@@ -44,6 +44,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public Type LocalizationType { get; set; }
         [HtmlAttributeName("enable-query")]
         public bool? QueryEnabled { get; set; }
+        [HtmlAttributeName("sorting-clauses")]
+        public uint MaxSortingClauses { get; set; }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (For == null) throw new ArgumentNullException(ForAttributeName);

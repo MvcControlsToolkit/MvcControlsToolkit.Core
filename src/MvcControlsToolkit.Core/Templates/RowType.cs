@@ -45,6 +45,7 @@ namespace MvcControlsToolkit.Core.Templates
         public Type LocalizationType { get; set; }
         public bool? QueryEnabled { get; set; }
         public uint Order { get; set; }
+        public uint MaxSortingClauses { get; set; }
         private TypeInfo _TypeInfos = null;
         private int _ColumnsCount=-1;
         public int ColumnsCount
