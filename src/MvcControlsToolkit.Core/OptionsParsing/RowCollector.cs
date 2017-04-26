@@ -14,6 +14,8 @@ namespace MvcControlsToolkit.Core.OptionsParsing
         public Template<RowType> DisplayTemplate { get; private set; }
         public Template<RowType> EditTemplate { get; private set; }
         public Template<RowType> FilterTemplate { get; private set; }
+        public Template<RowType> SortingTemplate { get; private set; }
+        public Template<RowType> GroupingTemplate { get; private set; }
         public IList<Column> Columns { get; private set; }
         public IList<string> RemoveColumns { get; private set; }
         uint? inherit;
@@ -49,13 +51,13 @@ namespace MvcControlsToolkit.Core.OptionsParsing
                     defaults.IsDetail,
                     Columns,
                     RemoveColumns,
-                    defaults.RenderHiddenFields);
+                    defaults.RenderHiddenFields, rowTag.QueryEnabled);
                 
             }
             else if (Columns != null || rowTag.AllProperties)
             {
                 result= new RowType(expression, keyName, defaults.IsDetail,
-                    Columns, rowTag.AllProperties, RemoveColumns, defaults.RenderHiddenFields);
+                    Columns, rowTag.AllProperties, RemoveColumns, defaults.RenderHiddenFields, rowTag.QueryEnabled);
             }
             else return null;
             result.RequiredFunctionalities = rowTag.RequiredFunctionalities;
@@ -68,9 +70,10 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.DisplayTemplate = DisplayTemplate;
             result.EditTemplate = EditTemplate;
             result.FilterTemplate = FilterTemplate;
+            result.SortingTemplate = SortingTemplate;
+            result.GroupingTemplate = GroupingTemplate;
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
-            result.QueryEnabled = rowTag.QueryEnabled;
             result.MaxSortingClauses = rowTag.MaxSortingClauses;
             return result;
         }
@@ -82,7 +85,9 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             {
                 if (item.Token == TagTokens.DTemplate) DisplayTemplate = item.Result as Template<RowType>;
                 else if (item.Token == TagTokens.ETemplate) EditTemplate = item.Result as Template<RowType>;
-                else if (item.Token == TagTokens.ETemplate) FilterTemplate = item.Result as Template<RowType>;
+                else if (item.Token == TagTokens.FTemplate) FilterTemplate = item.Result as Template<RowType>;
+                else if (item.Token == TagTokens.STemplate) SortingTemplate = item.Result as Template<RowType>;
+                else if (item.Token == TagTokens.GTemplate) GroupingTemplate = item.Result as Template<RowType>;
                 else if (item.Token == TagTokens.Column)
                 {
                     if (item.SubToken > 0)

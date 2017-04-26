@@ -206,7 +206,8 @@ namespace MvcControlsToolkit.Core.Views
         public Tuple<string, string> GetAggregationOperation(string path)
         {
             if (aggregationDictionary == null) PopulateAggregationDictionary();
-            Tuple<string, string> res;
+            if (aggregationDictionary == null) return null;
+                Tuple<string, string> res;
             if (aggregationDictionary.TryGetValue(path, out res)) return res;
             return null;
         }
@@ -214,7 +215,8 @@ namespace MvcControlsToolkit.Core.Views
         public string GetFilterCondition(Type type, string path, int place, ref object model)
         {
             if (filterDictionary == null) PopulateFilterIndex(type);
-            IList<QueryFilterCondition> res;
+            if (filterDictionary == null) return null;
+                IList<QueryFilterCondition> res;
             if (filterDictionary.TryGetValue(path, out res))
             {
                 if (place >= res.Count) return null;

@@ -8,7 +8,8 @@ using MvcControlsToolkit.Core.Types;
 
 namespace MvcControlsToolkit.Core.OData.Test
 {
-    
+    public enum TestEnum { value1, value2, value3 }
+
     public class ReferenceType
     {
         [Query]
@@ -81,7 +82,7 @@ namespace MvcControlsToolkit.Core.OData.Test
         [Query]
         public Guid? ANGuid { get; set; }
 
-        
+        public TestEnum AnEnum { get; set; }
     }
     public class ReferenceTypeExtended: ReferenceType
     {
@@ -108,6 +109,9 @@ namespace MvcControlsToolkit.Core.OData.Test
         Week? ANWeek { get; set; }
         [Query(Deny = QueryOptions.None)]
         string AString { get; set; }
+
+        
+
         IEnumerable<IFilterNestedReferenceType> Children { get; set; }
     }
 }

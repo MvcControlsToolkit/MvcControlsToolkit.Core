@@ -48,6 +48,10 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string InputCssClass { get; set; }
         [HtmlAttributeName("chekbox-class")]
         public string CheckboxCssClass { get; set; }
+        [HtmlAttributeName("input-class")]
+        public string InputDetailCssClass { get; set; }
+        [HtmlAttributeName("chekbox-class")]
+        public string CheckboxDetailCssClass { get; set; }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             

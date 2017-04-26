@@ -19,6 +19,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             this.output = output;
         }
         [Theory]
+        [InlineData("AnEnum eq 1", typeof(TestEnum), "AnEnum", TestEnum.value2)]
         [InlineData("ABool eq true", typeof(bool), "ABool", true)]
         [InlineData("ANBool eq false", typeof(bool), "ANBool", false)]
         [InlineData("ALong eq 1", typeof(long), "ALong", (long)1)]

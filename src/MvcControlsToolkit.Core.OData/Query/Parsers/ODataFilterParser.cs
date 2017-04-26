@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.OData.UriParser;
 using MvcControlsToolkit.Core.Types;
 using MvcControlsToolkit.Core.Views;
@@ -122,7 +123,14 @@ namespace MvcControlsToolkit.Core.OData.Parsers
             {
                 dateTimeType = QueryFilterCondition.IsDuration;
             }
-            else if (value.GetType() != propertyType) value = Convert.ChangeType(value, propertyType);
+
+            else if (value.GetType() != propertyType)
+            {
+                if (propertyType.GetTypeInfo().IsEnum)
+                    value=Enum.ToObject(propertyType, value);
+                else
+                    value = Convert.ChangeType(value, propertyType);
+            }
             return value;
         }
         private QueryFilterCondition BuildComparison(Microsoft.OData.UriParser.QueryNode left, Microsoft.OData.UriParser.QueryNode right, string normalOperator, string inverseOperator)

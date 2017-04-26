@@ -49,6 +49,8 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             res.ColSpan = colTag.ColSpan;
             res.InputCssClass = colTag.InputCssClass;
             res.CheckboxCssClass = colTag.CheckboxCssClass;
+            res.InputDetailCssClass = colTag.InputDetailCssClass;
+            res.CheckboxDetailCssClass = colTag.CheckboxDetailCssClass;
             res.ColumnConnection = ColumnConnection;
             if (tag is ColumnTagHelper)
             {

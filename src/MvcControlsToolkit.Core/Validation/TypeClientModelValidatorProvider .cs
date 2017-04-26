@@ -9,7 +9,7 @@ namespace MvcControlsToolkit.Core.Validation
 {
     public class TypeClientModelValidatorProvider : IClientModelValidatorProvider
     {
-        private static Type[] typesToValidate = new Type[] { typeof(double), typeof(float), typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(long), typeof(ulong), typeof(TimeSpan), typeof(DateTime), typeof(Week), typeof(Month), typeof(DateTimeOffset) };
+        private static Type[] typesToValidate = new Type[] { typeof(double), typeof(float), typeof(decimal), typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(long), typeof(ulong), typeof(TimeSpan), typeof(DateTime), typeof(Week), typeof(Month), typeof(DateTimeOffset) };
 
         public void CreateValidators(ClientValidatorProviderContext context)
         {

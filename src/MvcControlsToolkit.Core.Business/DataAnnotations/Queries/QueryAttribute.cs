@@ -46,7 +46,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         };
         public QueryOptions Allow { get; set; }
         public QueryOptions Deny { get; set; }
-
+        public QueryOptions Add {set { Allow = Allow | value; } }
+        public QueryOptions Remove { set { Deny = Deny | value; } }
         public QueryAttribute()
         {
             Allow = QueryOptions.Equal |
@@ -86,7 +87,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             if (pInfo.Item2 == null) return QueryOptions.None;
             if (type == typeof(bool) || type == typeof(bool?))
             {
-                conditions = conditions & QueryOptions.Equal;
+                conditions = conditions & (QueryOptions.Equal | QueryOptions.OrderBy |
+                QueryOptions.GroupBy);
                 return pInfo.Item2.Filter(conditions);
             }
             if (type != typeof(string))
@@ -110,7 +112,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
 
             if (type == typeof(bool) || type == typeof(bool?))
             {
-                conditions = conditions & QueryOptions.Equal;
+                conditions = conditions & (QueryOptions.Equal | QueryOptions.OrderBy |
+                QueryOptions.GroupBy);
                 return this.Filter(conditions);
             }
             if (type != typeof(string))
@@ -138,7 +141,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             QueryOptions conditions = pInfo.Item2.Allow & (~pInfo.Item2.Deny);
             if (type == typeof(bool) || type == typeof(bool?))
             {
-                conditions = conditions & QueryOptions.Equal;
+                conditions = conditions & (QueryOptions.Equal | QueryOptions.OrderBy |
+                QueryOptions.GroupBy);
                 return conditions;
             }
             if (type != typeof(string))
@@ -164,7 +168,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             QueryOptions conditions = this.Allow & (~this.Deny);
             if (type == typeof(bool) || type == typeof(bool?))
             {
-                conditions = conditions & QueryOptions.Equal;
+                conditions = conditions & (QueryOptions.Equal | QueryOptions.OrderBy |
+                QueryOptions.GroupBy);
                 return conditions;
             }
             if (type != typeof(string))
@@ -208,18 +213,19 @@ namespace MvcControlsToolkit.Core.DataAnnotations
             for (int i = 0; i < decoder.Length; i++)
             {
                 if ((run & options) == run) res.Add(decoder[i]);
-                run = (QueryOptions)((uint)run >> 1);
+                run = (QueryOptions)((uint)run << 1);
             }
             return res;
         }
         public static IEnumerable<KeyValuePair<string, string>> GroupOptionsToEnum(GroupingOptions options)
         {
-            GroupingOptions run = (GroupingOptions)0;
+            GroupingOptions run = (GroupingOptions)1;
             var res = new List<KeyValuePair<string, string>>();
-            for (int i = 0; i <= groupDecoder.Length; i++)
+            res.Add(groupDecoder[0]);
+            for (int i = 1; i < groupDecoder.Length; i++)
             {
-                if ((run & options) == run) res.Add(decoder[i]);
-                run = (GroupingOptions)((uint)run >> 1);
+                if ((run & options) == run) res.Add(groupDecoder[i]);
+                run = (GroupingOptions)((uint)run << 1);
             }
             return res;
         }

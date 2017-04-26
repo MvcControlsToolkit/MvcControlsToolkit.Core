@@ -11,6 +11,7 @@ using System.Security.Claims;
 using WebTestCore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using MvcControlsToolkit.Core.DataAnnotations;
 
 namespace WebTestCore.Controllers
 {
@@ -24,6 +25,8 @@ namespace WebTestCore.Controllers
             {
                 var id = httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             }
+            var options = new QueryAttribute().AllowedForProperty(typeof(string));
+            var select = QueryAttribute.QueryOptionsToEnum(options);
         }
         public IActionResult Index()
         {

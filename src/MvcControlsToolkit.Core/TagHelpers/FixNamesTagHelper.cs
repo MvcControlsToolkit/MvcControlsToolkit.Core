@@ -148,7 +148,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
     {
         private const string ForAttributeName = "asp-for";
         private const string OptionsListForName = "asp-options-for";
-        [HtmlAttributeName(ForAttributeName)]
+        [HtmlAttributeName(OptionsListForName)]
         public ModelExpression OptionsListFor { get; set; }
         
         public FixSelectNamesTagHelper(IOptions<MvcViewOptions> optionsAccessor) : base(optionsAccessor)

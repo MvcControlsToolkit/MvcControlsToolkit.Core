@@ -31,6 +31,8 @@ namespace MvcControlsToolkit.Core.Templates
         public Template<RowType> EditTemplate { get; set; }
         public Template<RowType> DisplayTemplate { get; set; }
         public Template<RowType> FilterTemplate { get; set; }
+        public Template<RowType> SortingTemplate { get;  set; }
+        public Template<RowType> GroupingTemplate { get;  set; }
         public IEnumerable<Column> Columns { get; private set; }
         public string RowId { get; internal set; }
         public string KeyName { get; private set; }
@@ -248,7 +250,8 @@ namespace MvcControlsToolkit.Core.Templates
             bool isDetail = false,
             IEnumerable<Column> addColumns = null,
             IEnumerable<string> removeColumns = null,
-            Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
+            Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null,
+            bool? queryEnabled=null)
         {
             IsDetail = isDetail;
             For = expression;
@@ -270,6 +273,7 @@ namespace MvcControlsToolkit.Core.Templates
                      if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
                  }
                  InheritColumns(inheritFrom.visibleAndHiddenColumns, addColumns, removeColumns, true);
+                 QueryEnabled = queryEnabled;
                  PrepareColumns();
              };
         }
@@ -279,11 +283,12 @@ namespace MvcControlsToolkit.Core.Templates
             IEnumerable<Column> addColumns = null,
             bool allProperties = false,
             IEnumerable<string> removeColumns = null,
-            Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null)
+            Func<IEnumerable<Column>, ContextualizedHelpers, object, IHtmlContent> renderHiddens = null, bool? queryEnabled=null)
         {
             IsDetail = isDetail;
             For = expression;
             this.renderHiddens = renderHiddens;
+            QueryEnabled = queryEnabled;
             if (KeyName == null)
             {
                 KeyName = GetConventionKey(For.Metadata.ModelType);
@@ -315,6 +320,22 @@ namespace MvcControlsToolkit.Core.Templates
                 new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
                 this, helpers);
 
+        }
+        public async Task<IHtmlContent> InvokeGrouping(object o, string prefix, ContextualizedHelpers helpers, Type destinationType)
+        {
+            if (GroupingTemplate == null) return new HtmlString(string.Empty);
+            //await PrerenderInLineColumnTemplates(o, prefix, helpers);
+            return await GroupingTemplate.Invoke(
+                new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
+                this, helpers, null, destinationType);
+        }
+        public async Task<IHtmlContent> InvokeSorting(object o, string prefix, ContextualizedHelpers helpers)
+        {
+            if (SortingTemplate == null) return new HtmlString(string.Empty);
+            //await PrerenderInLineColumnTemplates(o, prefix, helpers);
+            return await SortingTemplate.Invoke(
+                new ModelExpression(prefix, For.ModelExplorer.GetExplorerForModel(o)),
+                this, helpers);
         }
         public async Task<IHtmlContent> InvokeDisplay(object o, string prefix, ContextualizedHelpers helpers)
         {
@@ -443,17 +464,15 @@ namespace MvcControlsToolkit.Core.Templates
                 return first[level] - second[level];
             }
         }
-        private bool editComputed, displayComputed, filterComputed;
-        public void ComputeWidths(bool edit, int gridMax, bool filter=false)
+        private bool editComputed, displayComputed;
+        public void ComputeWidths(bool edit, int gridMax)
         {
             lock (this)
             {
-                if ((editComputed && edit && !filter) || (filter && filterComputed) ||(displayComputed && !edit && !filter)) return;
-                var cols = (filter ?
-                    Columns.Where(m => m.Queries.HasValue && ((m.Queries.Value & (QueryOptions.Search - 1)) > 0))
-                    :
+                if ((editComputed && edit) ||  (displayComputed && !edit)) return;
+                var cols = 
                     Columns
-                    .Where(m => (!m.EditOnly && !edit) || edit)).ToArray();
+                    .Where(m => (!m.EditOnly && !edit) || edit).ToArray();
                 var levels = cols.Max(m => m.DetailWidths != null ? m.DetailWidths.Length : 1);
                 if (levels == 0) levels = 1;
                 var allWidths = new int[cols.Length][];
@@ -461,12 +480,7 @@ namespace MvcControlsToolkit.Core.Templates
                 var i = 0;
                 foreach (var col in cols)
                 {
-                    if (filter)
-                    {
-                        allWidths[i] = col.FilterDetailWidths = new int[levels];
-                        col.FilterDetailEndRow = new bool[levels];
-                    }
-                    else if (edit)
+                    if (edit)
                     {
                         allWidths[i] = col.EditDetailWidths = new int[levels];
                         col.EditDetailEndRow = new bool[levels];
@@ -534,8 +548,7 @@ namespace MvcControlsToolkit.Core.Templates
                         lineStart = lineEnd+1;
                     }
                 }
-                if (filter) filterComputed = true;
-                else if (edit) editComputed = true;
+                if (edit) editComputed = true;
                 else displayComputed = true;
             }
 

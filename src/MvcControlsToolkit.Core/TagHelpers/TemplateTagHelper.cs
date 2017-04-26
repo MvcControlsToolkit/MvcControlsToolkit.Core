@@ -14,7 +14,7 @@ using MvcControlsToolkit.Core.Templates;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    public enum TemplateShowType {Display=0, Edit=1, Filter = 2 }
+    public enum TemplateShowType {Display=0, Edit=1, Filter = 2, Sorting=3, Grouping=4 }
     [HtmlTargetElement("asp-template", Attributes = TypeName, TagStructure = TagStructure.NormalOrSelfClosing)]
     public class TemplateTagHelper: TagHelper
     {
@@ -35,6 +35,18 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
         private bool cloned = false;
 
+        private int templateToken()
+        {
+            switch(TemplateType)
+            {
+                case TemplateShowType.Display: return TagTokens.DTemplate;
+                case TemplateShowType.Edit: return TagTokens.ETemplate;
+                case TemplateShowType.Filter: return TagTokens.FTemplate;
+                case TemplateShowType.Grouping: return TagTokens.GTemplate;
+                case TemplateShowType.Sorting: return TagTokens.STemplate;
+                default: return TagTokens.ETemplate;
+            }
+        }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             
@@ -77,7 +89,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
                 
                 rc.Results.Add(new ReductionResult(
-                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : (TemplateType == TemplateShowType.Edit ? TagTokens.ETemplate : TagTokens.ETemplate),
+                    templateToken(),
                     0,
                     Partial != null || ViewComponent != null ?
                     new Template<Column>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,  
@@ -99,7 +111,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             else
             {
                 rc.Results.Add(new ReductionResult(
-                    TemplateType == TemplateShowType.Display ? TagTokens.DTemplate : (TemplateType == TemplateShowType.Edit ? TagTokens.ETemplate : TagTokens.ETemplate),
+                    templateToken(),
                     0,
                     Partial != null || ViewComponent != null ?
                     new Template<RowType>(Partial != null ? TagHelpers.TemplateType.Partial : TagHelpers.TemplateType.ViewComponent,

@@ -49,7 +49,8 @@ namespace MvcControlsToolkit.Core.OData
             };
         private static EdmPrimitiveTypeKind? GetPrimitiveEDMType(PropertyInfo p, Type pType)
         {
-            
+
+
             
             if (pType == typeof(DateTime))
             {
@@ -67,6 +68,7 @@ namespace MvcControlsToolkit.Core.OData
             }
             EdmPrimitiveTypeKind result;
             if (typeMapping.TryGetValue(pType, out result)) return result;
+            else if (p.PropertyType.GetTypeInfo().IsEnum) return EdmPrimitiveTypeKind.Int32;
             else return null;
         }
         #endregion

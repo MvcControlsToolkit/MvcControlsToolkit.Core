@@ -39,18 +39,18 @@ namespace MvcControlsToolkit.Core.Templates
         public decimal[] Widths { get; set; }
         public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
-        public int[] FilterDetailWidths { get; set; }
         public int[] EditDetailWidths { get; set; }
         public bool[] DisplayDetailEndRow { get; set; }
         public bool[] EditDetailEndRow { get; set; }
-        public bool[] FilterDetailEndRow { get; set; }
         public string ColumnCssClass { get; set; }
         public int? Order { get; set; }
         public int NaturalOrder { get; set; }
         public string AdditionalPrefix { get; set; }
         public int? ColSpan { get; set; }
+        public string InputDetailCssClass { get; set; }
         public string InputCssClass { get; set; }
         public string CheckboxCssClass { get; set; }
+        public string CheckboxDetailCssClass { get; set; }
         public QueryOptions? Queries { get; set;}
         public QueryOptions[] FilterClauses { get; set; }
         private string name;
@@ -255,7 +255,7 @@ namespace MvcControlsToolkit.Core.Templates
                 }
                 else Queries = QueryOptions.None;
             }
-            else Queries = QueryOptions.None;
+            if(Queries == null) Queries = QueryOptions.None;
             if (FilterClauses == null) FilterClauses = new QueryOptions[] { Queries.Value & QueryOptions.AllFilters };
             else
             {

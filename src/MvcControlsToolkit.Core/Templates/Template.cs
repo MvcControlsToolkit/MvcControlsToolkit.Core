@@ -55,7 +55,7 @@ namespace MvcControlsToolkit.Core.Templates
                 OriginalProvider = originalContext.TagHelperProvider();
             }
         }
-        public async Task<IHtmlContent>  Invoke(ModelExpression expression, O options, ContextualizedHelpers helpers, string overridePrefix=null)
+        public async Task<IHtmlContent>  Invoke(ModelExpression expression, O options, ContextualizedHelpers helpers, string overridePrefix=null, object data=null)
         {
             if (expression == null) throw new ArgumentNullException(nameof(expression));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -78,6 +78,7 @@ namespace MvcControlsToolkit.Core.Templates
                 vd["Options"] = options;
                 vd["ContextualizedHelpers"] = helpers;
                 vd["LocalizerFactory"] = helpers.LocalizerFactory;
+                if (data != null) vd["ExtraData"] = data;
                 vd.Remove(RenderingScope.Field);
                 return await h.PartialAsync(TemplateName, model.Model, vd);
             }
@@ -86,7 +87,17 @@ namespace MvcControlsToolkit.Core.Templates
                 if (helpers == null) throw new ArgumentNullException(nameof(helpers));
                 var origVd = helpers.Context.ViewData;
                 var fatherPrefix = (origVd[RenderingScope.Field] as RenderingScope)?.FatherPrefix;
-                return await helpers.Component.InvokeAsync(TemplateName, new {
+                if(data != null)
+                    return await helpers.Component.InvokeAsync(TemplateName, new
+                    {
+                        model = model.Model,
+                        options = options,
+                        prefix = overridePrefix != null ? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(combinePrefixes(fatherPrefix, expression.Name)),
+                        modelState = origVd.ModelState,
+                        extraData=data
+                    });
+                else
+                    return await helpers.Component.InvokeAsync(TemplateName, new {
                     model = model.Model,
                     options = options,
                     prefix = overridePrefix != null ? combinePrefixes(overridePrefix, expression.Name) : origVd.GetFullHtmlFieldName(combinePrefixes(fatherPrefix, expression.Name)),
