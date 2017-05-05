@@ -154,7 +154,50 @@ namespace MvcControlsToolkit.Core.Views
             if (exp.NodeType == ExpressionType.Parameter) return sb == null ? null : sb.ToString();
             else return null;
         }
-        
+        internal static QueryFilterCondition FromModelAndName(Type t, string property, object model, string op="eq", bool inv=false)
+        {
+            var res = QueryNodeCache.GetPath(t, property);
+            if (res == null || res.Item1==null || res.Item1.Count==0) return null;
+            var props = res.Item1;
+            var prop = props[props.Count - 1];
+            object value = prop.GetValue(model);
+            var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+            short dateTimeType = QueryFilterCondition.IsNotDateTime;
+            if (type == typeof(Month))
+            {
+                dateTimeType = QueryFilterCondition.IsDate;
+                //if (value is Month) value = (DateTime)value;
+            }
+            else if (type == typeof(Week))
+            {
+                dateTimeType = QueryFilterCondition.IsDate;
+                //if (value is Week) value = (DateTime)value;
+            }
+            else if (type == typeof(DateTime))
+            {
+                var att = prop.GetCustomAttribute(typeof(DataTypeAttribute)) as DataTypeAttribute;
+                if (att != null && att.DataType == DataType.Date) dateTimeType = QueryFilterCondition.IsDate;
+                else dateTimeType = QueryFilterCondition.IsDateTime;
+            }
+            else if (type == typeof(DateTimeOffset))
+            {
+                dateTimeType = QueryFilterCondition.IsDateTime;
+            }
+            else if (type == typeof(TimeSpan))
+            {
+                var att = prop.GetCustomAttribute(typeof(DataTypeAttribute)) as DataTypeAttribute;
+                if (att != null && att.DataType == DataType.Time) dateTimeType = QueryFilterCondition.IsTime;
+                else dateTimeType = QueryFilterCondition.IsDuration;
+            }
+            return new QueryFilterCondition
+            {
+                Inv = inv,
+                Operator = op,
+                Property = property,
+                Value = value,
+                DateTimeType = dateTimeType
+            };
+        }
         private static QueryFilterCondition getBinaryCondition(Expression arg1, Expression arg2, string directOperator, string invOperator)
         {
             arg1 = removeConvert(arg1);
@@ -181,7 +224,6 @@ namespace MvcControlsToolkit.Core.Views
                 value = (arg2 as ConstantExpression).Value;
             }
             else return null;
-            if (value == null ) return null;
             short dateTimeType = QueryFilterCondition.IsNotDateTime;
             var type = prop.PropertyType;
             type = Nullable.GetUnderlyingType(type) ?? type;
@@ -310,11 +352,11 @@ namespace MvcControlsToolkit.Core.Views
         }
         public override string ToString()
         {
-            if (Value == null) return null;
+            
             switch (Operator)
             {
                 case null:
-                    var val = Value.ToString();
+                    var val = Value ?.ToString() ?? string.Empty;
                     if (val != null && val.Contains(' ')) return "\"" + val + "\"";
                     else return val;
                 case "startswith":
@@ -326,7 +368,7 @@ namespace MvcControlsToolkit.Core.Views
                     else return string.Format("{0}({1},{2})", Operator, EncodeProperty(Property), sc);
                 default:
                     var s = encodeConstant(Value, DateTimeType);
-                    if (s == null) return null;
+                    if (s == null) return "null";
                     else return string.Format("({0} {1} {2})", EncodeProperty(Property), Operator, s);
                     
             }

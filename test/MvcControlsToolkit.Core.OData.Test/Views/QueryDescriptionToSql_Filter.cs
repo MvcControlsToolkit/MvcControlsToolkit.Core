@@ -153,6 +153,58 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             Assert.Equal(res.Data.Count, all);
         }
         [Theory]
+        [InlineData("AString eq null", 0)]
+        [InlineData("null eq AString", 0)]
+
+
+        [InlineData("ANInt eq null", 0)]
+
+
+        [InlineData("ANShort eq null", 0)]
+
+        [InlineData("ANLong eq null", 0)]
+
+        [InlineData("ANDecimal eq null", 0)]
+
+        [InlineData("ANFloat eq null", 0)]
+
+        [InlineData("ANDouble eq null", 0)]
+
+        [InlineData("ANBool eq null", 0)]
+
+        [InlineData("ANGuid eq null", 0)]
+
+        [InlineData("ANTime eq null", 0)]
+
+        [InlineData("ANDuration eq null", 0)]
+
+        [InlineData("ANDate eq null", 0)]
+
+        [InlineData("ANMonth eq null", 0)]
+
+        [InlineData("ANDateTime eq null", 0)]
+
+        [InlineData("ANDateTimeOffset eq null", 0)]
+
+
+        public async Task NullConstants(string filter, int all)
+        {
+            provider.Filter = filter;
+            var q = provider.Parse<ReferenceType>();
+
+            Assert.NotNull(q);
+            Assert.NotNull(q.Filter);
+            var filterExpression = q.GetFilterExpression();
+            var res = await repository.GetPage<ReferenceType>(
+                filterExpression,
+                x => x.OrderBy(m => m.Id),
+                1, 10
+                );
+            Assert.Equal(res.TotalCount, all);
+            Assert.NotNull(res.Data);
+            Assert.Equal(res.Data.Count, all);
+        }
+        [Theory]
         [InlineData("(AString eq 'dummy1') or (ABool eq false)", 4)]
         [InlineData("(AString eq 'dummy1') or not (ABool eq true)", 4)]
         [InlineData("not (AString eq 'dummy1') or (ABool eq true)", 4)]

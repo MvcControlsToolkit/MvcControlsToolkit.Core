@@ -226,6 +226,29 @@ namespace MvcControlsToolkit.Core.Views
             }
             else return null;
         }
+        public string GetGroupDetailUrl<G>(G model, string baseUrl = null)
+        {
+
+            if (Grouping == null || Grouping.Keys == null || Grouping.Keys.Count == 0)
+                return null;
+            List<string> AllConditions = new List<string>();
+            foreach (var key in Grouping.Keys)
+            {
+                var cond = QueryFilterCondition.FromModelAndName(typeof(G), key, model);
+                if (cond == null) continue;
+                AllConditions.Add(cond.ToString());
+            }
+            baseUrl = baseUrl ?? AttachedTo?.BaseUrl ?? string.Empty;
+
+            if (AllConditions.Count == 0) return baseUrl;
+            else
+            {
+                baseUrl = baseUrl.Contains("?") ? (baseUrl + "&") : (baseUrl + "?");
+                return baseUrl + ((filterName + "=") + UrlEncode(String.Join(" and ", AllConditions)));
+            }
+                
+
+        }
 
     }
 

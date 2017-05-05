@@ -161,7 +161,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 else return null;
                 inv = true;
                 value = convertValue((left as ConstantNode).Value, out dateTimeType, propertyType);
-                if (value == null) return null;
+                
                 
             }
             else if (right.Kind == QueryNodeKind.Constant)
@@ -174,7 +174,7 @@ namespace MvcControlsToolkit.Core.OData.Parsers
                 }
                 else return null;
                 value = convertValue((right as ConstantNode).Value, out dateTimeType, propertyType);
-                if (value == null) return null;
+                
             }
             else return null;
             if (propertyName == null) return null;

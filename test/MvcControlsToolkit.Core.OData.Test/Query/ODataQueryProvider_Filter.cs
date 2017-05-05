@@ -85,6 +85,45 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             }
         }
         [Theory]
+        
+        
+        [InlineData("ANBool eq null", typeof(bool), "ANBool")]
+        [InlineData("ANLong eq null", typeof(long), "ANLong")]
+        [InlineData("ANInt eq null", typeof(int), "ANInt")]
+        [InlineData("ANShort eq null", typeof(short), "ANShort")]
+        [InlineData("ANDouble eq null", typeof(double), "ANDouble")]
+        [InlineData("ANFloat eq null", typeof(float), "ANFloat")]
+        [InlineData("AString eq null", typeof(string), "AString")]
+        [InlineData("ANDecimal eq null", typeof(decimal), "ANDecimal")]
+        [InlineData("ANGuid eq null", typeof(Guid), "ANGuid")]
+        [InlineData("ANTime eq null", typeof(TimeSpan), "ANTime")]
+        [InlineData("ANDuration eq null", typeof(TimeSpan), "ANDuration")]
+        [InlineData("ANDate eq null", typeof(DateTime), "ANDate")]
+        [InlineData("ANMonth eq null", typeof(Month), "ANMonth")]
+        [InlineData("ANWeek eq null", typeof(Week), "ANWeek")]
+        [InlineData("ANDateTime eq null", typeof(DateTime), "ANDateTime")]
+        [InlineData("ANDateTimeOffset eq null", typeof(DateTimeOffset), "ANDateTimeOffset")]
+        public void NullConstantEncoding(string filter, Type valueType, string propertyName)
+        {
+            provider.Filter = filter;
+            var res = provider.Parse<ReferenceType>();
+
+            Assert.NotNull(res);
+
+            Assert.NotNull(res.Filter);
+            Assert.Equal(res.Filter.Operator, QueryFilterBooleanOperator.and);
+            Assert.Null(res.Filter.Child1);
+            Assert.Null(res.Filter.Child2);
+            Assert.Null(res.Filter.Argument2);
+            var cond = res.Filter.Argument1;
+            Assert.NotNull(cond);
+            Assert.Equal(cond.Operator, "eq");
+            Assert.Equal(cond.Property, propertyName);
+            Assert.Null(cond.Value);
+
+            
+        }
+        [Theory]
         [InlineData("ABool eq true", typeof(bool), "ABool", true)]
         [InlineData("ANBool eq false", typeof(bool), "ANBool", false)]
         [InlineData("ALong eq 1", typeof(long), "ALong", (long)1)]
@@ -206,6 +245,28 @@ namespace MvcControlsToolkit.Core.OData.Test.Query
             provider.Filter = filter; 
             res = provider.Parse<ReferenceType>();
             Assert.Equal(filter, res.Filter.ToString());
+        }
+        [Theory]
+        [InlineData("groupby((AString, ABool))", "AString eq 'dummy' and ABool eq true")]
+        [InlineData("groupby((AString, ABool))", "AString eq null and ABool eq true")]
+        public void GroupDetail(string grouping, string result)
+        {
+            provider.Apply = grouping;
+            var res = provider.Parse<ReferenceType>();
+            var allKeys = res.Grouping.Keys;
+            provider = new ODataQueryProvider();
+            provider.Filter = result;
+            var res1 = provider.Parse<ReferenceType>();
+            var filter=res1.AddToUrl("http://dummy.com/");
+
+            object model = new ReferenceType();
+
+            foreach(var key in allKeys)
+            {
+                res1.GetFilterCondition(typeof(ReferenceType), key, 0, ref model);
+            }
+            string computedFilter=res.GetGroupDetailUrl(model as ReferenceType, "http://dummy.com/");
+            Assert.Equal(computedFilter.Replace("(", "").Replace(")", ""), filter.Replace("(", "").Replace(")", ""));
         }
     }
 }

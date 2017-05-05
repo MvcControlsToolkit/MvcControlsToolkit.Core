@@ -36,7 +36,7 @@ namespace MvcControlsToolkit.Core.Views
         }
         internal string encodeConstant(object value, short dateTimeType)
         {
-            if (value == null) return null;
+            if (value == null) return "null";
             var type = value.GetType();
             type = Nullable.GetUnderlyingType(type) ?? type;
             if(type == typeof(Month))
