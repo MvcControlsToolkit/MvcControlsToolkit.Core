@@ -17,6 +17,11 @@ namespace MvcControlsToolkit.Core.Extensions
 {
     public class MvcControlsToolkitOptionsSetup : IConfigureOptions<MvcOptions>
     {
+        private IServiceProvider serviceProvider;
+        public MvcControlsToolkitOptionsSetup(IServiceProvider serviceProvider)
+        {
+            this.serviceProvider = serviceProvider;
+        }
         public void Configure(MvcOptions options)
         {
 
@@ -53,7 +58,7 @@ namespace MvcControlsToolkit.Core.Extensions
             if (res != null)
             {
                 options.ModelBinderProviders.Remove(res);
-                options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res, new InterfacesModelBinderProvider()));
+                options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res, new InterfacesModelBinderProvider(serviceProvider.GetService<IDIMeta>())));
                 //options.ModelBinderProviders.Insert(bcount, new InterfacesModelBinderProvider());
             }
             options.Filters.Add(typeof(CacheViewPartsFilter));

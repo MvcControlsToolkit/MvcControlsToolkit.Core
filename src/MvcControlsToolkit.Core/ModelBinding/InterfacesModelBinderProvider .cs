@@ -4,11 +4,17 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using MvcControlsToolkit.Core.Extensions;
 
 namespace MvcControlsToolkit.Core.ModelBinding
 {
     public class InterfacesModelBinderProvider: IModelBinderProvider
     {
+        private IDIMeta servicesInfo;
+        public InterfacesModelBinderProvider(IDIMeta servicesInfo)
+        {
+            this.servicesInfo = servicesInfo;
+        }
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
@@ -17,8 +23,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
             }
 
             if (!context.Metadata.IsCollectionType &&
-                (context.Metadata.ModelType.GetTypeInfo().IsInterface ||
-                 context.Metadata.ModelType.GetTypeInfo().IsAbstract) &&
+                servicesInfo.IsRegistred(context.Metadata.ModelType) &&
                 (context.BindingInfo.BindingSource == null ||
                 !context.BindingInfo.BindingSource
                 .CanAcceptDataFrom(BindingSource.Services)))
