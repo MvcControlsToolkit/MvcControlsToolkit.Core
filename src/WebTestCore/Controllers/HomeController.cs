@@ -117,6 +117,15 @@ namespace WebTestCore.Controllers
             }
             return View(model);
         }
+        public IActionResult JsonInterfaceTest()
+        {
+            return View(new TestInterfaceViewModel { TestProperty = 5 });
+        }
+        [HttpPost]
+        public IActionResult JsonInterfaceTest(ITestInterface model)
+        {
+            return View(model);
+        }
         [HttpGet]
         public IActionResult SubClassTest()
         {

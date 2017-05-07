@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using MvcControlsToolkit.Core.Extensions;
 using MvcControlsToolkit.Core.ModelBinding.DerivedClasses;
 using MvcControlsToolkit.Core.Types;
 using Newtonsoft.Json.Serialization;
@@ -10,18 +12,41 @@ namespace MvcControlsToolkit.Core.ModelBinding
 {
     public class RuntimeTypeContractResolver: CamelCasePropertyNamesContractResolver
     {
-        public override JsonContract ResolveContract(Type type)
+        IDIMeta diMeta;
+        IServiceProvider sp;
+        public RuntimeTypeContractResolver(IDIMeta diMeta, IServiceProvider sp)
+        {
+            this.diMeta = diMeta;
+            this.sp = sp;
+        }
+        protected override JsonObjectContract CreateObjectContract(Type objectType)
+        {
+        
+            if (diMeta.IsRegistred(objectType))
+            {
+                JsonObjectContract contract = DIResolveContract(objectType);
+                contract.DefaultCreator = () => sp.GetService(objectType);
+
+                return contract;
+            }
+
+            return base.CreateObjectContract(objectType);
+        }
+        private JsonObjectContract DIResolveContract(Type objectType)
+        {
+            var fType = diMeta.RegistredTypeFor(objectType);
+            if (fType != null) return base.CreateObjectContract(fType);
+            else return CreateObjectContract(objectType);
+        }
+        public  override JsonContract ResolveContract(Type type)
         {
             var res = base.ResolveContract(type);
-            if(DerivedClassesRegister.GetCodeFromType(type, true) != null 
-                && res.Converter == null)
-                res.Converter = new RuntimeTypesJsonConverter();
-            //else
-            //{
-            //    type = Nullable.GetUnderlyingType(type) ?? type;
-            //    if (type == typeof(Month)) res.Converter = new MonthJsonConverter();
-            //    else if (type == typeof(Week)) res.Converter = new WeekJsonConverter();
-            //}
+            if(res.Converter == null)
+            {
+                if (DerivedClassesRegister.GetCodeFromType(type, true) != null)
+                    res.Converter = new RuntimeTypesJsonConverter();
+                
+            }
             return res;
         }
     }

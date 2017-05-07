@@ -62,6 +62,8 @@ namespace WebTestCore
                 .AddViewLocalization()
                 .AddDataAnnotationsLocalization();
 
+            services.AddTransient<ITestInterface, TestInterfaceViewModel>();
+
             services.AddMvc();
             services.AddMvcControlsToolkit(m => { m.CustomMessagesResourceType = typeof(ErrorMessages); });
             services.AddPreferences()

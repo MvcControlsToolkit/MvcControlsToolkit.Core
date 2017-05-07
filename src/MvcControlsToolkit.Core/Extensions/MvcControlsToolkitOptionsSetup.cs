@@ -53,8 +53,8 @@ namespace MvcControlsToolkit.Core.Extensions
             if (res != null)
             {
                 options.ModelBinderProviders.Remove(res);
-                options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res));
-                options.ModelBinderProviders.Insert(bcount, new InterfacesModelBinderProvider());
+                options.ModelBinderProviders.Insert(bcount, new TransformationModelBinderProvider(res, new InterfacesModelBinderProvider()));
+                //options.ModelBinderProviders.Insert(bcount, new InterfacesModelBinderProvider());
             }
             options.Filters.Add(typeof(CacheViewPartsFilter));
 
@@ -82,6 +82,19 @@ namespace MvcControlsToolkit.Core.Extensions
             options.ClientModelValidatorProviders.Add(new TypeClientModelValidatorProvider());
             
 
+        }
+    }
+    public class MvcControlsToolkitJsonOptionsSetup : IConfigureOptions<MvcJsonOptions>
+    {
+        IServiceProvider serviceProvider;
+        public MvcControlsToolkitJsonOptionsSetup(IServiceProvider serviceProvider)
+        {
+            this.serviceProvider = serviceProvider;
+        }
+        public void Configure(MvcJsonOptions o)
+        {
+            o.SerializerSettings.ContractResolver = 
+                new RuntimeTypeContractResolver(serviceProvider.GetService<IDIMeta>(), serviceProvider);
         }
     }
 }

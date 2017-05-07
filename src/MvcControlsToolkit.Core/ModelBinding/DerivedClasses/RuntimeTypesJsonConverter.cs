@@ -27,7 +27,6 @@ namespace MvcControlsToolkit.Core.ModelBinding
         {
             return true;
         }
-        
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var t=JToken.FromObject(value);

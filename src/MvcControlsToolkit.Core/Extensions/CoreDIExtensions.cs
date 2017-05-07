@@ -37,7 +37,7 @@ namespace MvcControlsToolkit.Core.Extensions
 
             services.AddTransient<IConfigureOptions<MvcOptions>, MvcControlsToolkitOptionsSetup>();
             services.AddTransient<IConfigureOptions<MvcViewOptions>, MvcControlsToolkitViewOptionsSetup>();
-            services.Configure<MvcJsonOptions>(o => o.SerializerSettings.ContractResolver = new RuntimeTypeContractResolver());
+            services.AddTransient<IConfigureOptions<MvcJsonOptions>, MvcControlsToolkitJsonOptionsSetup>();
             services.AddSingleton<DefaultTagHelpersProvider>();
             services.AddPreferences()
                 .AddPreferencesClass<Html5InputSupport>("Browser.Html5InputSupport")
@@ -53,6 +53,11 @@ namespace MvcControlsToolkit.Core.Extensions
             });
             if (setupAction != null)
                 services.Configure(setupAction);
+            services.TryAddSingleton<IDIMeta>(s =>
+                {
+                    return new DIMetaDefault(services);
+                }
+            );
             return services;
         }
         public static IServiceCollection AddTagHelpersProvider(this IServiceCollection services, Type providerType, ITagHelpersProvider instance=null)

@@ -229,25 +229,53 @@ namespace MvcControlsToolkit.Core.Views
         public string GetGroupDetailUrl<G>(G model, string baseUrl = null)
         {
 
+            return GetGroupDetailUrl(typeof(G), model, baseUrl);
+
+
+
+        }
+        public void AddFilterCondition(QueryFilterClause filter, bool useOr = false)
+        {
+            if (filter == null) return;
+            var res = filter;
+            if (res == null) return;
+            if (Filter == null)
+            {
+                Filter = res is QueryFilterBooleanOperator ? res as QueryFilterBooleanOperator
+                      : new QueryFilterBooleanOperator(res, null);
+                return;
+            }
+
+            QueryFilterClause cleanFilter;
+            if (Filter.Operator != QueryFilterBooleanOperator.not)
+            {
+                if (Filter.Child1 == null && Filter.Argument1 == null) cleanFilter = Filter.Argument2 as QueryFilterClause ?? Filter.Child2;
+                else if (Filter.Child2 == null && Filter.Argument2 == null) cleanFilter = Filter.Argument1 as QueryFilterClause ?? Filter.Child1;
+                else cleanFilter = Filter;
+            }
+            else cleanFilter = Filter;
+            Filter = new QueryFilterBooleanOperator(cleanFilter, res);
+            if (useOr) Filter.Operator = QueryFilterBooleanOperator.or;
+
+        }
+        public string GetGroupDetailUrl(Type type, object model, string baseUrl = null)
+        {
+
             if (Grouping == null || Grouping.Keys == null || Grouping.Keys.Count == 0)
                 return null;
-            List<string> AllConditions = new List<string>();
+            
+            var newQuery = Clone();
+            newQuery.Grouping = null;
+            newQuery.Take = null;
+            newQuery.Page = 1;
+            newQuery.Skip = 0;
             foreach (var key in Grouping.Keys)
             {
-                var cond = QueryFilterCondition.FromModelAndName(typeof(G), key, model);
+                var cond = QueryFilterCondition.FromModelAndName(type, key, model);
                 if (cond == null) continue;
-                AllConditions.Add(cond.ToString());
+                newQuery.AddFilterCondition(cond);
             }
-            baseUrl = baseUrl ?? AttachedTo?.BaseUrl ?? string.Empty;
-
-            if (AllConditions.Count == 0) return baseUrl;
-            else
-            {
-                baseUrl = baseUrl.Contains("?") ? (baseUrl + "&") : (baseUrl + "?");
-                return baseUrl + ((filterName + "=") + UrlEncode(String.Join(" and ", AllConditions)));
-            }
-                
-
+            return newQuery.AddToUrl(baseUrl??newQuery.AttachedTo?.BaseUrl);
         }
 
     }
@@ -332,7 +360,19 @@ namespace MvcControlsToolkit.Core.Views
         }
         protected override QueryDescription CloneInternal()
         {
-            return MemberwiseClone() as QueryDescription;
+
+            return new QueryDescription<T>()
+            {
+                Filter = Filter,
+                Search = Search,
+                Grouping = Grouping,
+                Sorting = Sorting,
+                Skip = Skip,
+                Take = Take,
+                Page = Page,
+                AttachedTo = AttachedTo,
+                UrlEncode = UrlEncode
+            };
         }
         protected override void ClearFilterCache()
         {
@@ -359,27 +399,10 @@ namespace MvcControlsToolkit.Core.Views
         {
             if (filter == null) return;
             var res = QueryFilterClause.FromLinQExpression(filter);
-            if (res == null) return;
-            if (Filter == null)
-            {
-                Filter = res is QueryFilterBooleanOperator ? res as QueryFilterBooleanOperator
-                      : new QueryFilterBooleanOperator(res, null);
-                return;
-            }
-
-            QueryFilterClause cleanFilter;
-            if (Filter.Operator != QueryFilterBooleanOperator.not)
-            {
-                if (Filter.Child1 == null && Filter.Argument1 == null) cleanFilter = Filter.Argument2 as QueryFilterClause ?? Filter.Child2;
-                else if (Filter.Child2 == null && Filter.Argument2 == null) cleanFilter = Filter.Argument1 as QueryFilterClause ?? Filter.Child1;
-                else cleanFilter = Filter;
-            }
-            else cleanFilter = Filter;
-            Filter = new QueryFilterBooleanOperator(cleanFilter, res);
-            if (useOr) Filter.Operator = QueryFilterBooleanOperator.or;    
-
+            AddFilterCondition(res, useOr);
         }
         
-        
+
+
     }
 }
