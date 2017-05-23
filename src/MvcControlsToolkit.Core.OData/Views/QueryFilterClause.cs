@@ -157,7 +157,7 @@ namespace MvcControlsToolkit.Core.Views
         internal static QueryFilterCondition FromModelAndName(Type t, string property, object model, string op="eq", bool inv=false)
         {
             var res = QueryNodeCache.GetPath(t, property);
-            if (res == null || res.Item1==null || res.Item1.Count==0) return null;
+            if (res == null || res.Item1==null || res.Item1.Count==0 || model==null) return null;
             var props = res.Item1;
             var prop = props[props.Count - 1];
             object value = prop.GetValue(model);

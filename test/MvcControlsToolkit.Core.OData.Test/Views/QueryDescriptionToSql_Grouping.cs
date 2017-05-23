@@ -233,7 +233,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             Assert.NotNull(res.Data);
             Assert.Equal(res.Data.Count, totalResults);
             if (firstVAlue != null)
-                Assert.Equal(res.Data.First().ANewInt, firstVAlue.Value);
+                Assert.Equal((res.Data.First() as ReferenceTypeExtended).ANewInt, firstVAlue.Value);
         }
     }
 }

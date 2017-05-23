@@ -30,6 +30,7 @@ namespace MvcControlsToolkit.Core.Views
     public class QueryGrouping : QueryNode
     {
         public ICollection<string> Keys { get; set; }
+        public ICollection<short> DateTimeTypes { get; set; }
         public ICollection<QueryAggregation> Aggregations { get; set; }
         private HashSet<string> propertySet;
         private bool setComputed;

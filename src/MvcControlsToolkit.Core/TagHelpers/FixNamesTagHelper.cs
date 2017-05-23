@@ -60,7 +60,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
             bool canHaveNames = prov.GenerateNames;
             bool correctNames = ViewContext.ViewData[RenderingScope.Field] as RenderingScope != null;
             bool filtering = ViewContext.IsFilterRendering();
-
+            output.Attributes.Add("data-original-type", ClientSideHelpers.getClientType(For.Metadata));
 
             prov?.InputProcess?.Invoke(context, output, this);
             if (!canHaveNames)

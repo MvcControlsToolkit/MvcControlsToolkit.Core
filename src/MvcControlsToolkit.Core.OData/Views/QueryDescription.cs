@@ -236,7 +236,6 @@ namespace MvcControlsToolkit.Core.Views
         }
         public void AddFilterCondition(QueryFilterClause filter, bool useOr = false)
         {
-            if (filter == null) return;
             var res = filter;
             if (res == null) return;
             if (Filter == null)
@@ -261,7 +260,7 @@ namespace MvcControlsToolkit.Core.Views
         public string GetGroupDetailUrl(Type type, object model, string baseUrl = null)
         {
 
-            if (Grouping == null || Grouping.Keys == null || Grouping.Keys.Count == 0)
+            if (model == null || Grouping == null || Grouping.Keys == null || Grouping.Keys.Count == 0)
                 return null;
             
             var newQuery = Clone();
@@ -346,8 +345,8 @@ namespace MvcControlsToolkit.Core.Views
                    }
                    else
                    {
-                       if (s.Down) result = result.ThenByDescending(s.GetSortingLambda(typeof(T)));
-                       else result = result.ThenBy(s.GetSortingLambda(typeof(T)));
+                       if (s.Down) result = result.ThenByDescending(s.GetSortingLambda(typeof(F)));
+                       else result = result.ThenBy(s.GetSortingLambda(typeof(F)));
                    }
                }
                return result;

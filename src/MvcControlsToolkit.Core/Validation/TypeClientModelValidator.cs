@@ -67,7 +67,7 @@ namespace MvcControlsToolkit.Core.Validation
                 typeCode = 1;
                 return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBePositiveInteger)), modelMetadata.GetDisplayName());
             }
-            else if (type == typeof(float) || type == typeof(double))
+            else if (type == typeof(float) || type == typeof(double) || type == typeof(decimal))
             {
                 typeCode = 3;
                 return string.Format(GetResourceMessage(nameof(DefaultMessages.ClientFieldMustBeNumber)), modelMetadata.GetDisplayName());

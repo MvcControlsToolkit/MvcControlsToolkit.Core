@@ -96,6 +96,13 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 conditions = conditions & (~(QueryOptions.StartsWith |
                                              QueryOptions.EndsWith));
             }
+            else
+            {
+                conditions = conditions & (~(QueryOptions.LessThan |
+                                             QueryOptions.LessThanOrEqual | 
+                                             QueryOptions.GreaterThan | 
+                                             QueryOptions.GreaterThanOrEqual));
+            }
 
             if (!typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type))
             {
@@ -121,7 +128,13 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 conditions = conditions & (~(QueryOptions.StartsWith |
                                              QueryOptions.EndsWith));
             }
-
+            else
+            {
+                conditions = conditions & (~(QueryOptions.LessThan |
+                                             QueryOptions.LessThanOrEqual |
+                                             QueryOptions.GreaterThan |
+                                             QueryOptions.GreaterThanOrEqual));
+            }
             if (!typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type))
             {
                 conditions = conditions & (~QueryOptions.Contains);
@@ -150,7 +163,13 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 conditions = conditions & (~(QueryOptions.StartsWith |
                                              QueryOptions.EndsWith));
             }
-
+            else
+            {
+                conditions = conditions & (~(QueryOptions.LessThan |
+                                             QueryOptions.LessThanOrEqual |
+                                             QueryOptions.GreaterThan |
+                                             QueryOptions.GreaterThanOrEqual));
+            }
             if (!typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type))
             {
                 conditions = conditions & (~QueryOptions.Contains);
@@ -177,7 +196,13 @@ namespace MvcControlsToolkit.Core.DataAnnotations
                 conditions = conditions & (~(QueryOptions.StartsWith |
                                              QueryOptions.EndsWith));
             }
-
+            else
+            {
+                conditions = conditions & (~(QueryOptions.LessThan |
+                                             QueryOptions.LessThanOrEqual |
+                                             QueryOptions.GreaterThan |
+                                             QueryOptions.GreaterThanOrEqual));
+            }
             if (!typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type))
             {
                 conditions = conditions & (~QueryOptions.Contains);

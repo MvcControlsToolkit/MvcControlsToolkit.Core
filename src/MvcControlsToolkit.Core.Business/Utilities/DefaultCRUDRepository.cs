@@ -70,6 +70,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         private static readonly ConcurrentDictionary<Type, Func<Operation, bool, object, object, ChangeSet>> CreatorCache = new ConcurrentDictionary<Type, Func<Operation, bool, object, object, ChangeSet>>();
         private static readonly ConcurrentDictionary<Type, PropertyInfo> KeyProperty = new ConcurrentDictionary<Type, PropertyInfo>();
         private static readonly ConcurrentDictionary<Type, object> Projections = new ConcurrentDictionary<Type, object>();
+        private static readonly ConcurrentDictionary<Type, Tuple<object, Func<IQueryable, IEnumerable>>> FilterProjections = new ConcurrentDictionary<Type, Tuple<object, Func<IQueryable, IEnumerable>>>();
         private static readonly ConcurrentDictionary<Type, object> CompiledProjections = new ConcurrentDictionary<Type, object>();
         public D Context { get; private set; }
         public DbSet<T> Table { get; private set; }
@@ -90,6 +91,15 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             if (proj == null) return;
             Projections[typeof(K)] = ProjectionExpression<T>.BuildExpression(proj, typeof(K).GetTypeInfo().IsInterface ? typeof(K) : null);
             
+        }
+        public static void DeclareQueryProjection<K, PK>(Expression<Func<T, K>> proj, Expression<Func<K, PK>> key)
+        {
+            if (proj == null || key == null) return;
+            Func<IQueryable, IEnumerable> keys = (x) => (x as IQueryable<K>).Select(key).ToArray();
+            FilterProjections[typeof(K)] = Tuple.
+                Create<object, Func<IQueryable, IEnumerable>>(ProjectionExpression<T>.BuildExpression(proj, typeof(K).GetTypeInfo().IsInterface ? typeof(K) : null),
+                keys);
+
         }
         public static Func<T, K> GetCompiledExpression<K>()
         {
@@ -139,7 +149,13 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var comp = Expression.Equal(acc, Expression.Constant(keyVal));
             return Expression.Lambda<Func<T, bool>>(comp, parameter);
         }
-        
+        protected Expression<Func<T, bool>> BuildKeysFilter(IEnumerable keyVals)
+        {
+            var prop = GetKeyProperty<T>();
+            return new FilterBuilder<T>().Add(FilterCondition.IsContainedIn, prop.Name, keyVals).Get();
+            
+        }
+
         private ChangeSet GetChangeset<VM>(Operation o, bool full, object x, object y)
         {
             Func<Operation, bool, object, object, ChangeSet> res;
@@ -226,7 +242,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting,
             int page,
             int itemsPerPage,
-            Func<IQueryable<T1>, IQueryable<T2>> grouping = null
+            Func<IQueryable<T1>, IQueryable<T2>> grouping ,
+            out Tuple<object, Func<IQueryable, IEnumerable>> fQueryProj
             )
         {
             if (sorting == null) throw new ArgumentNullException(nameof(sorting));
@@ -235,34 +252,50 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             if (SelectFilter != null) start = Table.Where(SelectFilter);
             else start = Table.Select(m => m);
 
-            IQueryable<T1> proj;
-            object projExp;
-            if (Projections.TryGetValue(typeof(T1), out projExp))
+            IQueryable<T1> proj=null;
+            object projExp=null;
+            fQueryProj = null;
+            if(FilterProjections.TryGetValue(typeof(T1), out fQueryProj))
+            {
+                proj = start.Select(fQueryProj.Item1 as Expression<Func<T, T1>>);
+            }
+            else if (Projections.TryGetValue(typeof(T1), out projExp))
                 proj = start.Select(projExp as Expression<Func<T, T1>>);
             else
                 proj = start.Project().To<T1>();
             if (filter != null) proj = proj.Where(filter);
             IQueryable<T2> toGroup;
-            if (grouping != null) toGroup = grouping(proj);
-            else toGroup = proj as IQueryable<T2>;
+            if (grouping != null)
+            {
+                fQueryProj = null;
+                toGroup = grouping(proj);
+            }
+            else
+            {
+
+                toGroup = proj as IQueryable<T2>;
+            }
             if (toGroup == null) toGroup = proj.Project().To<T2>();
             return toGroup;
         }
 
-        public virtual async Task<DataPage<T2>> GetPageExtended<T1, T2>(
+        public virtual async Task<DataPage<T1>> GetPageExtended<T1, T2>(
             Expression<Func<T1, bool>> filter, 
             Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting, 
             int page, 
             int itemsPerPage,
             Func<IQueryable<T1>, IQueryable<T2>> grouping=null
             )
+            where T2: T1
         {
             page = page - 1;
             if (page < 0) page = 0;
+            Tuple<object, Func<IQueryable, IEnumerable>> fQueryProj;
             var toGroup = InternalGetPageExtended<T1, T2>(
-                filter, sorting, page, itemsPerPage, grouping
+                filter, sorting, page, itemsPerPage, grouping,
+                out fQueryProj
                 );
-            var res = new DataPage<T2>
+            var res = new DataPage<T1>
             {
                 TotalCount=await toGroup.CountAsync(),
                 ItemsPerPage=itemsPerPage,
@@ -273,24 +306,46 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var sorted = sorting(toGroup);
             if (page > 0) toGroup = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
             else toGroup = sorted.Take(itemsPerPage);
-            res.Data =  await toGroup.ToArrayAsync();
+            if (fQueryProj != null)
+            {
+                var allIds = typeof(T1) == typeof(T2) ? fQueryProj.Item2(toGroup) : fQueryProj.Item2(toGroup.Project().To<T1>());
+                var toStart = Table.Where(BuildKeysFilter(allIds));
+                object projExp = null;
+                IQueryable<T1> proj = null;
+                if (Projections.TryGetValue(typeof(T1), out projExp))
+                    proj = toStart.Select(projExp as Expression<Func<T, T1>>);
+                else
+                    proj = toStart.Project().To<T1>();
+                toGroup = proj as IQueryable<T2>;
+                if (toGroup == null) toGroup = proj.Project().To<T2>();
+                toGroup = sorting(toGroup);
+        }
+            if (typeof(T1) == typeof(T2))
+                res.Data = (await toGroup.ToArrayAsync()) as T1[];
+            else if (grouping ==null)
+                res.Data =  (await toGroup.Project().To<T1>().ToArrayAsync()) ;
+            else 
+                res.Data = (await toGroup.ToArrayAsync()).Select(m => (T1)m).ToArray();
             return res;
         }
         
-        public virtual DataPage<T2> GetPageExtendedSync<T1, T2>(
+        public virtual DataPage<T1> GetPageExtendedSync<T1, T2>(
             Expression<Func<T1, bool>> filter,
             Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting,
             int page,
             int itemsPerPage,
             Func<IQueryable<T1>, IQueryable<T2>> grouping = null
             )
+            where T2 : T1
         {
             page = page - 1;
             if (page < 0) page = 0;
+             Tuple<object, Func<IQueryable, IEnumerable>> fQueryProj;
             var toGroup = InternalGetPageExtended<T1, T2>(
-                filter, sorting, page, itemsPerPage, grouping
+                filter, sorting, page, itemsPerPage, grouping,
+                out fQueryProj
                 );
-            var res = new DataPage<T2>
+            var res = new DataPage<T1>
             {
                 TotalCount = toGroup.Count(),
                 ItemsPerPage = itemsPerPage,
@@ -301,7 +356,26 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var sorted = sorting(toGroup);
             if (page > 0) toGroup = sorted.Skip(page * itemsPerPage).Take(itemsPerPage);
             else toGroup = sorted.Take(itemsPerPage);
-            res.Data = toGroup.ToArray();
+            if (fQueryProj != null)
+            {
+                var allIds = typeof(T1) == typeof(T2) ? fQueryProj.Item2(toGroup) : fQueryProj.Item2(toGroup.Project().To<T1>());
+                var toStart = Table.Where(BuildKeysFilter(allIds));
+                object projExp = null;
+                IQueryable<T1> proj = null;
+                if (Projections.TryGetValue(typeof(T1), out projExp))
+                    proj = toStart.Select(projExp as Expression<Func<T, T1>>);
+                else
+                    proj = toStart.Project().To<T1>();
+                toGroup = proj as IQueryable<T2>;
+                if (toGroup == null) toGroup = proj.Project().To<T2>();
+                toGroup = sorting(toGroup);
+            }
+            if (typeof(T1) == typeof(T2))
+                res.Data = toGroup.ToArray() as T1[];
+            else if (grouping == null)
+                res.Data = toGroup.Project().To<T1>().ToArray();
+            else
+                res.Data = toGroup.ToArray().Select(m => (T1)m).ToArray();
             return res;
         }
         public virtual async Task<DataPage<T1>> GetPage<T1>(
