@@ -46,8 +46,8 @@ namespace MvcControlsToolkit.Core.DataAnnotations
         };
         public QueryOptions Allow { get; set; }
         public QueryOptions Deny { get; set; }
-        public QueryOptions Add {set { Allow = Allow | value; } }
-        public QueryOptions Remove { set { Deny = Deny | value; } }
+        public QueryOptions Add {set { Allow = Allow | value; } get { return Allow; } }
+        public QueryOptions Remove { set { Deny = Deny | value; } get { return Deny; } }
         public QueryAttribute()
         {
             Allow = QueryOptions.Equal |

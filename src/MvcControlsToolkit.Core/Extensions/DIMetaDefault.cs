@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +15,10 @@ namespace MvcControlsToolkit.Core.Extensions
         {
             foreach(var s in services)
             {
-                register[s.ServiceType] = s.ImplementationType;
+
+                var fType = s.ServiceType.GetTypeInfo();
+                if(fType.IsAbstract || fType.IsInterface || s.ImplementationFactory != null || s.ImplementationInstance != null)
+                    register[s.ServiceType] = s.ImplementationType;
             }
         }
 

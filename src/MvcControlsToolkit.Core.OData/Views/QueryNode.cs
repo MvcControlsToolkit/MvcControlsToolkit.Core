@@ -51,7 +51,7 @@ namespace MvcControlsToolkit.Core.Views
                 type = typeof(DateTime);
                 value = ((Week)value).StartDate();
             }
-            if (type == typeof(string)) return "'"+(value as string)+"'";
+            if (type == typeof(string)) return "'"+(value as string).Replace("'", "''") + "'";
             if (type == typeof(int)
                 || type == typeof(uint)
                 || type == typeof(long)
@@ -66,7 +66,7 @@ namespace MvcControlsToolkit.Core.Views
                 || type == typeof(double)
                 || type == typeof(decimal)
             ) return (value as IFormattable).ToString("G", CultureInfo.InvariantCulture);
-            if (type == typeof(string)) return "'" + value.ToString() + "'";
+            if (type == typeof(string)) return "'" + value.ToString().Replace("'", "''") + "'";
             if (type == typeof(Guid)) return value.ToString();
             if (type == typeof(bool)) return ((bool)value) ? "true" : "false";
             if (type == typeof(DateTime))

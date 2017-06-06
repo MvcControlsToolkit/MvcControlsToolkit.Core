@@ -2,7 +2,7 @@
     "description": "OData parsing to json and to IQueryable transformations, and OData middleware",
     "title": "Mvc Controls Toolkit OData tools",
     "copyright": "Mvc Controls Toolkit Team",
-    "version": "1.0.0-beta1",
+    "version": "1.0.0",
     "authors": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
@@ -42,8 +42,8 @@
         }
     },
     "dependencies": {
-        "MvcControlsToolkit.Core.Business": "1.2.0-beta1",
-        "MvcControlsToolkit.Core.Options": "1.2.0-beta1",
+        "MvcControlsToolkit.Core.Business": "1.2.0",
+        "MvcControlsToolkit.Core.Options": "1.2.0",
         "NETStandard.Library": "1.6.1",
         "Microsoft.OData.Core": "7.0.0"
     },

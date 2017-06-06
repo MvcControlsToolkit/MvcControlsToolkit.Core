@@ -36,7 +36,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
         {
             var fType = diMeta.RegistredTypeFor(objectType);
             if (fType != null) return base.CreateObjectContract(fType);
-            else return CreateObjectContract(objectType);
+            else return base.CreateObjectContract(objectType);
         }
         public  override JsonContract ResolveContract(Type type)
         {
