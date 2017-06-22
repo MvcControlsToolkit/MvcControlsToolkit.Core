@@ -114,4 +114,29 @@ namespace MvcControlsToolkit.Core.TagHelpersUtilities
         }
 
     }
+    
+}
+namespace MvcControlsToolkit.Core.TagHelpers
+{
+    public class DisabledPostFormContent : IDisposable
+    {
+        private HttpContext httpContext;
+        private const string formDisabled = "__disabled_form_context__";
+        public DisabledPostFormContent(HttpContext httpContext)
+        {
+            this.httpContext = httpContext;
+            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+            httpContext.Items[formDisabled] = true;
+        }
+        public void Dispose()
+        {
+            httpContext.Items[formDisabled] = false;
+        }
+        internal static bool IsDisabled(HttpContext httpContext)
+        {
+            if (httpContext == null) return false;
+            object obj;
+            return httpContext.Items.TryGetValue(formDisabled, out obj) && (bool)(obj);
+        }
+    }
 }

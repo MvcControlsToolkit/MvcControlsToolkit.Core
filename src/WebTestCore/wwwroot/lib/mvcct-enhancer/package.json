@@ -1,0 +1,35 @@
+{
+  "name": "mvcct-enhancer",
+  "version": "1.1.1",
+  "description": "a javascript package to handle standard html enhancements",
+  "main": "mvcct.enhancer.min.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/MvcControlsToolkit/mvcct-enhancer.git"
+  },
+  "keywords": [
+    "html",
+    "enhancement",
+    "html5",
+    "polyfill"
+  ],
+  "readme": "a javascript package to handle standard html enhancements",
+  "author": "Mvc Controls Toolkit Team",
+  "license": "https://github.com/MvcControlsToolkit/mvcct-enhancer/blob/master/LICENSE.txt",
+  "bugs": {
+    "url": "https://github.com/MvcControlsToolkit/mvcct-enhancer/issues"
+  },
+  "homepage": "https://github.com/MvcControlsToolkit/mvcct-enhancer",
+  "files": [
+    "LICENSE.txt",
+    "mvcct.enhancer.d.ts",
+    "mvcct.enhancer.js",
+    "mvcct.enhancer.min.js",
+    "enhancer-modules/mvcct.enhancer.input.basic.js",
+    "enhancer-modules/mvcct.enhancer.input.basic.min.js"
+  ],
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-closure-compiler": "^0.4.0"
+  }
+}

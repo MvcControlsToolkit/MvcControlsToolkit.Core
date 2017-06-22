@@ -2,6 +2,9 @@
 (function () {
     var options = {};
     options.browserSupport = {
+        addToSupport: {
+            myTest: 1
+        },
         cookie: "_browser_basic_capabilities",
         forms: null,
         fallbacks: {

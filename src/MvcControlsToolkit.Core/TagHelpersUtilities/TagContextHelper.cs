@@ -14,9 +14,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
     public static class TagContextHelper
     {
         private const string bodyKey = "__body__";
+        private const string formKey = "__form__";
         private const string rowContainerKey = "__row_container__";
         private const string bindingKeyPrefix = "__binding__";
         private const string typeBindingKeyPrefix = "__type_binding__";
+        
         public static void OpenRowContainerContext(HttpContext httpContext)
         {
             RenderingContext.OpenContext<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey, null);
@@ -51,12 +53,47 @@ namespace MvcControlsToolkit.Core.TagHelpers
         {
             RenderingContext.CloseContext(o, httpContext, bodyKey);
         }
+        public static void OpenFormContext(HttpContext httpContext)
+        {
+            if (DisabledPostFormContent.IsDisabled(httpContext)) return;
+            RenderingContext.OpenContext<Action<IHtmlContent, object>>(httpContext, formKey, (s, o) =>
+            {
+                (o as TagHelperOutput).PostElement.AppendHtml(s);
+            });
+        }
+       
+        public static void EndOfFormHtml(HttpContext httpContext, IHtmlContent html)
+        {
+            if (DisabledPostFormContent.IsDisabled(httpContext)) return;
+            var res = RenderingContext.Current(httpContext, formKey);
+            if (res == null || res.Empty) OpenFormContext(httpContext);
+            RenderingContext.AttachEvent<Action<IHtmlContent, object>>(httpContext, formKey,
+                (f, o) =>
+                {
+                    f(html, o);
+                }
+                );
+        }
+        public static void CloseFormContext(HttpContext httpContext, TagHelperOutput o)
+        {
+            if (DisabledPostFormContent.IsDisabled(httpContext)) return;
+            RenderingContext.CloseContext(o, httpContext, formKey);
+        }
         public static void RegisterDefaultToolWindow(HttpContext httpContext, Func<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>, IHtmlContent> getHtml)
         {
             RenderingContext.AttachEvent<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey,
                 (groups, o) =>
                 {
                     EndOfBodyHtml(httpContext, getHtml(groups));
+                }
+                );
+        }
+        public static void RegisterDefaultFormToolWindow(HttpContext httpContext, Func<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>, IHtmlContent> getHtml)
+        {
+            RenderingContext.AttachEvent<Tuple<IList<RowType>, IList<KeyValuePair<string, string>>>>(httpContext, rowContainerKey,
+                (groups, o) =>
+                {
+                    EndOfFormHtml(httpContext, getHtml(groups));
                 }
                 );
         }

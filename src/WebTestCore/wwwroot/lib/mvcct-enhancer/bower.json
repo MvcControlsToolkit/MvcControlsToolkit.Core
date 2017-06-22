@@ -1,6 +1,6 @@
 {
     "name":  "mvcct-enhancer",
-    "version": "1.0.0-rc3",
+    "version": "1.1.1",
     "homepage": "https://github.com/MvcControlsToolkit/mvcct-enhancer",
     "description": "a javascript package to handle standard html enhancements",
     "main": [

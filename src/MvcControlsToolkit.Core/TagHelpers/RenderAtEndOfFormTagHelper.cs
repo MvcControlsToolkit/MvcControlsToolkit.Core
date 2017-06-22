@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
-    
-    [HtmlTargetElement("body", TagStructure = TagStructure.NormalOrSelfClosing)]
-    public class RenderAtEndOfBodyTagHelper: TagHelper
+    [HtmlTargetElement("form", TagStructure = TagStructure.NormalOrSelfClosing)]
+    public class RenderAtEndOfFormTagHelper: TagHelper
     {
-        public override int Order => int.MinValue;
+        public override int Order => int.MaxValue;
         private IHttpContextAccessor contextAccessor;
-        public RenderAtEndOfBodyTagHelper(IHttpContextAccessor contextAccessor)
+        public RenderAtEndOfFormTagHelper(IHttpContextAccessor contextAccessor)
         {
             this.contextAccessor = contextAccessor;
         }
@@ -26,10 +25,10 @@ namespace MvcControlsToolkit.Core.TagHelpers
             {
                 throw new ArgumentNullException(nameof(output));
             }
-            
-            await output.GetChildContentAsync();
-            
-            TagContextHelper.CloseBodyContext(contextAccessor.HttpContext, output);
+            if(!output.Content.IsModified)
+                await output.GetChildContentAsync();
+
+            TagContextHelper.CloseFormContext(contextAccessor.HttpContext, output);
         }
     }
 }
