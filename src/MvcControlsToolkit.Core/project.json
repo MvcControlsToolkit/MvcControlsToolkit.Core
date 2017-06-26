@@ -33,7 +33,7 @@
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Fixed minor bugs, Added Custom columns and TagHelperProvider extensions engine",
+        "releaseNotes": "Added RenderAtEndOfFormTagHelper logic",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -54,5 +54,5 @@
 
     },
     "title": "Mvc Controls Toolkit core code",
-    "version": "1.2.4-beta5"
+    "version": "1.2.5"
 }
