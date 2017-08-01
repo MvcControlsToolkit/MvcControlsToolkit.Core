@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Localization;
 using MvcControlsToolkit.Core.OptionsParsing;
 using MvcControlsToolkit.Core.Templates;
 using MvcControlsToolkit.Core.Views;
@@ -29,7 +30,10 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
         private IHttpContextAccessor contextAccessor;
-        public CacheRowsTagHelper(IHttpContextAccessor contextAccessor)
+        public CacheRowsTagHelper(
+            IHttpContextAccessor contextAccessor,
+            IStringLocalizerFactory factory
+            ):base(factory)
         {
             this.contextAccessor = contextAccessor;
         }

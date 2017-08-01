@@ -28,14 +28,50 @@ namespace MvcControlsToolkit.Core.Templates
         public Template<Column> EditTemplate { get; set; }
         public Template<Column> DisplayTemplate { get; set; }
         public Template<Column> FilterTemplate { get; set; }
-        public string ColumnTitle { get; set; }
+        private string _columnTitle;
+        private string localize(string x)
+        {
+            if (x == null) return null;
+            var localizer= Row.GetLocalizer();
+            if (localizer != null) return localizer[x];
+            else return x;
+        }
+        public string ColumnTitle {
+            get {
+                return _columnTitle != null || For == null ? localize(_columnTitle) : For.Metadata.GetDisplayName();
+            }
+            set { _columnTitle = value; } }
         public bool? Hidden { get; set; }
         public bool ReadOnly { get; set; }
         public bool EditOnly { get; set; }
         public string DisplayFormat { get; set; }
-        public string PlaceHolder { get; set; }
-        public string NullDisplayText { get; set; }
-        public string Description { get; set; }
+        private string _placeHolder;
+        public string PlaceHolder
+        {
+            get
+            {
+                return _placeHolder != null || For == null ? localize(_placeHolder) : For.Metadata.Placeholder;
+            }
+            set { _placeHolder = value; }
+        }
+        private string _nullDisplayText;
+        public string NullDisplayText
+        {
+            get
+            {
+                return _nullDisplayText != null || For == null ? localize(_nullDisplayText) : For.Metadata.NullDisplayText;
+            }
+            set { _nullDisplayText = value; }
+        }
+        private string _description;
+        public string Description
+        {
+            get
+            {
+                return (_description != null || For == null ? localize(_description) : For.Metadata.Description)??ColumnTitle ;
+            }
+            set { _description = value; }
+        }
         public decimal[] Widths { get; set; }
         public decimal[] DetailWidths { get; set; }
         public int[] DisplayDetailWidths { get; set; }
@@ -176,23 +212,23 @@ namespace MvcControlsToolkit.Core.Templates
             if (!Hidden.HasValue) Hidden = For.Metadata.HideSurroundingHtml;
             if (!Order.HasValue) Order = For.Metadata.Order;
             
-            if (ColumnConnection!= null)
-            {
-                var infos = ColumnConnection.DisplayProperty.Metadata;
-                if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = infos.GetDisplayName();
-                if (string.IsNullOrEmpty(Description)) Description = infos.Description ?? ColumnTitle;
-                if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = infos.Placeholder;
-                if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = infos.DisplayFormatString;
-                if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = infos.NullDisplayText;
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = metaData.GetDisplayName();
-                if (string.IsNullOrEmpty(Description)) Description = metaData.Description ?? ColumnTitle;
-                if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = metaData.Placeholder;
-                if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = metaData.DisplayFormatString;
-                if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = metaData.NullDisplayText;
-            }
+            //if (ColumnConnection!= null)
+            //{
+            //    var infos = ColumnConnection.DisplayProperty.Metadata;
+            //    if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = infos.GetDisplayName();
+            //    if (string.IsNullOrEmpty(Description)) Description = infos.Description ?? ColumnTitle;
+            //    if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = infos.Placeholder;
+            //    if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = infos.DisplayFormatString;
+            //    if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = infos.NullDisplayText;
+            //}
+            //else
+            //{
+            //    if (string.IsNullOrEmpty(ColumnTitle)) ColumnTitle = metaData.GetDisplayName();
+            //    if (string.IsNullOrEmpty(Description)) Description = metaData.Description ?? ColumnTitle;
+            //    if (string.IsNullOrEmpty(PlaceHolder)) PlaceHolder = metaData.Placeholder;
+            //    if (string.IsNullOrEmpty(DisplayFormat)) DisplayFormat = metaData.DisplayFormatString;
+            //    if (string.IsNullOrEmpty(NullDisplayText)) NullDisplayText = metaData.NullDisplayText;
+            //}
             
             if(Widths == null || DetailWidths == null)
             {

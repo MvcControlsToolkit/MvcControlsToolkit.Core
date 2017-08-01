@@ -33,7 +33,7 @@
     "packOptions": {
         "projectUrl": "https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core",
         "requireLicenseAcceptance": true,
-        "releaseNotes": "Added RenderAtEndOfFormTagHelper logic",
+        "releaseNotes": "Fixed bug on RowType Keyname",
         "iconUrl": "https://avatars2.githubusercontent.com/u/15634526?v=3&s=200",
         "owners": [ "Francesco Abbruzzese", "Mvc Controls Toolkit Team" ],
         "licenseUrl": "https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt",
@@ -54,5 +54,5 @@
 
     },
     "title": "Mvc Controls Toolkit core code",
-    "version": "1.2.5"
+    "version": "1.2.6-alfa10"
 }

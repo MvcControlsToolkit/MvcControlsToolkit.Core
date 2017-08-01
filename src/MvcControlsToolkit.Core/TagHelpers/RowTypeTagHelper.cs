@@ -4,13 +4,14 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Localization;
 using MvcControlsToolkit.Core.OptionsParsing;
 using MvcControlsToolkit.Core.Templates;
 
 namespace MvcControlsToolkit.Core.TagHelpers
 {
     [HtmlTargetElement("row-type", Attributes = ForAttributeName)]
-    public class RowTypeTagHelper: TagHelper
+    public class RowTypeTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
         private const string KeyAttributeName = "asp-for";
@@ -19,7 +20,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
         [HtmlAttributeName("row-id")]
         public string RowId { get; set; }
         [HtmlAttributeName("key")]
-        public ModelExpression KeyName { get;  set; }
+        public ModelExpression KeyName { get; set; }
         [HtmlAttributeName("mvc-controller")]
         public Type ControllerType { get; set; }
         [HtmlAttributeName("title")]
@@ -46,6 +47,11 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public bool? QueryEnabled { get; set; }
         [HtmlAttributeName("sorting-clauses")]
         public uint MaxSortingClauses { get; set; }
+        public IStringLocalizerFactory DefaultLocalizerFactory {get; set;}
+        public RowTypeTagHelper(IStringLocalizerFactory factory)
+        {
+            DefaultLocalizerFactory = factory;
+        }
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (For == null) throw new ArgumentNullException(ForAttributeName);

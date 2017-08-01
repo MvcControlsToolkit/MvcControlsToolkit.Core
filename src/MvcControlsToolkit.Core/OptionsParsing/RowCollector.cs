@@ -75,6 +75,7 @@ namespace MvcControlsToolkit.Core.OptionsParsing
             result.ControllerType = rowTag.ControllerType;
             result.RowId = rowTag.RowId;
             result.MaxSortingClauses = rowTag.MaxSortingClauses;
+            result.DefaultLocalizerFactory = rowTag.DefaultLocalizerFactory;
             return result;
         }
 

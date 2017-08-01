@@ -48,6 +48,9 @@ namespace MvcControlsToolkit.Core.Templates
         public bool? QueryEnabled { get; set; }
         public uint Order { get; set; }
         public uint MaxSortingClauses { get; set; }
+        public IStringLocalizerFactory DefaultLocalizerFactory { get; set; }
+        public IEnumerable<Column> VisibleAndHiddenColumns {get { return visibleAndHiddenColumns; } }
+        public IEnumerable<Column> HiddenColumns { get { return hiddens; } }
         private TypeInfo _TypeInfos = null;
         private int _ColumnsCount=-1;
         public int ColumnsCount
@@ -267,11 +270,12 @@ namespace MvcControlsToolkit.Core.Templates
                  
                  this.renderHiddens = renderHiddens;
                  if (inheritFrom == null || inheritFrom.Columns == null) throw new ArgumentNullException(nameof(inheritFrom));
-                 if (KeyName == null)
+                 if (keyName == null)
                  {
                      KeyName = GetConventionKey(For.Metadata.ModelType);
                      if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
                  }
+                 else KeyName = keyName;
                  InheritColumns(inheritFrom.visibleAndHiddenColumns, addColumns, removeColumns, true);
                  QueryEnabled = queryEnabled;
                  PrepareColumns();
@@ -289,11 +293,12 @@ namespace MvcControlsToolkit.Core.Templates
             For = expression;
             this.renderHiddens = renderHiddens;
             QueryEnabled = queryEnabled;
-            if (KeyName == null)
+            if (keyName == null)
             {
                 KeyName = GetConventionKey(For.Metadata.ModelType);
                 if (KeyName == null) throw new ArgumentException(DefaultMessages.NoRowKey, nameof(keyName));
             }
+            else KeyName = keyName;
             if (!allProperties) Columns = addColumns;
             else
             {
@@ -439,6 +444,11 @@ namespace MvcControlsToolkit.Core.Templates
         {
             if (LocalizationType == null) return null;
             return factory.Create(LocalizationType);
+        }
+        public IStringLocalizer GetLocalizer()
+        {
+            if (LocalizationType == null || DefaultLocalizerFactory == null) return null;
+            return DefaultLocalizerFactory.Create(LocalizationType);
         }
         public bool MustAddButtonColumn(ContextualizedHelpers helpers, bool editOnly=false)
         {
