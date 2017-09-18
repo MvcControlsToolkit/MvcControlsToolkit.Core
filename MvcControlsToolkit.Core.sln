@@ -1,28 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DCF6E267-CFED-464D-A438-F80CD90FDA6E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6BF19DB3-48D6-4BBE-B1C7-2FE5FE79A311}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcControlsToolkit.Core.Business", "src\MvcControlsToolkit.Core.Business\MvcControlsToolkit.Core.Business.xproj", "{23625DE7-BBA3-4A13-AC52-9D4F79545D8D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcControlsToolkit.Core.Options", "src\MvcControlsToolkit.Core.Options\MvcControlsToolkit.Core.Options.xproj", "{F5F1C16E-9461-4252-99DE-0066B2E49066}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcControlsToolkit.Core", "src\MvcControlsToolkit.Core\MvcControlsToolkit.Core.xproj", "{C85A378C-E9D6-49D2-8BB1-9B5FA7B9A5F7}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebTestCore", "src\WebTestCore\WebTestCore.xproj", "{00D529FF-E060-4A53-AEA5-56870D7F3A17}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcControlsToolkit.Core.OData", "src\MvcControlsToolkit.Core.OData\MvcControlsToolkit.Core.OData.xproj", "{9716FBDE-CF87-49CE-8BE1-7AF4715EDD22}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CBC814A5-1ED6-4A6B-97F1-D59D157D5297}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcControlsToolkit.Core.OData.Test", "test\MvcControlsToolkit.Core.OData.Test\MvcControlsToolkit.Core.OData.Test.xproj", "{2C4094A6-03A4-48A6-9148-A0C0CE5F68E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcControlsToolkit.Core.Business", "src\MvcControlsToolkit.Core.Business\MvcControlsToolkit.Core.Business.csproj", "{23625DE7-BBA3-4A13-AC52-9D4F79545D8D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcControlsToolkit.Core.Options", "src\MvcControlsToolkit.Core.Options\MvcControlsToolkit.Core.Options.csproj", "{F5F1C16E-9461-4252-99DE-0066B2E49066}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcControlsToolkit.Core", "src\MvcControlsToolkit.Core\MvcControlsToolkit.Core.csproj", "{C85A378C-E9D6-49D2-8BB1-9B5FA7B9A5F7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTestCore", "src\WebTestCore\WebTestCore.csproj", "{00D529FF-E060-4A53-AEA5-56870D7F3A17}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcControlsToolkit.Core.OData", "src\MvcControlsToolkit.Core.OData\MvcControlsToolkit.Core.OData.csproj", "{9716FBDE-CF87-49CE-8BE1-7AF4715EDD22}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcControlsToolkit.Core.OData.Test", "test\MvcControlsToolkit.Core.OData.Test\MvcControlsToolkit.Core.OData.Test.csproj", "{2C4094A6-03A4-48A6-9148-A0C0CE5F68E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,5 +64,8 @@ Global
 		{00D529FF-E060-4A53-AEA5-56870D7F3A17} = {DCF6E267-CFED-464D-A438-F80CD90FDA6E}
 		{9716FBDE-CF87-49CE-8BE1-7AF4715EDD22} = {DCF6E267-CFED-464D-A438-F80CD90FDA6E}
 		{2C4094A6-03A4-48A6-9148-A0C0CE5F68E8} = {CBC814A5-1ED6-4A6B-97F1-D59D157D5297}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF06873B-CCC3-4F58-A480-AC198C99E9DB}
 	EndGlobalSection
 EndGlobal

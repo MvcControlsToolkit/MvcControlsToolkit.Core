@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>OData parsing to json and to IQueryable transformations, and OData middleware</Description>
+    <Copyright>Mvc Controls Toolkit Team</Copyright>
+    <AssemblyTitle>Mvc Controls Toolkit OData tools</AssemblyTitle>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <AssemblyName>MvcControlsToolkit.Core.OData</AssemblyName>
+    <AssemblyOriginatorKeyFile>../../tools/Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>MvcControlsToolkit.Core.OData</PackageId>
+    <PackageTags>aspnetcore;aspnetcoremvc;OData</PackageTags>
+    <PackageReleaseNotes>First realease</PackageReleaseNotes>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dotnet5.6;dnxcore50;portable-net45+win8</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MvcControlsToolkit.Core.Business\MvcControlsToolkit.Core.Business.csproj" />
+    <ProjectReference Include="..\MvcControlsToolkit.Core.Options\MvcControlsToolkit.Core.Options.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.OData.Core" Version="7.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+  </ItemGroup>
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\Nuget\" />
+  </Target>
+</Project>

@@ -5,6 +5,7 @@ using MvcControlsToolkit.Core.Types;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using MvcControlsToolkit.Core.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 
 namespace MvcControlsToolkit.Core.Validation

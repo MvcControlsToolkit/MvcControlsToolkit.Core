@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Core feature of Mvc Controls Toolkit.</Description>
+    <Copyright>Mvc Controls Toolkit Team</Copyright>
+    <AssemblyTitle>Mvc Controls Toolkit core code</AssemblyTitle>
+    <VersionPrefix>1.2.7</VersionPrefix>
+    <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <AssemblyName>MvcControlsToolkit.Core</AssemblyName>
+    <AssemblyOriginatorKeyFile>../../tools/Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>MvcControlsToolkit.Core</PackageId>
+    <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <PackageReleaseNotes>Fixed bug on RowType Keyname</PackageReleaseNotes>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/MvcControlsToolkit/MvcControlsToolkit.Core.git</RepositoryUrl>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dotnet5.6;dnxcore50;portable-net45+win8</PackageTargetFallback>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MvcControlsToolkit.Core.Business\MvcControlsToolkit.Core.Business.csproj" />
+    <ProjectReference Include="..\MvcControlsToolkit.Core.Options\MvcControlsToolkit.Core.Options.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Localization" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\Nuget\" />
+  </Target>
+
+</Project>

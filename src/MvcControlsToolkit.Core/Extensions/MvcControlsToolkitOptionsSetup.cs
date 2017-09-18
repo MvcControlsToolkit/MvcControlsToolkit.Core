@@ -29,20 +29,24 @@ namespace MvcControlsToolkit.Core.Extensions
            
            
             int bcount = 0;
-            IModelBinderProvider res = null;
+            IModelBinderProvider res=null, prev = null;
             foreach (var b in options.ModelBinderProviders)
             {
+                
                 if (b is SimpleTypeModelBinderProvider)
                 {
                     res = b;
                     break;
                 }
                 bcount++;
+                prev = b;
             }
             if (res != null)
             {
                 options.ModelBinderProviders.Remove(res);
                 options.ModelBinderProviders.Insert(bcount, new SimpleTypeModelBinderProviderExt());
+                if(prev!=null && ! (prev is HeaderModelBinderProvider))
+                    options.ModelBinderProviders.Remove(prev);
             }
             bcount = 0;
             res = null;
