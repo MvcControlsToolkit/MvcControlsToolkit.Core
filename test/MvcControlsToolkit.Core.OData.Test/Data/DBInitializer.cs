@@ -40,7 +40,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                     ANMonth = Month.FromDateTime(m.ANMonth.Value),
                     AWeek = Week.FromDateTime(m.AWeek),
                     ANWeek = Week.FromDateTime(m.ANWeek.Value),
-                    Children =  m.Children.Select(l => new NestedReferenceType { }).ToList()
+                    Children =  m.Children.Select(l => new NestedReferenceType { })
                 });
         }
         private TestContext context;

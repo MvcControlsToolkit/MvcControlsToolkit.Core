@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,10 +33,10 @@ namespace WebTestCore
             if (env.IsDevelopment())
             {
                 // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets();
+                //builder.AddUserSecrets(;
 
                 // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
-                builder.AddApplicationInsightsSettings(developerMode: true);
+                
             }
 
             builder.AddEnvironmentVariables();
@@ -49,7 +49,7 @@ namespace WebTestCore
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
+            
             services.AddLocalization(m => { m.ResourcesPath = "Resources"; });
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -141,7 +141,7 @@ namespace WebTestCore
                 FallBackToParentUICultures = true
             });
 
-            app.UseApplicationInsightsRequestTelemetry();
+            
 
             if (env.IsDevelopment())
             {
@@ -154,11 +154,11 @@ namespace WebTestCore
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseApplicationInsightsExceptionTelemetry();
+            
 
             app.UseStaticFiles();
 
-            app.UseIdentity();
+            app.UseAuthentication();
 
             app.UsePreferences();
 

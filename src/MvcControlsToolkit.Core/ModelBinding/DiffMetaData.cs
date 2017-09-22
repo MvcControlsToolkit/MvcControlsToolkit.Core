@@ -222,6 +222,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
         }
 
         /// <inheritdoc />
+#if        NET451 
         public override IModelBindingMessageProvider ModelBindingMessageProvider
         {
             get
@@ -229,6 +230,24 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 return subClass.ModelBindingMessageProvider;
             }
         }
+#elif NETSTANDARD1_6
+         public override IModelBindingMessageProvider ModelBindingMessageProvider
+        {
+            get
+            {
+                return subClass.ModelBindingMessageProvider;
+            }
+        }
+#else
+  public override ModelBindingMessageProvider ModelBindingMessageProvider
+        {
+            get
+            {
+                return subClass.ModelBindingMessageProvider;
+            }
+        }
+#endif
+   
 
         /// <inheritdoc />
         public override string NullDisplayText
@@ -344,7 +363,7 @@ namespace MvcControlsToolkit.Core.ModelBinding
                 return subClass.PropertyGetter;
             }
         }
-
+        
         /// <inheritdoc />
         public override Action<object, object> PropertySetter
         {

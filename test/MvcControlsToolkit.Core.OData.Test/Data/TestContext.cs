@@ -24,7 +24,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                 .HasMany(m => m.Children)
                 .WithOne(m => m.Father)
                 .HasForeignKey(m => m.FatherId)
-                .OnDelete(Microsoft.EntityFrameworkCore.Metadata.DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade);
                 
         }
     }

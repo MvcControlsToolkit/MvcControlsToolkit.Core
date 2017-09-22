@@ -69,7 +69,11 @@ namespace MvcControlsToolkit.Core.ModelBinding
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
+#if        NET451
                 return TaskCache.CompletedTask;
+#else
+                return Task.CompletedTask;
+#endif
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -132,12 +136,20 @@ namespace MvcControlsToolkit.Core.ModelBinding
                         bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
 
+#if NET451
                     return TaskCache.CompletedTask;
+#else
+                return Task.CompletedTask;
+#endif
                 }
                 else
                 {
                     bindingContext.Result = ModelBindingResult.Success(model);
+#if NET451
                     return TaskCache.CompletedTask;
+#else
+                return Task.CompletedTask;
+#endif
                 }
             }
             catch (Exception exception)
@@ -156,7 +168,11 @@ namespace MvcControlsToolkit.Core.ModelBinding
                     bindingContext.ModelMetadata);
 
                 // Were able to find a converter for the type but conversion failed.
+#if NET451
                 return TaskCache.CompletedTask;
+#else
+                return Task.CompletedTask;
+#endif
             }
         }
         
