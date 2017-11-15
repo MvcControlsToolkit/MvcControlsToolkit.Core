@@ -4,7 +4,8 @@
     <Description>Data annotations, database utilities, and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.</Description>
     <Copyright>Mvc Controls Toolkit Team</Copyright>
     <AssemblyTitle>Mvc Controls Toolkit business Layer tools</AssemblyTitle>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionSuffix>alpha-9</VersionSuffix>
     <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>MvcControlsToolkit.Core.Business</AssemblyName>
@@ -13,7 +14,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>MvcControlsToolkit.Core.Business</PackageId>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <PackageReleaseNotes>Added compatibility with .Net Core 2</PackageReleaseNotes>
+    <PackageReleaseNotes>Improved projection helpers</PackageReleaseNotes>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
     <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>

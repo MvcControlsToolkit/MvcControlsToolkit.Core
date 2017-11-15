@@ -22,6 +22,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
         {
             repository = init.Repository;
             provider = new ODataQueryProvider();
+
         }
         [Theory]
         [InlineData("AString asc", 4, "dummy1")]

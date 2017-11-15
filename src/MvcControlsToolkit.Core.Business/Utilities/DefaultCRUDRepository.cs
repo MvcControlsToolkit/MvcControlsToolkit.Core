@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using MvcControlsToolkit.Core.Business.Utilities.Internal;
 using MvcControlsToolkit.Core.Linq;
 
 namespace MvcControlsToolkit.Core.Business.Utilities
@@ -92,6 +93,12 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             Projections[typeof(K)] = ProjectionExpression<T>.BuildExpression(proj, typeof(K).GetTypeInfo().IsInterface ? typeof(K) : null);
             
         }
+        public static RecursiveObjectCopier<K, T> DeclareUpdateProjection<K>(Expression<Func<K, T>> proj)
+        {
+            if (proj == null) return null;
+            return RecursiveCopiersCache.DeclareCopierSpecifications<K, T>(proj);
+
+        }
         public static void DeclareQueryProjection<K, PK>(Expression<Func<T, K>> proj, Expression<Func<K, PK>> key)
         {
             if (proj == null || key == null) return;
@@ -116,7 +123,23 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             CompiledProjections[typeof(K)] = fres;
             return fres;
         }
-        
+        public static Expression<Func<T, K>> GetExpression<K>()
+        {
+            
+            object pres = null;
+            Projections.TryGetValue(typeof(K), out pres);
+            return pres as Expression<Func<T, K>>;
+        }
+        public static Expression<Func<T, K>> GetQueryExpression<K>(out Func<IQueryable,IEnumerable> getKeys)
+        {
+            Tuple<object, Func<IQueryable,IEnumerable>> pres = null;
+            FilterProjections.TryGetValue(typeof(K), out pres);
+            getKeys = null;
+            if (pres == null) return null;
+            getKeys = pres.Item2;
+            return pres.Item1 as Expression<Func<T, K>>;
+        }
+
 
         private IEnumerable<string> GetKeyNames() 
         {
@@ -129,16 +152,32 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             }
             return null;
         }
+        private IEnumerable<PropertyInfo> GetKeyProperties()
+        {
+            var keys = Context.Model.FindEntityType(typeof(T))
+                .GetKeys();
+            var principalKey = keys.Where(m => m.Properties.All(l => l.IsPrimaryKey())).SingleOrDefault();
+            if (principalKey != null)
+            {
+                return principalKey.Properties.Select(m => m.PropertyInfo);
+            }
+            return null;
+        }
         private PropertyInfo GetKeyProperty<K>()
         {
             PropertyInfo res;
             var pair = typeof(K);
             if (KeyProperty.TryGetValue(pair, out res))
                 return res;
-            var keys = GetKeyNames();
+            var keys = GetKeyProperties();
             if (keys.Count() > 1) throw new NotSupportedException(string.Format(Resources.UnsupportedMultipleKeys, typeof(T).Name));
             var key = keys.SingleOrDefault();
-            return KeyProperty[pair]=typeof(K).GetTypeInfo().GetProperty(key);
+            var copier=RecursiveCopiersCache.Get<K, T>();
+            if(copier != null)
+            {
+                return (copier as RecursiveObjectCopier<K, T>)?.GetMappedProperty(key);
+            }
+            return KeyProperty[pair]=typeof(K).GetTypeInfo().GetProperty(key.Name);
         }
         
         protected Expression<Func<T, bool>> BuildKeyFilter(object keyVal)

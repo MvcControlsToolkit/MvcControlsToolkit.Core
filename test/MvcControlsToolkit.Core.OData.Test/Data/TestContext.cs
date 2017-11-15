@@ -15,6 +15,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
         }
         public DbSet<ReferenceModel> ReferenceModels { get; set; }
         public DbSet<NestedReferenceModel> NestedReferenceModels { get; set; }
+        public DbSet<Person> Persons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,7 +26,18 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                 .WithOne(m => m.Father)
                 .HasForeignKey(m => m.FatherId)
                 .OnDelete(DeleteBehavior.Cascade);
-                
+
+            builder.Entity<Person>()
+                .HasOne(m => m.Spouse)
+                .WithOne(m => m.SpouseOf)
+                .HasForeignKey<Person>(m => m.SpouseOfId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            builder.Entity<Person>()
+                .HasMany(m => m.Children)
+                .WithOne(m => m.Parent)
+                .HasForeignKey(m => m.ParentId);
+
+
         }
     }
 }

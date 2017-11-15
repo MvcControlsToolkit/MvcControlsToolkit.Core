@@ -92,7 +92,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Views
             if (firstVAlue != null)
             {
                 Assert.Equal(res.Data.First().AString, firstVAlue);
-                Assert.Equal((res.Data.First() as ReferenceTypeWithChildren).ANInt, null);
+                Assert.NotEqual((res.Data.First() as ReferenceTypeWithChildren).ANInt, null);
                 Assert.Equal(res.Data.First().Children.Count(), nChildren);
                 int nCount = 0;
                 foreach (var child in res.Data.First().Children)

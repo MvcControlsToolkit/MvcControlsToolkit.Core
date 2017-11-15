@@ -50,7 +50,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         }
 
     }
-    public class ObjectCopier<M,T>
+    public class ObjectCopier<M,T>: IObjectCopier<M, T>, IComputeConnections
+        where T: new()
     {
         List<KeyValuePair<PropertyInfo, PropertyInfo>> allProps = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
         Action<M, T> compiled;
@@ -112,6 +113,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         
         public T Copy(M origin, T target)
         {
+            if (target == null) target = new T();
             if (compiled != null)
             {
                 compiled(origin, target);

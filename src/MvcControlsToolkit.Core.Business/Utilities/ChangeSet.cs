@@ -8,6 +8,7 @@ using System.Reflection;
 using MvcControlsToolkit.Core.Linq;
 using System.Collections;
 using System.Collections.Concurrent;
+using MvcControlsToolkit.Core.Business.Utilities.Internal;
 
 namespace MvcControlsToolkit.Core.Business.Utilities
 {
@@ -17,24 +18,26 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         protected static readonly ConcurrentDictionary<Type, PropertyInfo> KeyProperties = new ConcurrentDictionary<Type,PropertyInfo>();
         protected static readonly ConcurrentDictionary<Type, IEnumerable<PropertyInfo>> AllProperties = new ConcurrentDictionary<Type, IEnumerable<PropertyInfo>>();
         protected static readonly ConcurrentDictionary<Type, object> CompiledKeys = new ConcurrentDictionary<Type, object>();
-        protected static ObjectCopier<T, M>  GetCopier<T, M>(Type sourceType=null, Type destinationType=null)
+        protected static IObjectCopier<T, M>  GetStandardCopier<T, M>(Type sourceType=null, Type destinationType=null)
+            where M: new()
         {
             object res = null;
             var pair = new KeyValuePair<Type, Type>(sourceType??typeof(T), destinationType??typeof(M));
             if (CopierCache.TryGetValue(pair, out res))
-                return (ObjectCopier<T, M>)res;
-            else return (ObjectCopier<T, M>)(CopierCache[pair] = new ObjectCopier<T, M>(null, true, sourceType, destinationType));
+                return (IObjectCopier<T, M>)res;
+            else return (IObjectCopier<T, M>)(CopierCache[pair] = new ObjectCopier<T, M>(null, true, sourceType, destinationType));
         }
         Type lastCopierSource=null;
         Type lastCopierDestination = null;
         object lastCopier = null;
-        protected ObjectCopier<T, M> GetCopierOptimized<T, M>(Type sourceType = null, Type destinationType = null)
+        protected IObjectCopier<T, M> GetCopierOptimized<T, M>(Type sourceType = null, Type destinationType = null)
+            where M : new()
         {
             sourceType = typeof(T).GetTypeInfo().IsInterface ? typeof(T) : (sourceType ?? typeof(T));
             destinationType = destinationType ?? typeof(M);
             if (sourceType == lastCopierSource && destinationType == lastCopierDestination)
-                return lastCopier as ObjectCopier<T, M>;
-            var res = GetCopier<T, M>(sourceType, destinationType);
+                return lastCopier as IObjectCopier<T, M>;
+            var res = GetStandardCopier<T, M>(sourceType, destinationType);
             lastCopier = res;
             return res;
         }
@@ -179,10 +182,12 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             var keyProperty = GetKeyProperty(KeyExpression, typeof(M));
             var keyFunc = GetCopiledKey(KeyExpression);
             bool aChange=false;
+            
             IEnumerable<K> changedIds = null;
             Expression<Func<M, bool>> changedFilter = null;
             Expression<Func<M, bool>> deletedFilter = null;
-            ObjectCopier<T,M> copier = null; ;
+            IObjectCopier<T, M> recursiveCopier = RecursiveCopiersCache.Get<T, M>();
+            IObjectCopier<T,M> copier = null ;
             if (!retrieveChanged && accessFilter != null && Deleted != null && Deleted.Count > 0)
             {
                 var deletedIds = Deleted;
@@ -245,10 +250,9 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 
                 foreach (var oItem in Inserted)
                 {
-                    copier = GetCopierOptimized<T, M>(oItem.GetType());
+                    copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
                     aChange = true;
-                    var item = new M();
-                    copier.Copy(oItem, item);
+                    var item = copier.Copy(oItem, null);
                     table.Add(item);
                     res.Add(item);
                 }
@@ -264,9 +268,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         changedFilter = new FilterBuilder<M>()
                             .Add(FilterCondition.IsContainedIn, keyPropName, changedIds)
                             .Get();
-                    var connections = Changed.SelectMany(m => GetCopierOptimized<T, M>(m.GetType()).GetNeededConnections(m as IUpdateConnections))
-                        .Where(m => m!= null)
-                        .Distinct();
+                    IEnumerable<PropertyInfo> connections=null;
+                    if (recursiveCopier == null)
+                    {
+                        connections = Changed.SelectMany(m => (GetCopierOptimized<T, M>(m.GetType()) as IComputeConnections)?.GetNeededConnections(m as IUpdateConnections))
+                            .Where(m => m != null)
+                            .Distinct();
+                    }
+                    
                     var query = table.Where(changedFilter);
                     if (accessFilter != null) query = query.Where(accessFilter);
                     if (connections != null)
@@ -276,6 +285,11 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                             query = query.Include(conn.Name);
                         }
                     }
+                    if(connections == null && recursiveCopier != null && recursiveCopier is IComputeIncludes<M>)
+                    {
+                        var fun = (recursiveCopier as IComputeIncludes<M>).GetIncludes();
+                        if (fun != null) query = fun(query);
+                    }
                     var toModify = await query.ToListAsync();
                     var dict = Changed.ToDictionary(keyFunc);
                     foreach(var item in toModify)
@@ -284,7 +298,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         aChange = true;
                         var key = keyProperty.GetValue(item);
                         var oItem = dict[(K)key];
-                        copier = GetCopierOptimized<T, M>(oItem.GetType());
+                        copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
                         
                     }
@@ -295,9 +309,8 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     foreach (var oItem in Changed)
                     {
                         aChange = true;
-                        var item = new M();
-                        copier = GetCopierOptimized<T, M>(oItem.GetType());
-                        copier.Copy(oItem, item);
+                        copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
+                        var item = copier.Copy(oItem, null);
                         table.Attach(item);
                     }
                 }
