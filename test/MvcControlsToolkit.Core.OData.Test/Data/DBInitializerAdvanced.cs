@@ -44,8 +44,8 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
             DefaultCRUDRepository<TestContext, Person>
                 .DeclareProjection(m => new PersonDTO
                 {
-                    Children = m.Children.Select(l => new PersonDTO { }),
-                    Spouse = new PersonDTO {Children= m.Spouse.Children.Select(l => new PersonDTO { }) } 
+                    Children = m.Children.Select(l => new PersonDTO { Spouse = l.Spouse == null ? null : new PersonDTO { } }),
+                    Spouse = new PersonDTO {Children= m.Spouse.Children.Select(l => new PersonDTO { Spouse = l.Spouse == null ? null : new PersonDTO { } }) } 
                 });
             DefaultCRUDRepository<TestContext, Person>
                 .DeclareProjection(m => new PersonDTOAuto
@@ -64,9 +64,9 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                         m.Spouse == null ? null :
                         new Person
                         {
-                            Children = m.Spouse.Children.Select(l => new Person {  }).ToList()
+                            Children = m.Spouse.Children.Select(l => new Person { Spouse = l.Spouse == null ? null : new Person { }   }).ToList()
                         },
-                        Children = m.Children.Select(l => new Person {  }).ToList()
+                        Children = m.Children.Select(l => new Person { Spouse = l.Spouse == null ? null : new Person { } }).ToList()
                     }
                 );
         }

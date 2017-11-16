@@ -135,6 +135,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Repository
             Assert.Equal(res.Spouse.Surname, "NewSpouseSurname");
 
             Assert.NotNull(res.Children);
+            res.Children = res.Children.ToList();
             Assert.Equal(res.Children.Count(), 1);
             var child = res.Children.FirstOrDefault();
 
@@ -143,6 +144,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Repository
             Assert.Null(child.Spouse);
 
             Assert.NotNull(res.Spouse.Children);
+            res.Spouse.Children = res.Spouse.Children.ToList();
             Assert.Equal(res.Spouse.Children.Count(), 1);
             child = res.Spouse.Children.FirstOrDefault();
 
@@ -227,6 +229,86 @@ namespace MvcControlsToolkit.Core.OData.Test.Repository
             Assert.Equal(added.Surname, "AddedSurname");
 
             added = model.SpouseChildren.Where(m => m.Name == "AddedName").FirstOrDefault();
+            Assert.NotNull(added);
+            Assert.Equal(added.Surname, "AddedSurname");
+        }
+        
+        [Fact]
+        public async Task ModifyNotFlattened()
+        {
+            var lres = await repository.GetPage<PersonDTO>(m => m.Name == "Root2", q => q.OrderBy(m => m.Name), 1, 10);
+            var model = lres.Data.FirstOrDefault();
+            model.Surname = "SurnameModified";
+            model.Spouse.Name = "SpouseNameModified";
+            var minId = model.Children.Min(m => m.Id);
+            var maxId = model.Children.Max(m => m.Id);
+
+
+
+
+            var list = model.Children.Where(m => m.Id != minId)
+                .Append(new PersonDTO { Name = "AddedName", Surname = "AddedSurname" }).ToList();
+
+            var changed = list.Where(m => m.Id == maxId).FirstOrDefault();
+            changed.Surname = "ChildrenSurnameChanged";
+            changed.Spouse.Surname = "ChildrenSurnameSpouseChanged";
+            model.Children = list;
+
+            var minIdS = model.Spouse.Children.Min(m => m.Id);
+            var maxIdS = model.Spouse.Children.Max(m => m.Id);
+
+
+
+
+            var listS = model.Spouse.Children.Where(m => m.Id != minIdS)
+                .Append(new PersonDTO { Name = "AddedName", Surname = "AddedSurname" }).ToList();
+            changed = listS.Where(m => m.Id == maxIdS).FirstOrDefault();
+            changed.Surname = "ChildrenSurnameChanged";
+            changed.Spouse.Surname = "ChildrenSurnameSpouseChanged";
+            model.Spouse.Children = listS;
+            var newCtx = new TestContext();
+            var repos = new DefaultCRUDRepository<TestContext, Person>(newCtx, newCtx.Persons);
+
+            repos.Update(false, model);
+            await repos.SaveChanges();
+
+            var id = model.Id.Value;
+
+            model = await repos.GetById<PersonDTO, int>(id);
+
+            Assert.Equal(model.Name, "Root2");
+            Assert.Equal(model.Surname, "SurnameModified");
+            Assert.Equal(model.Spouse.Name, "SpouseNameModified");
+            Assert.Equal(model.Spouse.Surname, "SpouseSurname2");
+            Assert.Equal(model.Children.Count(), 4);
+            Assert.Equal(model.Spouse.Children.Count(), 4);
+
+            var deleted = model.Children.Where(m => m.Id == minId)
+                .FirstOrDefault();
+            Assert.Null(deleted);
+
+            deleted = model.Spouse.Children.Where(m => m.Id == minIdS)
+                .FirstOrDefault();
+            Assert.Null(deleted);
+            
+
+            changed = model.Children.Where(m => m.Id == maxId).FirstOrDefault();
+            Assert.Equal(changed.Surname, "ChildrenSurnameChanged");
+            Assert.Equal(changed.Name, "Name2Children");
+            Assert.Equal(changed.Spouse.Surname, "ChildrenSurnameSpouseChanged");
+            Assert.Equal(changed.Spouse.Name, "SpouseName2Children");
+
+            changed = model.Spouse.Children.Where(m => m.Id == maxIdS).FirstOrDefault();
+            Assert.Equal(changed.Surname, "ChildrenSurnameChanged");
+            Assert.Equal(changed.Name, "Name2SpouseChildren");
+            Assert.Equal(changed.Spouse.Surname, "ChildrenSurnameSpouseChanged");
+            Assert.Equal(changed.Spouse.Name, "SpouseName2SpouseChildren");
+
+            var added = model.Children.Where(m => m.Name == "AddedName").FirstOrDefault();
+            Assert.NotNull(added);
+            Assert.Equal(added.Surname, "AddedSurname");
+
+            added = model.Spouse.Children.Where(m => m.Name == "AddedName").FirstOrDefault();
             Assert.NotNull(added);
             Assert.Equal(added.Surname, "AddedSurname");
         }
