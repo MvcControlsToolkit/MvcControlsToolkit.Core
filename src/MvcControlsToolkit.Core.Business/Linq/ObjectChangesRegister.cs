@@ -19,11 +19,63 @@ namespace MvcControlsToolkit.Core.Linq.Internal
         public PropertyInfo Property { get; private set;}
         public Expression ValueExpression { get; private set; }
         public List<ObjectChangesRegister> Changes { get; private set; }
+        public Dictionary<PropertyInfo,ObjectChangesRegister> Index { get; private set; }
         MethodInfo clear, add, remove;
         Type listType;
         public void SetExpression(Expression value)
         {
             if (ValueExpression == null) ValueExpression = value;
+        }
+        internal void IndexProperties()
+        {
+            if (Index != null || Changes == null || Changes.Count == 0) return;
+            Index = new Dictionary<PropertyInfo, ObjectChangesRegister>();
+            foreach(var o in Changes)
+            {
+                Index.Add(o.Property, o);
+                o.IndexProperties();
+            }
+        }
+        private LambdaExpression FindExpression(Expression exp)
+        {
+            if (exp.NodeType == ExpressionType.Convert) return FindExpression((exp as UnaryExpression).Operand);
+            else if (exp.NodeType == ExpressionType.Conditional)
+            {
+                var cond = exp as ConditionalExpression;
+                var r1 = FindExpression(cond.IfTrue);
+                var r2 = FindExpression(cond.IfFalse);
+                if (r1 != null && r2 != null) return null;
+                else return r1 ?? r2;
+            }
+            else if (exp.NodeType == ExpressionType.MemberAccess)
+            {
+                var currExpression = exp;
+                var currProperty = (currExpression as MemberExpression)?.Member as PropertyInfo;
+                while (currProperty != null)
+                {
+                    currExpression = (currExpression as MemberExpression).Expression;
+                    currProperty = (currExpression as MemberExpression)?.Member as PropertyInfo;
+
+                }
+                if (currExpression.NodeType == ExpressionType.Parameter)
+                {
+                    var par = currExpression as ParameterExpression;
+                    return Expression.Lambda(exp, par);
+                }
+                else return null;
+            }
+            else return null;
+        }
+        public LambdaExpression InvertPropertyChain(List<PropertyInfo> chain, int index =-0)
+        {
+            if (chain == null || chain.Count < index) return null;
+            if (chain.Count > index)
+            {
+                ObjectChangesRegister next;
+                if (Index.TryGetValue(chain[index], out next)) return next.InvertPropertyChain(chain, index + 1);
+                else return null;
+            }
+            else return FindExpression(ValueExpression);
         }
         public ObjectChangesRegister (
             PropertyInfo property,
@@ -65,21 +117,25 @@ namespace MvcControlsToolkit.Core.Linq.Internal
             if(Changes == null)
                 Changes = new List<ObjectChangesRegister>();
         }
-        public List<string> ComputePaths()
+        public List<string> ComputePaths(out bool hasIenumerables)
         {
+            hasIenumerables = this.EnumType != null;
             if (Changes == null) return null;
             List<string> res = new List<string>();
             foreach(var change in Changes)
             {
-                if(change.Changes != null)
+                hasIenumerables = hasIenumerables || change.EnumType != null;
+                if (change.Changes != null)
                 {
-                    var innerRes = change.ComputePaths();
+                    bool innerHasIenumerables;
+                    var innerRes = change.ComputePaths(out innerHasIenumerables);
                     if (innerRes == null || innerRes.Count==0) res.Add(change.Property.Name);
                     else
                     {
                         foreach (var s in innerRes)
                             res.Add(change.Property.Name + "." + s);
                     }
+                    hasIenumerables = hasIenumerables || innerHasIenumerables;
                 }
                     
             }

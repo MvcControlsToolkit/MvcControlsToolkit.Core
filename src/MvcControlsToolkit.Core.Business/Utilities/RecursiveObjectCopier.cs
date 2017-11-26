@@ -43,7 +43,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
     //        return destination;
     //    }
     //}
-    public class RecursiveObjectCopier<S, D>: IObjectCopier<S, D>, IComputeIncludes<D>, IObjectCopier<D>
+    public class RecursiveObjectCopier<S, D>: IObjectCopier<S, D>, IComputeIncludes<D>, IObjectCopier<D>, ICopierInverter
         where D: class, new()
     {
         private ObjectChangesRegister changes;
@@ -52,14 +52,20 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         List<KeyValuePair<TypeInfo, IObjectCopier<D>>> variations = null;
         HashSet<string> simplifier = null;
         Expression<Func<S, D>> originalSpecifications;
+        public Expression<Func<S, D>> FullExpression { get; private set; }
+        public bool HasIEnumerables { get; set; }
         public RecursiveObjectCopier(Expression<Func<S, D>> specifications=null)
         {
             //if (specifications == null) throw new ArgumentException(nameof(specifications));
             changes = new ObjectChangesRegister(null, true);
             originalSpecifications = specifications;
             specifications =ProjectionExpression<S>.BuildExpression(specifications, null,changes);
+            FullExpression = specifications;
             transform = specifications.Compile();
-            paths = changes.ComputePaths();
+            bool hasIEnumerables;
+            paths = changes.ComputePaths(out hasIEnumerables);
+            HasIEnumerables = hasIEnumerables;
+            changes.IndexProperties();
         }
         private IObjectCopier<D> getSpecifiCopier(S source)
         {
@@ -69,6 +75,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 if (pair.Key.IsAssignableFrom(source.GetType())) return pair.Value;
             }
             return this;
+        }
+        public LambdaExpression InvertPropertyChain(List<PropertyInfo> chain)
+        {
+            return changes.InvertPropertyChain(chain);
         }
         public D Copy(S source, D destination)
         {

@@ -51,7 +51,7 @@ namespace MvcControlsToolkit.Core.OData.Test.Data
                 .DeclareProjection(m => new PersonDTOAuto
                 {
                     Children = m.Children.Select(l => new PersonDTO {Spouse=new PersonDTO { }  }),
-                    Spouse = new PersonDTO { Children = m.Spouse.Children.Select(l => new PersonDTO { Spouse = new PersonDTO { } }) }
+                    Spouse = m.Spouse == null ? null : new PersonDTO { Children = m.Spouse.Children.Select(l => new PersonDTO { Spouse = new PersonDTO { } }) }
                 });
             DefaultCRUDRepository<TestContext, Person>
                 .DeclareUpdateProjection<PersonDTO>

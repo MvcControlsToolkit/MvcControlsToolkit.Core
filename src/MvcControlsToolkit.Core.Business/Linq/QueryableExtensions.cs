@@ -231,7 +231,7 @@ namespace MvcControlsToolkit.Core.Linq
                             :
                             Expression.Bind(projection.Member,
                             Expression.Condition(Expression.Equal(copyMemberAccesses(select.Arguments[0]), Expression.Constant(null)),
-                                Expression.Constant(null, (newExpression as MethodCallExpression).Method.ReturnType),
+                                Expression.Constant(null, newExpression.Type),
                                 newExpression));
                         if(changesRegister != null)
                         {
@@ -287,7 +287,7 @@ namespace MvcControlsToolkit.Core.Linq
                 var lbindings = new List<MemberAssignment>();
                 foreach (var binding in innerBindings)
                 {
-                    var bind = BuildBinding(parameterExpression, binding, sourceProperties);
+                    var bind = BuildBinding(parameterExpression, binding, sourceProperties, true);
                     lbindings.Add(bind);
                     changesRegister
                          .AddChange(new ObjectChangesRegister(binding.Destination as PropertyInfo, false, null, bind.Expression));
@@ -297,7 +297,7 @@ namespace MvcControlsToolkit.Core.Linq
             else
             {
                 bindings = innerBindings
-                        .Select(m => BuildBinding(parameterExpression, m, sourceProperties))
+                        .Select(m => BuildBinding(parameterExpression, m, sourceProperties, changesRegister != null))
                         .Union(customAssignements);
             }
             if(modifiedAssignements != null && modifiedAssignements.Count>0)
@@ -317,7 +317,7 @@ namespace MvcControlsToolkit.Core.Linq
                 {
                     foreach (var binding in internalBindings)
                     {
-                        var bind = BuildBinding(parameterExpression, binding);
+                        var bind = BuildBinding(parameterExpression, binding, null, true);
                         lbindings.Add(bind);
                         changesRegister
                          .AddChange(new ObjectChangesRegister(binding.Destination as PropertyInfo, false, null, bind.Expression));
@@ -329,7 +329,7 @@ namespace MvcControlsToolkit.Core.Linq
             {
                 bindings =
                 internalBindings
-                    .Select(m => BuildBinding(parameterExpression, m));
+                    .Select(m => BuildBinding(parameterExpression, m, null, changesRegister != null));
             }
             
             return Expression.MemberInit(Expression.New(typeof(TDest)), bindings);
@@ -347,7 +347,7 @@ namespace MvcControlsToolkit.Core.Linq
                     
                     foreach (var binding in internalBindings)
                     {
-                        var bind = BuildBinding(parameterExpression, binding);
+                        var bind = BuildBinding(parameterExpression, binding, null, true);
                         lbindings.Add(bind);
                         changesRegister
                          .AddChange(new ObjectChangesRegister(binding.Destination as PropertyInfo, false, null, bind.Expression));
@@ -359,7 +359,7 @@ namespace MvcControlsToolkit.Core.Linq
             else
             {
                 bindings = internalBindings
-                    .Select(m => BuildBinding(parameterExpression, m));
+                    .Select(m => BuildBinding(parameterExpression, m, null, changesRegister != null));
             }
             
             return Expression.MemberInit(Expression.New(destination), bindings);
@@ -517,7 +517,7 @@ namespace MvcControlsToolkit.Core.Linq
 
             return null;
         }
-        private static MemberAssignment BuildBinding(Expression parameterExpression, PropertyBinding binding, Stack<PropertyInfo> prefix=null)
+        private static MemberAssignment BuildBinding(Expression parameterExpression, PropertyBinding binding, Stack<PropertyInfo> prefix=null, bool verifyNull=false)
         {
             var dType = (binding.Destination as PropertyInfo).PropertyType;
             
@@ -539,6 +539,7 @@ namespace MvcControlsToolkit.Core.Linq
             else
             {
                 Expression curr = parameterExpression;
+                BinaryExpression condition = null;
                 PropertyInfo lastProp = null;
                 List<PropertyInfo> loop = binding.Sources;
                 if(prefix != null && prefix.Count > 0)
@@ -548,8 +549,18 @@ namespace MvcControlsToolkit.Core.Linq
                 }
                 foreach (var property in loop)
                 {
+                    if(verifyNull && lastProp != null)
+                    {
+                        var con=Expression.Equal(curr, Expression.Constant(null, lastProp.PropertyType));
+                        if (condition == null) condition = con;
+                        else condition = Expression.Or(condition, con);
+                    }
                     curr = Expression.Property(curr, property);
                     lastProp = property;
+                }
+                if (condition != null)
+                {
+                    curr = Expression.Condition(condition, Expression.Constant(lastProp.PropertyType.GetTypeInfo().IsValueType ? Activator.CreateInstance(lastProp.PropertyType) : null, lastProp.PropertyType), curr);
                 }
                 if (lastProp.PropertyType != dType)
                 {
