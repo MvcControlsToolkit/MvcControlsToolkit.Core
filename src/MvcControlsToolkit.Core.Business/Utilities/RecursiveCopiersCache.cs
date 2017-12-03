@@ -38,5 +38,13 @@ namespace MvcControlsToolkit.Core.Business.Utilities.Internal
             if (allStronglyTypedCopiers.TryGetValue(Tuple.Create(typeof(TSource), typeof(TDest)), out res)) return res as IObjectCopier<TSource, TDest>;
             else return null;
         }
+        public static IObjectCopier<TSource, TDest> GetOrDefault<TSource, TDest>()
+            where TDest : class, new()
+        {
+            var res = Get<TSource, TDest>();
+            if (res == null)
+                return DeclareCopierSpecifications<TSource, TDest>(null) as IObjectCopier<TSource, TDest>;
+            else return res;
+        }
     }
 }

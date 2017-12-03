@@ -171,7 +171,7 @@ namespace MvcControlsToolkit.Core.Linq.Internal
                         IEnumerable oldDestination = null;
                         if (!change.IsCollection)
                         {
-                            var newDestinationEnum = Activator.CreateInstance(listType);
+                            var newDestinationEnum = Activator.CreateInstance(change.listType);
                             if (change.ToAdd )
                             {
                                 foreach(var item in destinationEnum as IEnumerable)
