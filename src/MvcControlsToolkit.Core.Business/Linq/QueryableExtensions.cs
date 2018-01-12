@@ -136,7 +136,7 @@ namespace MvcControlsToolkit.Core.Linq
             if (res != null) return res;
             var sourceProperties = (source??typeof(TSource)).GetProperties();
             var destinationProperties = t.GetProperties()
-                .Where(dest => dest.CanWrite && (dest.PropertyType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(dest.PropertyType)));
+                .Where(dest => dest.CanWrite && (dest.PropertyType == typeof(string) || dest.PropertyType == typeof(byte[]) || !typeof(IEnumerable).IsAssignableFrom(dest.PropertyType)));
             if (filter != null)
             {
                 var filterProperties = new HashSet<string>(filter.GetProperties()

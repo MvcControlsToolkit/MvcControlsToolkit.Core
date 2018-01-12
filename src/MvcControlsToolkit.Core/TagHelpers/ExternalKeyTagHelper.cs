@@ -20,6 +20,8 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public string ItemsValueProperty { get; set; }
         [HtmlAttributeName("query-display")]
         public bool QueryDisplay { get;  set; }
+        [HtmlAttributeName("items-provider-type")]
+        public Type ProviderType { get; set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (DisplayProperty == null) new ArgumentNullException("display-property");
@@ -46,9 +48,10 @@ namespace MvcControlsToolkit.Core.TagHelpers
         public uint MaxResults { get; set; }
         protected override ColumnConnectionInfos GetExpernalConnection()
         {
-            if (string.IsNullOrWhiteSpace(ItemsUrl)) new ArgumentNullException("items-url");
-            if (string.IsNullOrWhiteSpace(UrlToken)) new ArgumentNullException("url-token");
-            if (string.IsNullOrWhiteSpace(DataSetName)) new ArgumentNullException("max-results");
+            if (string.IsNullOrWhiteSpace(ItemsUrl) && ProviderType == null) new ArgumentNullException("items-url/items-provider-type");
+            if (string.IsNullOrWhiteSpace(UrlToken)) UrlToken="_ s";
+            if (string.IsNullOrWhiteSpace(DataSetName)) DataSetName = DisplayProperty.Name + "_DataSet";
+            if (MaxResults==0) MaxResults=10;
             return new ColumnConnectionInfosOnLine
                 (DisplayProperty, 
                 ItemsDisplayProperty, 
@@ -72,7 +75,7 @@ namespace MvcControlsToolkit.Core.TagHelpers
 
     protected override ColumnConnectionInfos GetExpernalConnection()
         {
-            if (string.IsNullOrWhiteSpace(ClientItemsSelector) && ItemsSelector==null) new ArgumentNullException("client-items/client-items-selector");
+            if (string.IsNullOrWhiteSpace(ClientItemsSelector) && ItemsSelector==null&& ProviderType == null) new ArgumentNullException("client-items/client-items-selector/items-provider-type");
             
             return new ColumnConnectionInfosStatic
                 (DisplayProperty,

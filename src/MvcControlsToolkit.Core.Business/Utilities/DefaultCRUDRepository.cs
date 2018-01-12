@@ -75,9 +75,18 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         private static readonly ConcurrentDictionary<Type, object> CompiledProjections = new ConcurrentDictionary<Type, object>();
         public D Context { get; private set; }
         public DbSet<T> Table { get; private set; }
+        public virtual async Task BeforeUpdate(T entity, bool full, object dto)
+        {
 
+        }
+        public virtual async Task BeforeAdd(T entity, bool full, object dto)
+        {
+
+        }
+        
         public Expression<Func<T, bool>> AccessFilter { get; private set; }
         public Expression<Func<T, bool>> SelectFilter { get; private set; }
+        public Expression<Func<T, bool>> ModificationFilter { get { return AccessFilter; } }
         private ChangeSet lastChangeSet;
         public DefaultCRUDRepository(D dbContext, DbSet<T> table, Expression<Func<T, bool>> accessFilter=null, Expression<Func<T, bool>> selectFilter = null)
         {
@@ -210,7 +219,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             res = method.Invoke(null, new object[] { prop })
                 as Func<Operation, bool, object, object, ChangeSet>;
             CreatorCache[pair] = res;
-            return res(o, full, x, y);
+            var cs= res(o, full, x, y);
+            cs.BeforeAdd = (Func<T, bool, object, Task>) BeforeAdd;
+            cs.BeforeUpdate = (Func<T, bool, object, Task>)BeforeUpdate;
+            return cs;
         }
         public virtual void Update<T1>(bool full , params T1[] viewModel)
         {
@@ -319,14 +331,20 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         }
 
         public virtual async Task<DataPage<T1>> GetPageExtended<T1, T2>(
-            Expression<Func<T1, bool>> filter, 
-            Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting, 
-            int page, 
+            Expression<Func<T1, bool>> filter,
+            Func<IQueryable<T2>, IOrderedQueryable<T2>> sorting,
+            int page,
             int itemsPerPage,
-            Func<IQueryable<T1>, IQueryable<T2>> grouping=null
+            Func<IQueryable<T1>, IQueryable<T2>> grouping = null
             )
-            where T2: T1
+            where T2 : T1
         {
+            bool noCount = false;
+            if (page < 0)
+            {
+                noCount = true;
+                page = -page;
+            }
             page = page - 1;
             if (page < 0) page = 0;
             Tuple<object, Func<IQueryable, IEnumerable>> fQueryProj;
@@ -336,12 +354,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 );
             var res = new DataPage<T1>
             {
-                TotalCount=await toGroup.CountAsync(),
-                ItemsPerPage=itemsPerPage,
-                Page = page+1
+                TotalCount = noCount ? -1 : await toGroup.CountAsync(),
+                ItemsPerPage = itemsPerPage,
+                Page = page + 1,
+                TotalPages = -1
             };
-            res.TotalPages = res.TotalCount / itemsPerPage;
-            if (res.TotalCount % itemsPerPage > 0) res.TotalPages++;
+            if (!noCount)
+            {
+                res.TotalPages = res.TotalCount / itemsPerPage;
+                if (res.TotalCount % itemsPerPage > 0) res.TotalPages++;
+            }
             var sorted = sorting(toGroup);
             if (page > 0) toGroup = sorted.Skip(page* itemsPerPage).Take(itemsPerPage);
             else toGroup = sorted.Take(itemsPerPage);
@@ -365,6 +387,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 res.Data =  (await toGroup.Project().To<T1>().ToArrayAsync()) ;
             else 
                 res.Data = (await toGroup.ToArrayAsync()).Select(m => (T1)m).ToArray();
+            if(res.Data.Count == 0)
+            {
+                res.TotalCount = res.TotalPages = 0;
+            }
+            else if (res.Data.Count< itemsPerPage)
+            {
+                res.TotalPages = 1;
+            }
             return res;
         }
         
@@ -415,6 +445,14 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 res.Data = toGroup.Project().To<T1>().ToArray();
             else
                 res.Data = toGroup.ToArray().Select(m => (T1)m).ToArray();
+            if (res.Data.Count == 0)
+            {
+                res.TotalCount = res.TotalPages = 0;
+            }
+            else if (res.Data.Count < itemsPerPage)
+            {
+                res.TotalPages = 1;
+            }
             return res;
         }
         public virtual async Task<DataPage<T1>> GetPage<T1>(

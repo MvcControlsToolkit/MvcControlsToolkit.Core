@@ -4,7 +4,7 @@
     <Description>Core feature of Mvc Controls Toolkit.</Description>
     <Copyright>Mvc Controls Toolkit Team</Copyright>
     <AssemblyTitle>Mvc Controls Toolkit core code</AssemblyTitle>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>MvcControlsToolkit.Core</AssemblyName>
@@ -13,7 +13,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>MvcControlsToolkit.Core</PackageId>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <PackageReleaseNotes>Added compatibility with .Net Core 2-Asp.net Core 2</PackageReleaseNotes>
+    <PackageReleaseNotes>Added external keys handling also through data annotations</PackageReleaseNotes>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
     <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>

@@ -104,6 +104,10 @@ namespace MvcControlsToolkit.Core.Business.Utilities
             }
             return false;
         }
+
+        public object BeforeAdd { get; set; }
+        public object BeforeUpdate { get; set; }
+
         public static ChangeSet<T, K>   Create<T, K> (IEnumerable<T> oldValues, IEnumerable<T> newValues, Expression<Func<T, K>> keyExpression, bool verifyPropertyChanges=true)
         {
             bool supposeModify = Nullable.GetUnderlyingType(typeof(K)) != null;
@@ -165,7 +169,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
         public ICollection<T>  Changed { get; set; }
         public ICollection<T> ChangedOldValues { get; set; }
         public ICollection<K> Deleted { get; set; }
-
+        
         public override object GetKey(object x)
         {
 
@@ -253,6 +257,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                     copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
                     aChange = true;
                     var item = copier.Copy(oItem, null);
+                    if (BeforeAdd != null) await (BeforeAdd as Func<M, bool, object, Task>)(item, !retrieveChanged, oItem);
                     table.Add(item);
                     res.Add(item);
                 }
@@ -300,7 +305,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         var oItem = dict[(K)key];
                         copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
                         copier.Copy(oItem, item);
-                        
+                        if (BeforeUpdate != null) await (BeforeUpdate as Func<M, bool, object, Task>)(item, !retrieveChanged, oItem);
                     }
                 }
                 else
@@ -311,6 +316,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                         aChange = true;
                         copier = recursiveCopier??GetCopierOptimized<T, M>(oItem.GetType());
                         var item = copier.Copy(oItem, null);
+                        if (BeforeUpdate != null) await (BeforeUpdate as Func<M, bool, object, Task>)(item, !retrieveChanged, oItem);
                         table.Attach(item);
                     }
                 }

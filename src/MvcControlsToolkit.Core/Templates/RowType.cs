@@ -147,6 +147,7 @@ namespace MvcControlsToolkit.Core.Templates
             return res;
         }
         private IEnumerable<Column> visibleAndHiddenColumns = null;
+        
         protected virtual void PrepareColumns()
         {
             if (columnsPrepared) return;
@@ -226,6 +227,7 @@ namespace MvcControlsToolkit.Core.Templates
             IEnumerable<string> removeColumns = null, bool cloneInherited=false)
         {
             var standardColumns = inherited;
+            HashSet<string> set = null;
             if (removeColumns != null || addColumns != null)
             {
                 IEnumerable<string> toRemove;
@@ -235,12 +237,25 @@ namespace MvcControlsToolkit.Core.Templates
                     if (addColumns != null) toRemove = toRemove.Union(addColumns.Select(m => m.Name));
                 }
                 else toRemove = addColumns.Select(m => m.Name);
-                var set = new HashSet<string>(toRemove);
+                set = new HashSet<string>(toRemove);
                 standardColumns = standardColumns.Where(m => !set.Contains(m.Name));
             }
             if (cloneInherited) standardColumns = standardColumns.Select(m => m.CloneColumn());
             if (addColumns != null) standardColumns = standardColumns.Union(addColumns);
-            Columns = standardColumns;
+            bool columnsChanged = false;
+            HashSet<string> newSet = null;
+            standardColumns = standardColumns.ToList();
+            foreach(var col in standardColumns)
+            {
+                string name=col.PrepareConnections(this);
+                if(name != null)
+                {
+                    if (newSet == null) newSet = new HashSet<string>();
+                    newSet.Add(name);
+                    columnsChanged = true;
+                }
+            }
+            Columns = columnsChanged ? standardColumns.Where(m => !newSet.Contains(m.Name)) :  standardColumns ;
             PrepareColumns();
         }
         internal void RowInit(IList<RowType> x)

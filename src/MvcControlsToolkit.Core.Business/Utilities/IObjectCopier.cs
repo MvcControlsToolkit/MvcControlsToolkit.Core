@@ -10,6 +10,7 @@ namespace MvcControlsToolkit.Core.Business.Utilities
     {
         object Copy(object source, object destination);
     }
+    
     public interface IObjectCopier<D>
     {
         D Copy(object source, D destination);

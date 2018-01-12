@@ -99,6 +99,19 @@ namespace MvcControlsToolkit.Core.Templates
         {
             return this.MemberwiseClone() as Column;
         }
+        internal string PrepareConnections(RowType row)
+        {
+            if (ColumnConnection != null || For==null || string.IsNullOrEmpty(For.Metadata.PropertyName)) return null;
+            var pres = row?.For?.Metadata?.ModelType?.GetTypeInfo()?.GetProperty(For.Metadata.PropertyName)?
+                        .GetCustomAttribute<ColumnConnectionAttribute>(false);
+            if (pres == null) return null;
+            else
+            {
+                ColumnConnection = pres.GetConnection(row);
+                return ColumnConnection.DisplayProperty.Metadata.PropertyName;
+            }
+            
+        }
         protected bool prepared;
         private TypeInfo _TypeInfos = null;
         public TypeInfo TypeInfos

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using MvcControlsToolkit.Core.DataAnnotations;
 
 namespace MvcControlsToolkit.Core.Templates
 {
@@ -17,17 +18,20 @@ namespace MvcControlsToolkit.Core.Templates
 
         public bool QueryDisplay { get; private set; }
 
+        public Type ItemsProvider { get; private set; }
+
         public ColumnConnectionInfos(
             ModelExpression displayProperty,
             string itemsDisplayProperty,
             string itemsValueProperty,
-            bool queryDisplay=false)
+            bool queryDisplay=false,
+            Type itemsProvider = null)
         {
             DisplayProperty = displayProperty;
             ItemsDisplayProperty = itemsDisplayProperty;
             ItemsValueProperty = itemsValueProperty;
             QueryDisplay = queryDisplay;
-
+            ItemsProvider = itemsProvider;
         }
         
     }
@@ -56,7 +60,40 @@ namespace MvcControlsToolkit.Core.Templates
             ItemsUrl = itemsUrl;
             UrlToken = urlToken;
             DataSetName = dataSetName;
+            MaxResults = maxResults; 
+        }
+        public ColumnConnectionInfosOnLine(
+        ModelExpression displayProperty,
+        string itemsDisplayProperty,
+        string itemsValueProperty,
+        Type itemsProvider,
+        uint maxResults, 
+        string dataSetName,
+        bool queryDisplay = false
+        )
+            : base(displayProperty,
+                 itemsDisplayProperty,
+                 itemsValueProperty,
+                 queryDisplay,
+                 itemsProvider)
+        {
+            
+            DataSetName = dataSetName;
             MaxResults = maxResults;
+        }
+        public IDispalyValueSuggestionsProvider SuggestionsProvider(IServiceProvider services)
+        {
+            if(ItemsUrl != null)
+            {
+                return new DefaultDispalyValueSuggestionsProvider(ItemsUrl, UrlToken??"_ s");
+            }
+            var provider = services.GetService(ItemsProvider) as IDispalyValueSuggestionsProvider;
+            if (provider != null)
+            {
+                provider.DisplayValueSuggestionsUrlToken = provider.DisplayValueSuggestionsUrlToken ?? "_ s";
+                return provider;
+            }
+            else return null;
         }
     }
     public class ColumnConnectionInfosStatic : ColumnConnectionInfos
@@ -77,6 +114,41 @@ namespace MvcControlsToolkit.Core.Templates
         {
             ClientItemsSelector = clientItemsSelector;
             ItemsSelector = itemsSelector;
+        }
+        public ColumnConnectionInfosStatic(
+        ModelExpression displayProperty,
+        string itemsDisplayProperty,
+        string itemsValueProperty,
+        Type itemsProvider,
+        bool queryDisplay = false)
+            : base(displayProperty,
+                 itemsDisplayProperty,
+                 itemsValueProperty,
+                 queryDisplay, itemsProvider)
+        {
+            
+        }
+        public async Task<IEnumerable> GetItems(IServiceProvider services, object o)
+        {
+            if (ItemsSelector != null) return await ItemsSelector(o);
+            if (ItemsProvider != null)
+            {
+                var provider = services.GetService(ItemsProvider) as IDispalyValueItemsProvider;
+                if (provider != null) return await provider.GetDisplayValuePairs(o);
+
+            }
+            
+            return null;
+        }
+        public string GetClientItemsSelector(IServiceProvider services)
+        {
+            if (ClientItemsSelector != null) return ClientItemsSelector;
+            if(ItemsProvider != null)
+            {
+                var provider = services.GetService(ItemsProvider) as IDispalyValueItemsProvider;
+                if (provider != null) return provider.ClientDisplayValueItemsSelector;
+            }
+            return null;
         }
     }
 }

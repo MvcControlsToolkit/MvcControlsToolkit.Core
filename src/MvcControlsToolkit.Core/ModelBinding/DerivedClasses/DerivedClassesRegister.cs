@@ -28,8 +28,9 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
     public class DerivedClassesRegister
     {
         protected static IDictionary<Type, int> AllRunTimeTypes;
-        protected static KeyValuePair<Type, int>[] InverseAllRunTimeTypes;
+        protected static List<KeyValuePair<Type, int>> InverseAllRunTimeTypes;
         protected static List<Type> DefaultTypes;
+        protected static object locker = new object();
         internal static void Prepare(IHostingEnvironment env)
         {
             
@@ -52,7 +53,7 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
             }
             int i = 0;
             InverseAllRunTimeTypes = tlist.Distinct().Select(m => new KeyValuePair<Type, int>(m, i++))
-            .ToArray();
+            .ToList();
 
             AllRunTimeTypes =InverseAllRunTimeTypes
                 .ToDictionary(m => m.Key, m=> m.Value);
@@ -63,7 +64,7 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
             index = index.Substring(0, index.Length - 1);
             int i;
             if (!int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out i)) return null;
-            if (i >= InverseAllRunTimeTypes.Length || i<0) return null;
+            if (i >= InverseAllRunTimeTypes.Count || i<0) return null;
             return InverseAllRunTimeTypes[i].Key;
         }
         public static string GetCodeFromType(Type type, bool quiet=false)
@@ -78,6 +79,20 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
         {
             if (DefaultTypes == null) DefaultTypes = new List<Type>();
             DefaultTypes.Add(typeof(T));
+        }
+        
+        public int GetAndAddIfNotExists(Type t)
+        {
+            int res;
+            if (AllRunTimeTypes.TryGetValue(t, out res)) return res;
+            lock (locker)
+            {
+                if (AllRunTimeTypes.TryGetValue(t, out res)) return res;
+                var toAdd = new KeyValuePair<Type, int>(t, InverseAllRunTimeTypes.Count);
+                InverseAllRunTimeTypes.Add(toAdd);
+                AllRunTimeTypes.Add(toAdd);
+                return toAdd.Value;
+            }
         }
     }
 }
