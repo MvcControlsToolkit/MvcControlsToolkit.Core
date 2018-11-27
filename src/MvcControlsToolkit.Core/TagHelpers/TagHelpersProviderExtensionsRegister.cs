@@ -35,9 +35,13 @@ namespace MvcControlsToolkit.Core.TagHelpers
                 DefaultTemplates>>>();
         internal static void Prepare(IHostingEnvironment env)
         {
-            var tenum = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(env.ApplicationName).
-               Where(m => !m.Name.StartsWith("MvcControlsToolkit"))
-               .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic
+            var tenum = Assembly
+                .GetEntryAssembly()
+                .GetReferencedAssemblies()
+                .Where(m =>  !m.Name.StartsWith("Microsoft") && !m.Name.StartsWith("System"))
+                .Select(Assembly.Load)
+                .SelectMany(m => m.DefinedTypes)
+                .Where(m => m.IsPublic
                && m.GetInterfaces().Contains(typeof(ITagHelpersProviderExtension)))
                .Select(m => m.AsType());
             foreach(var x in tenum)

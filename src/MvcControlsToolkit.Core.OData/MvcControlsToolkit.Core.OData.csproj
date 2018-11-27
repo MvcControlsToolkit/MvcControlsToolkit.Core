@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>OData parsing to json and to IQueryable transformations, and OData middleware</Description>
     <Copyright>Mvc Controls Toolkit Team</Copyright>
     <AssemblyTitle>Mvc Controls Toolkit OData tools</AssemblyTitle>
-    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionPrefix>2.2.0</VersionPrefix>
     <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>MvcControlsToolkit.Core.OData</AssemblyName>
@@ -13,7 +13,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>MvcControlsToolkit.Core.OData</PackageId>
     <PackageTags>aspnetcore;aspnetcoremvc;OData</PackageTags>
-    <PackageReleaseNotes>Added IWebQueryable interface and default implementation</PackageReleaseNotes>
+    <PackageReleaseNotes>Moved to dotnetcore 2.1 and to Microsoft.OData.Core 7.5.2</PackageReleaseNotes>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
     <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.OData.Core" Version="7.3.1" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.5.2" />
   </ItemGroup>
 
   

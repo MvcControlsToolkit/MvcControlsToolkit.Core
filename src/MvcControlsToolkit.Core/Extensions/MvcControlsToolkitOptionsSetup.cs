@@ -33,7 +33,7 @@ namespace MvcControlsToolkit.Core.Extensions
             foreach (var b in options.ModelBinderProviders)
             {
                 
-                if (b is SimpleTypeModelBinderProvider)
+                if (b is SimpleTypeModelBinderProvider || b is FloatingPointTypeModelBinderProvider)
                 {
                     res = b;
                     break;

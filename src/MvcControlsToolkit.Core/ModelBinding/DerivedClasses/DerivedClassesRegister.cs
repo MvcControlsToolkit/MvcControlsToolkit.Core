@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using System.Globalization;
 using Newtonsoft.Json.Serialization;
 
+
 namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
 {
     public class DerivedClasssSerializationBinder : DefaultSerializationBinder
@@ -31,12 +32,25 @@ namespace MvcControlsToolkit.Core.ModelBinding.DerivedClasses
         protected static List<KeyValuePair<Type, int>> InverseAllRunTimeTypes;
         protected static List<Type> DefaultTypes;
         protected static object locker = new object();
+        internal static IEnumerable<Assembly> allAssemblies()
+        {
+
+            var start = Assembly
+               .GetEntryAssembly();
+            return start.GetReferencedAssemblies()
+                .Where(m => !m.Name.StartsWith("MvcControlsToolkit")
+                    && !m.Name.StartsWith("Microsoft")
+                    && !m.Name.StartsWith("System"))
+                    .Select(m => m.FullName)
+                .Select(Assembly.ReflectionOnlyLoad).Union(new Assembly[] { start });
+        }
         internal static void Prepare(IHostingEnvironment env)
         {
             
-            var tenum = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(env.ApplicationName).
-                Where(m => !m.Name.StartsWith("MvcControlsToolkit"))
-                .SelectMany(m => (m as AssemblyPart).Types).Where(m => m.IsPublic
+            var tenum =
+                 allAssemblies()
+                .SelectMany(m => m.DefinedTypes)
+                .Where(m => m.IsPublic
                 && m.GetCustomAttribute(typeof(MvcControlsToolkit.Core.DataAnnotations.RunTimeTypeAttribute)) != null)
                 .Select(m => m.AsType());
             if (DefaultTypes != null) tenum = tenum.Union(DefaultTypes);

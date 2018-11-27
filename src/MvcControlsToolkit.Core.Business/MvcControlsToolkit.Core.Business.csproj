@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Data annotations, database utilities, and utility types for the Mvc Controls Toolkit that do not depend on Asp.net core.</Description>
     <Copyright>Mvc Controls Toolkit Team</Copyright>
     <AssemblyTitle>Mvc Controls Toolkit business Layer tools</AssemblyTitle>
-    <VersionPrefix>2.1.3</VersionPrefix>
+    <VersionPrefix>2.2.0</VersionPrefix>
     
     <Authors>Francesco Abbruzzese;Mvc Controls Toolkit Team</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
@@ -14,7 +14,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>MvcControlsToolkit.Core.Business</PackageId>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <PackageReleaseNotes>Added generic object mapping tools and repository events</PackageReleaseNotes>
+    <PackageReleaseNotes>Moved To dotnetcore 2.1/fixed bug on paged data</PackageReleaseNotes>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/15634526?v=3&amp;s=200</PackageIconUrl>
     <PackageProjectUrl>https://github.com/MvcControlsToolkit/MvcControlsToolkit.Core</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/MvcControlsToolkit/Home/blob/master/LICENSE.txt</PackageLicenseUrl>
@@ -31,14 +31,14 @@
 
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.4" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
     
   </ItemGroup>
 

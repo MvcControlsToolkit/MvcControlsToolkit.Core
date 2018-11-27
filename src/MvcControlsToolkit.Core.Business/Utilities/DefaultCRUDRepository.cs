@@ -387,13 +387,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 res.Data =  (await toGroup.Project().To<T1>().ToArrayAsync()) ;
             else 
                 res.Data = (await toGroup.ToArrayAsync()).Select(m => (T1)m).ToArray();
-            if(res.Data.Count == 0)
+            if (page == 0)
             {
-                res.TotalCount = res.TotalPages = 0;
-            }
-            else if (res.Data.Count< itemsPerPage)
-            {
-                res.TotalPages = 1;
+                if (res.Data.Count == 0)
+                {
+                    res.TotalCount = res.TotalPages = 0;
+                }
+                else if (res.Data.Count < itemsPerPage)
+                {
+                    res.TotalPages = 1;
+                }
             }
             return res;
         }
@@ -445,13 +448,16 @@ namespace MvcControlsToolkit.Core.Business.Utilities
                 res.Data = toGroup.Project().To<T1>().ToArray();
             else
                 res.Data = toGroup.ToArray().Select(m => (T1)m).ToArray();
-            if (res.Data.Count == 0)
+            if (page == 0)
             {
-                res.TotalCount = res.TotalPages = 0;
-            }
-            else if (res.Data.Count < itemsPerPage)
-            {
-                res.TotalPages = 1;
+                if (res.Data.Count == 0)
+                {
+                    res.TotalCount = res.TotalPages = 0;
+                }
+                else if (res.Data.Count < itemsPerPage)
+                {
+                    res.TotalPages = 1;
+                }
             }
             return res;
         }
